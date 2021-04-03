@@ -1,4 +1,4 @@
-# Sentinel教程
+# innoDB存储引擎
 
 本项目内容为一个关于MySQL innoDB存储引擎（基于MySQL3.23.49）源妈注释。
 
