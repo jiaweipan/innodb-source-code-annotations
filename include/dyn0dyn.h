@@ -105,60 +105,67 @@ dyn_array_get_data_size(
 	dyn_array_t*	arr);	/* in: dyn array */ /* 输入：指向结构体dyn_array_t大小内存缓冲区的指针 */
 /****************************************************************
 Gets the first block in a dyn array. */
+/*  获得动态数组的第一个数据块*/
 UNIV_INLINE
 dyn_block_t*
 dyn_array_get_first_block(
 /*======================*/
-	dyn_array_t*	arr);	/* in: dyn array */
+	dyn_array_t*	arr);	/* in: dyn array */ /* 输入：指向动态数组指针 */
 /****************************************************************
 Gets the last block in a dyn array. */
+/*  获得动态数组的最后一个数据块*/
 UNIV_INLINE
 dyn_block_t*
 dyn_array_get_last_block(
 /*=====================*/
-	dyn_array_t*	arr);	/* in: dyn array */
+	dyn_array_t*	arr);	/* in: dyn array */ /* 输入：指向动态数组指针 */
 /************************************************************************
 Gets the next block in a dyn array. */
+/*  获得动态数组的下一个数据块*/
 UNIV_INLINE
 dyn_block_t*
 dyn_array_get_next_block(
 /*=====================*/
 				/* out: pointer to next, NULL if end of list */
-	dyn_array_t*	arr,	/* in: dyn array */
-	dyn_block_t*	block);	/* in: dyn array block */
+	dyn_array_t*	arr,	/* in: dyn array */ /* 输入：指向动态数组指针 */
+	dyn_block_t*	block);	/* in: dyn array block */ /* 输入：指向当前动态数组数据块指针 */
 /************************************************************************
 Gets the number of used bytes in a dyn array block. */
+/*  获得动态数组数据块的已使用字节数量 */
 UNIV_INLINE
 ulint
 dyn_block_get_used(
 /*===============*/
-				/* out: number of bytes used */
-	dyn_block_t*	block);	/* in: dyn array block */
+				/* out: number of bytes used */ /* 输出：已使用数据大小（字节） */
+	dyn_block_t*	block);	/* in: dyn array block */ /* 输入：指向动态数组数据块指针 */
 /************************************************************************
 Gets pointer to the start of data in a dyn array block. */
+/*  获得指向动态数组数据块起始地址的指针 */
 UNIV_INLINE
 byte*
 dyn_block_get_data(
 /*===============*/
-				/* out: pointer to data */
-	dyn_block_t*	block);	/* in: dyn array block */
+				/* out: pointer to data */ /* 输出：指向数据的指针 */
+	dyn_block_t*	block);	/* in: dyn array block */ /* 输入：指向动态数组数据块指针 */
 /************************************************************************
 Gets the next block in a dyn array. */
+/*  获得动态数组数据块的下一个数据块*/
 UNIV_INLINE
 dyn_block_t*
 dyn_block_get_next(
 /*===============*/
-				/* out: pointer to next, NULL if end of list */
-	dyn_block_t*	block);	/* in: dyn array block */
+				/* out: pointer to next, NULL if end of list */ /* 输出：指向下一个数据块的指针 */
+	dyn_block_t*	block);	/* in: dyn array block */ /* 输入：指向动态数组数据块指针 */
 /************************************************************
 Pushes n bytes to a dyn array. */
+/*  将n个字节推送到动态数组。*/
 UNIV_INLINE
 void
 dyn_push_string(
 /*============*/
-	dyn_array_t*	arr,	/* in: dyn array */
-	byte*		str,	/* in: string to write */
-	ulint		len);	/* in: string length */
+	dyn_array_t*	arr,	/* in: dyn array */ /* 输入：指向动态数组指针 */
+	byte*		str,	/* in: string to write */ /* 输入：指向写入字符串指针 */
+	ulint		len);	/* in: string length */ /* 输入：字符串长度 */
 
 /*#################################################################*/
 
@@ -167,19 +174,19 @@ appears here only for the compiler to know its size! */
 /*注意！不要直接使用结构体的字段：定义出现在这里只是为了让编译器知道它的大小 */
 struct dyn_block_struct{
 	mem_heap_t*	heap;	/* in the first block this is != NULL 
-				if dynamic allocation has been needed */
-	ulint		used;	/* number of data bytes used in this block */
+				if dynamic allocation has been needed */ /* 如果需要动态分配，在第一个数据块它是非空的 */
+	ulint		used;	/* number of data bytes used in this block */ /* 在这个数据块里已使用字节数 */
 	byte		data[DYN_ARRAY_DATA_SIZE];
-				/* storage for array elements */	
+				/* storage for array elements */	/* 数组元素的存储区 */
 	UT_LIST_BASE_NODE_T(dyn_block_t) base;
 				/* linear list of dyn blocks: this node is
-				used only in the first block */
+				used only in the first block */ /* dyn块的线性列表：此节点仅用于第一个块 */
 	UT_LIST_NODE_T(dyn_block_t) list;
-				/* linear list node: used in all blocks */
+				/* linear list node: used in all blocks */ /* 线性列表节点：用于所有块 */
 #ifdef UNIV_DEBUG
 	ulint		buf_end;/* only in the debug version: if dyn array is
 				opened, this is the buffer end offset, else
-				this is 0 */
+				this is 0 */ /*仅在调试版本中：如果打开dyn array，则这是缓冲区结束偏移量，否则这是0*/
 	ulint		magic_n;
 #endif
 };

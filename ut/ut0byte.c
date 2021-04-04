@@ -14,14 +14,15 @@ Created 5/11/1994 Heikki Tuuri
 
 #include "ut0sort.h"
 
-/* Zero value for a dulint */
+/* Zero value for a dulint */ /*一个dulint的零值 */
 dulint	ut_dulint_zero 		= {0, 0};
 
-/* Maximum value for a dulint */
+/* Maximum value for a dulint */ /*一个dulint的最大值 */
 dulint	ut_dulint_max 		= {0xFFFFFFFF, 0xFFFFFFFF};
 
 /****************************************************************
-Sort function for dulint arrays. */
+Sort function for dulint arrays. */ 
+/* dulint数组的排序函数。 */
 void
 ut_dulint_sort(dulint* arr, dulint* aux_arr, ulint low, ulint high)
 /*===============================================================*/
@@ -32,7 +33,7 @@ ut_dulint_sort(dulint* arr, dulint* aux_arr, ulint low, ulint high)
 
 /****************************************************************
 Copies a string to a memory location, setting characters to lower case. */
-
+/* 将字符串复制到内存位置，将字符设置为小写 */
 void
 ut_cpy_in_lower_case(
 /*=================*/
@@ -49,7 +50,7 @@ ut_cpy_in_lower_case(
 
 /****************************************************************
 Compares two strings when converted to lower case. */
-
+/* 转换为小写时比较两个字符串 */
 int
 ut_cmp_in_lower_case(
 /*=================*/

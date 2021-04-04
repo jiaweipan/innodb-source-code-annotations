@@ -5,16 +5,17 @@ Utilities for byte operations
 
 Created 5/30/1994 Heikki Tuuri
 *******************************************************************/
-
+/* 字节操作工具集 */
 /***********************************************************
 Creates a 64-bit dulint out of two ulints. */
+/*从两个ulint中创建64位dulint。*/
 UNIV_INLINE
 dulint
 ut_dulint_create(
 /*=============*/
-			/* out: created dulint */
-	ulint	high,	/* in: high-order 32 bits */
-	ulint	low)	/* in: low-order 32 bits */
+			/* out: created dulint */   /*输出：被创建的dulint */
+	ulint	high,	/* in: high-order 32 bits */  /*输入：高阶32位 */
+	ulint	low)	/* in: low-order 32 bits */  /*输入：低阶32位 */
 {
 	dulint	res;
 
@@ -29,36 +30,39 @@ ut_dulint_create(
 
 /***********************************************************
 Gets the high-order 32 bits of a dulint. */
+/*从一个dulint中获得高阶32位。*/
 UNIV_INLINE
 ulint
 ut_dulint_get_high(
 /*===============*/
-			/* out: 32 bits in ulint */
-	dulint	d)	/* in: dulint */
+			/* out: 32 bits in ulint */ /*输出：32位 ulint */
+	dulint	d)	/* in: dulint */  /*输入：dulint */
 {
 	return(d.high);
 }
 
 /***********************************************************
 Gets the low-order 32 bits of a dulint. */
+/*从一个dulint中获得低阶32位。*/
 UNIV_INLINE
 ulint
 ut_dulint_get_low(
 /*==============*/
-			/* out: 32 bits in ulint */
-	dulint	d)	/* in: dulint */
+			/* out: 32 bits in ulint */ /*输出：32位 ulint */
+	dulint	d)	/* in: dulint */  /*输入：dulint */
 {
 	return(d.low);
 }
 
 /***********************************************************
 Tests if a dulint is zero. */
+/*测试一个dulint是否是0。*/
 UNIV_INLINE
 ibool
 ut_dulint_is_zero(
 /*==============*/
-			/* out: TRUE if zero */
-	dulint	a)	/* in: dulint */
+			/* out: TRUE if zero */  /*输出：如果是0返回TRUE */
+	dulint	a)	/* in: dulint */  /*输入：dulint */
 {
 	if ((a.low == 0) && (a.high == 0)) {
 
@@ -70,6 +74,7 @@ ut_dulint_is_zero(
 
 /***********************************************************
 Compares two dulints. */
+/*对比两个dulints。*/
 UNIV_INLINE
 int
 ut_dulint_cmp(
@@ -94,6 +99,7 @@ ut_dulint_cmp(
 
 /***********************************************************
 Calculates the max of two dulints. */
+/*计算两个dulint的最大值 。*/
 UNIV_INLINE
 dulint
 ut_dulint_get_max(
@@ -112,6 +118,7 @@ ut_dulint_get_max(
 
 /***********************************************************
 Calculates the min of two dulints. */
+/*计算两个dulint的最小值 。*/
 UNIV_INLINE
 dulint
 ut_dulint_get_min(
@@ -130,6 +137,7 @@ ut_dulint_get_min(
 
 /***********************************************************
 Adds a ulint to a dulint. */
+/*向dulint添加ulint。*/
 UNIV_INLINE
 dulint
 ut_dulint_add(
@@ -138,7 +146,7 @@ ut_dulint_add(
 	dulint	a,	/* in: dulint */
 	ulint	b)	/* in: ulint */
 {
-	if (0xFFFFFFFF - b >= a.low) {
+	if (0xFFFFFFFF - b >= a.low) { /* 类似与b + a.low <= 0xFFFFFFFF 加数与被加数的低32位相加小于等于0xFFFFFFFF（32位最大值），但是这样写会产生溢出*/
 		a.low += b;
 
 		return(a);
@@ -153,6 +161,7 @@ ut_dulint_add(
 
 /***********************************************************
 Subtracts a ulint from a dulint. */
+/*从dulint中减去ulint。*/
 UNIV_INLINE
 dulint
 ut_dulint_subtract(
@@ -181,6 +190,7 @@ ut_dulint_subtract(
 /***********************************************************
 Subtracts a dulint from another. NOTE that the difference must be positive
 and smaller that 4G. */
+/*从另一个中减去一个。请注意，差值必须为正比4G还小*/
 UNIV_INLINE
 ulint
 ut_dulint_minus(
@@ -210,6 +220,7 @@ ut_dulint_minus(
 
 /************************************************************
 Rounds a dulint downward to a multiple of a power of 2. */
+/* 将dulint向下舍入为2的幂的倍数。 */
 UNIV_INLINE
 dulint
 ut_dulint_align_down(
@@ -234,6 +245,7 @@ ut_dulint_align_down(
 
 /************************************************************
 Rounds a dulint upward to a multiple of a power of 2. */
+/* 将dulint向上舍入为2的幂的倍数。 */
 UNIV_INLINE
 dulint
 ut_dulint_align_up(
@@ -250,6 +262,7 @@ ut_dulint_align_up(
 The following function calculates the value of an integer n rounded
 to the least product of align_no which is >= n. align_no
 has to be a power of 2. */
+/* 下面的函数计算整数n的值到align_no的最小乘积>=n。align_no必须是2次幂*/
 UNIV_INLINE
 ulint
 ut_calc_align(
@@ -266,6 +279,7 @@ ut_calc_align(
 
 /*************************************************************
 The following function rounds up a pointer to the nearest aligned address. */
+/*下面的函数向上舍入指向最近对齐地址的指针。*/
 UNIV_INLINE
 void*
 ut_align(
@@ -287,6 +301,7 @@ ut_align(
 The following function calculates the value of an integer n rounded
 to the biggest product of align_no which is <= n. align_no has to be a
 power of 2. */
+/*下面的函数计算整数n的值到align_no的最大乘积<=n。align_no必须是2次幂。*/
 UNIV_INLINE
 ulint
 ut_calc_align_down(
@@ -304,6 +319,7 @@ ut_calc_align_down(
 /*************************************************************
 The following function rounds down a pointer to the nearest
 aligned address. */
+/*下面的函数将指针向下舍入到最近的对齐的地址。*/
 UNIV_INLINE
 void*
 ut_align_down(
@@ -323,6 +339,7 @@ ut_align_down(
 
 /*********************************************************************
 Gets the nth bit of a ulint. */
+/* 得到一个ulint的第n个比特。*/
 UNIV_INLINE
 ibool
 ut_bit_get_nth(
@@ -340,6 +357,7 @@ ut_bit_get_nth(
 
 /*********************************************************************
 Sets the nth bit of a ulint. */
+/* 设置一个ulint的第n个比特。*/
 UNIV_INLINE
 ulint
 ut_bit_set_nth(
