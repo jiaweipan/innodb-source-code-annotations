@@ -5,7 +5,7 @@ List utilities
 
 Created 9/10/1995 Heikki Tuuri
 ***********************************************************************/
-
+/*数组工具*/
 #ifndef ut0lst_h
 #define ut0lst_h
 
@@ -15,13 +15,18 @@ Created 9/10/1995 Heikki Tuuri
 if a list is used in the database. Note that a single struct may belong
 to two or more lists, provided that the list are given different names.
 An example of the usage of the lists can be found in fil0fil.c. */
+/* 这个模块实现了应该使用的双向线性列表如果数据库中使用了列表。
+请注意，单个结构可能属于两个或两个以上的列表，前提是列表的名称不同。
+列表的用法示例可以在fil0fil.c中找到。*/
 
 /***********************************************************************
 This macro expands to the unnamed type definition of a struct which acts
 as the two-way list base node. The base node contains pointers
 to both ends of the list and a count of nodes in the list (excluding
 the base node from the count). TYPE should be the list node type name. */
-
+/*此宏将扩展到执行以下操作的结构的未命名类型定义作为双向列表基节点。
+基节点包含指针列表的两端和列表中的节点数（不包括计数中的基节点）。
+类型应为列表节点类型名称。*/
 #define UT_LIST_BASE_NODE_T(TYPE)\
 struct {\
 	ulint	count;	/* count of nodes in list */\
@@ -43,6 +48,18 @@ struct LRU_node_struct {
 }
 The example implements an LRU list of name LRU_list. Its nodes are of type
 LRU_node_t.
+*/
+/*
+此宏扩展到结构的未命名类型定义，该结构应该嵌入到列表的节点中，节点类型必须是结构。
+此结构包含指向列表中下一个和上一个节点的指针。
+节点结构中字段的名称应为给定的名称加入名单。
+类型应为列表节点类型名称。用法示例：
+typedef struct LRU_node_struct	LRU_node_t;
+struct LRU_node_struct {
+	UT_LIST_NODE_T(LRU_node_t)	LRU_list;
+	...
+}
+该示例实现了一个名为LRU_list的LRU列表。其节点类型为LRU_node_t。
 */
 
 #define UT_LIST_NODE_T(TYPE)\

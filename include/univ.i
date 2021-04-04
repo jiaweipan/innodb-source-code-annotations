@@ -5,7 +5,7 @@ Version control for database, common definitions, and include files
 
 Created 1/20/1994 Heikki Tuuri
 ****************************************************************************/
-
+/* 数据库、公共定义和包含文件的版本控制 */
 #ifndef univ_i
 #define univ_i
 
@@ -20,7 +20,12 @@ be defined:
 #define HANDLE void*
 #define CRITICAL_SECTION	ulint
 */
-
+/*如果你想用编译器级别-W4检查错误，
+注释掉上面包含的windows.h，让下面来定义
+被定义:
+#define HANDLE void*
+#define CRITICAL_SECTION	ulint
+*/
 #ifdef _NT_
 #define __NT__
 #endif
@@ -29,6 +34,7 @@ be defined:
 /* The Unix version */
 
 /* Most C compilers other than gcc do not know 'extern inline' */ 
+/* 除了gcc，大多数C编译器都不知道'extern inline' */
 #if !defined(__GNUC__) && !defined(__WIN__)
 #define UNIV_MUST_NOT_INLINE
 #endif
@@ -36,10 +42,13 @@ be defined:
 /* Include two header files from MySQL to make the Unix flavor used
 in compiling more Posix-compatible. We assume that 'innobase' is a
 subdirectory of 'mysql'. */
+/* 包含两个来自MySQL的头文件，以使用Unix风格在编译posix兼容度更高时。
+我们假设innobase是一个子目录的mysql。*/
 #include <global.h>
 #include <my_pthread.h>
 
 /* Include <sys/stat.h> to get S_I... macros defined for os0file.c */
+/* 包括<sys/stat.h>得到S_I…为os0file.c定义的宏*/
 #include <sys/stat.h>
 
 #undef PACKAGE
@@ -65,11 +74,16 @@ subdirectory of 'mysql'. */
 all memory it allocates to zero. It hides Purify
 warnings about reading unallocated memory unless
 memory is read outside the allocated blocks. */
+/*下面的标志将使InnoDB初始化它分配给0的所有内存。
+它藏起了净化关于读取未分配内存的警告，
+除非从分配的块之外读取内存。
+*/
 /*
 #define UNIV_INIT_MEM_TO_ZERO
 */
 
 /* Make a non-inline debug version */
+/* 制作一个非内联调试版本 */
 /*
 #define UNIV_DEBUG
 #define UNIV_MEM_DEBUG
@@ -91,11 +105,13 @@ memory is read outside the allocated blocks. */
 			/* the above option prevents forcing of log to disk
 			at a buffer page write: it should be tested with this
 			option off; also some ibuf tests are suppressed */
+/*上面的选项防止在缓冲区页写入时将日志强制到磁盘:应该关闭此选项进行测试;还有一些ibuf测试被抑制*/
 /*
 #define UNIV_BASIC_LOG_DEBUG
 */
 			/* the above option enables basic recovery debugging:
 			new allocated file pages are reset */
+/*上面的选项开启基本的恢复调试:重置新分配的文件页*/
 
 #if (!defined(UNIV_DEBUG) && !defined(INSIDE_HA_INNOBASE_CC) && !defined(UNIV_MUST_NOT_INLINE))
 /* Definition for inline version */
@@ -115,6 +131,7 @@ memory is read outside the allocated blocks. */
 #else
 /* If we want to compile a noninlined version we use the following macro
 definitions: */
+/* 如果要编译非内联版本，可以使用以下宏定义: */
 
 #define UNIV_NONINL
 #define UNIV_INLINE
@@ -132,36 +149,43 @@ definitions: */
 
 /* The following alignment is used in memory allocations in memory heap
 management to ensure correct alignment for doubles etc. */
+/* 以下对齐方式用于内存堆中的内存分配管理确保doubles等的正确对齐。*/
 #define UNIV_MEM_ALIGNMENT      8
 
 /* The following alignment is used in aligning lints etc. */
+/* 下列对齐用于对齐lints等。*/
 #define UNIV_WORD_ALIGNMENT	UNIV_WORD_SIZE
 
 /*
 			DATABASE VERSION CONTROL
 			========================
 */
+/*数据库版本控制*/
 
 /* The universal page size of the database */
+/* 数据库的通用页大小*/
 #define UNIV_PAGE_SIZE          (2 * 8192) /* NOTE! Currently, this has to be a
-					power of 2 */
-/* The 2-logarithm of UNIV_PAGE_SIZE: */
+					power of 2 */ /* 注意！目前，这必须是2的幂 */
+/* The 2-logarithm of UNIV_PAGE_SIZE: */ /* UNIV_PAGE_SIZE 2的对数 */
 #define UNIV_PAGE_SIZE_SHIFT	14					
 
 /* Maximum number of parallel threads in a parallelized operation */
+/* 并行化操作中的最大并行线程数 */
 #define UNIV_MAX_PARALLELISM	32
 
 /*
 			UNIVERSAL TYPE DEFINITIONS
 			==========================
 */
+/* 通用类型定义 */
 
 /* Note that inside MySQL 'byte' is defined as char on Linux! */
+/* 请注意，在Linux上，MySQL内部的“byte”定义为char！ */
 #define byte	unsigned char
 
 /* Another basic type we use is unsigned long integer which is intended to be
 equal to the word size of the machine. */
-
+/* 我们使用的另一种基本类型是无符号长整型，它的目的是等于机器的字号。*/
 typedef unsigned long int	ulint;
 
 typedef long int		lint;
@@ -173,19 +197,24 @@ typedef longlong ib_longlong;
 #endif
 
 /* The following type should be at least a 64-bit floating point number */
+/* 以下类型应至少为64位浮点数 */
 typedef double		utfloat;
 
 /* The 'undefined' value for a ulint */
+/* ulint的“未定义”值 */
 #define ULINT_UNDEFINED		((ulint)(-1))
 
 /* The undefined 32-bit unsigned integer */
+/* 未定义的32位无符号整数*/
 #define	ULINT32_UNDEFINED	0xFFFFFFFF
 
 /* Maximum value for a ulint */
+/* ulint的最大值 */
 #define ULINT_MAX		((ulint)(-2))
 
 /* This 'ibool' type is used within Innobase. Remember that different included
 headers may define 'bool' differently. Do not assume that 'bool' is a ulint! */
+/* 此“ibool”类型在Innobase中使用。还记得不一样的东西吗标题对“bool”的定义可能不同。别以为“bool”是个ulint！ */
 #define ibool	ulint
 
 #ifndef TRUE
@@ -197,18 +226,20 @@ headers may define 'bool' differently. Do not assume that 'bool' is a ulint! */
 
 /* The following number as the length of a logical field means that the field
 has the SQL NULL as its value. */
+/* 以下数字作为逻辑字段的长度表示该字段将SQL NULL作为其值。*/
 #define UNIV_SQL_NULL 	ULINT_UNDEFINED
 
 /* Lengths which are not UNIV_SQL_NULL, but bigger than the following
 number indicate that a field contains a reference to an externally
 stored part of the field in the tablespace. The length field then
 contains the sum of the following flag and the locally stored len. */
-
+/*长度不是UNIV_SQL_NULL，但大于以下值数字表示字段包含对外部
+将字段的一部分存储在表空间中。那么长度字段包含以下标志和本地存储的长度之和。*/
 #define UNIV_EXTERN_STORAGE_FIELD (UNIV_SQL_NULL - UNIV_PAGE_SIZE)
 
 /* The following definition of __FILE__ removes compiler warnings
 associated with const char* / char* mismatches with __FILE__ */
-
+/*以下对 __FILE__的定义将删除编译器警告与const char* / char* 关联与__FILE__ 不匹配__*/
 #define IB__FILE__	((char*)__FILE__)
 
 #include <stdio.h>

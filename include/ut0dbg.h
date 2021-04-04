@@ -5,6 +5,7 @@ Debug utilities for Innobase
 
 Created 1/30/1994 Heikki Tuuri
 **********************************************************************/
+/*debug 工具集*/
 
 #ifndef ut0dbg_h
 #define ut0dbg_h
@@ -15,7 +16,7 @@ Created 1/30/1994 Heikki Tuuri
 #include "os0thread.h"
 
 extern ulint	ut_dbg_zero; /* This is used to eliminate
-				compiler warnings */
+				compiler warnings */ /*这是用来消除编译器警告*/
 extern ibool	ut_dbg_stop_threads;
 
 extern ulint*	ut_dbg_null_ptr;
