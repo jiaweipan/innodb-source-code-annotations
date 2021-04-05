@@ -5,7 +5,7 @@ Memory primitives
 
 Created 5/11/1994 Heikki Tuuri
 *************************************************************************/
-
+/*内存原语*/
 #include "ut0mem.h"
 
 #ifdef UNIV_NONINL
@@ -16,15 +16,17 @@ Created 5/11/1994 Heikki Tuuri
 #include "os0sync.h"
 
 /* This struct is placed first in every allocated memory block */
+/* 这个结构首先放在每个分配的内存块中 */
 typedef struct ut_mem_block_struct ut_mem_block_t;
 
 /* The total amount of memory currently allocated from the OS with malloc */
+/* 当前使用malloc从操作系统分配的内存总量 */
 ulint	ut_total_allocated_memory	= 0;
 
 struct ut_mem_block_struct{
         UT_LIST_NODE_T(ut_mem_block_t) mem_block_list;
-			/* mem block list node */
-	ulint	size;	/* size of allocated memory */
+			/* mem block list node */ /* 内存块的链表节点 */ 
+	ulint	size;	/* size of allocated memory */ /* 已分配内存大小 */ 
 	ulint	magic_n;
 };
 
@@ -32,14 +34,16 @@ struct ut_mem_block_struct{
 
 /* List of all memory blocks allocated from the operating system
 with malloc */
+/* 从操作系统mallc分配的所有内存块的列表*/
 UT_LIST_BASE_NODE_T(ut_mem_block_t)   ut_mem_block_list;
 
-os_fast_mutex_t ut_list_mutex;  /* this protects the list */
+os_fast_mutex_t ut_list_mutex;  /* this protects the list */ /* 他保护这个列表 */ 
 
 ibool  ut_mem_block_list_inited = FALSE;
 
 /**************************************************************************
 Initializes the mem block list at database startup. */
+/* 在数据库启动时初始化mem块列表。*/
 static
 void
 ut_mem_block_list_init(void)
@@ -53,7 +57,7 @@ ut_mem_block_list_init(void)
 /**************************************************************************
 Allocates memory. Sets it also to zero if UNIV_SET_MEM_TO_ZERO is
 defined and set_to_zero is TRUE. */
-
+/*分配内存。如果UNIV_SET_MEM_TO_ZERO被定义并且set_to_zero是真的，则也将其设置为0*/
 void*
 ut_malloc_low(
 /*==========*/
@@ -112,7 +116,7 @@ ut_malloc_low(
 /**************************************************************************
 Allocates memory. Sets it also to zero if UNIV_SET_MEM_TO_ZERO is
 defined. */
-
+/*分配内存。如果UNIV_SET_MEM_TO_ZERO为0，则也将其设置为0定义。*/
 void*
 ut_malloc(
 /*======*/
@@ -123,7 +127,7 @@ ut_malloc(
 }
 /**************************************************************************
 Frees a memory block allocated with ut_malloc. */
-
+/*释放用ut_malloc分配的内存块*/
 void
 ut_free(
 /*====*/
@@ -148,7 +152,7 @@ ut_free(
 
 /**************************************************************************
 Frees all allocated memory not freed yet. */
-
+/*释放所有尚未释放的已分配内存。*/
 void
 ut_free_all_mem(void)
 /*=================*/
@@ -176,7 +180,7 @@ ut_free_all_mem(void)
 /**************************************************************************
 Catenates two strings into newly allocated memory. The memory must be freed
 using mem_free. */
-
+/*将两个字符串连接到新分配的内存中。必须使用mem_free释放内存。*/
 char*
 ut_str_catenate(
 /*============*/

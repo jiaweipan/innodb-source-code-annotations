@@ -5,22 +5,26 @@ The dynamically allocated array
 
 Created 2/5/1996 Heikki Tuuri
 *******************************************************/
-
+/*
+ 动态分配数组
+ */
 #define DYN_BLOCK_MAGIC_N	375767
 #define DYN_BLOCK_FULL_FLAG	0x1000000
 
 /****************************************************************
 Adds a new block to a dyn array. */
-
+/* 初始化一个动态数组 */
 dyn_block_t*
 dyn_array_add_block(
 /*================*/
 				/* out: created block */
-	dyn_array_t*	arr);	/* in: dyn array */
+				/* 输出：初始化后的动态数组 */
+	dyn_array_t*	arr);	/* in: dyn array *//* 输入：指向结构体dyn_array_t大小内存缓冲区的指针 */
 
 
 /****************************************************************
 Gets the first block in a dyn array. */
+/*  获得动态数组的第一个数据块*/
 UNIV_INLINE
 dyn_block_t*
 dyn_array_get_first_block(
@@ -32,6 +36,7 @@ dyn_array_get_first_block(
 
 /****************************************************************
 Gets the last block in a dyn array. */
+/*  获得动态数组的最后一个数据块*/
 UNIV_INLINE
 dyn_block_t*
 dyn_array_get_last_block(
@@ -48,6 +53,7 @@ dyn_array_get_last_block(
 
 /************************************************************************
 Gets the next block in a dyn array. */
+/*  获得动态数组的下一个数据块*/
 UNIV_INLINE
 dyn_block_t*
 dyn_array_get_next_block(
@@ -69,6 +75,7 @@ dyn_array_get_next_block(
 
 /************************************************************************
 Gets the number of used bytes in a dyn array block. */
+/*  获得动态数组数据块的已使用字节数量 */
 UNIV_INLINE
 ulint
 dyn_block_get_used(
@@ -97,13 +104,15 @@ dyn_block_get_data(
 
 /*************************************************************************
 Initializes a dynamic array. */
+/* 初始化一个动态数组 */
 UNIV_INLINE
 dyn_array_t*
 dyn_array_create(
 /*=============*/
 				/* out: initialized dyn array */
+				/* 输出：初始化后的动态数组 */
 	dyn_array_t*	arr)	/* in: pointer to a memory buffer of
-				size sizeof(dyn_array_t) */
+				size sizeof(dyn_array_t) *//* 输入：指向结构体dyn_array_t大小内存缓冲区的指针 */
 {
 	ut_ad(arr);
 	ut_ad(DYN_ARRAY_DATA_SIZE < DYN_BLOCK_FULL_FLAG);

@@ -5,9 +5,10 @@ Various utilities
 
 Created 5/30/1994 Heikki Tuuri
 *******************************************************************/
-
+/*各种工具*/
 /**********************************************************
 Calculates the minimum of two ulints. */
+/*计算两个ULINT的最小值。*/
 UNIV_INLINE
 ulint
 ut_min(
@@ -133,6 +134,7 @@ ut_2pow_round(
 /*****************************************************************
 Calculates fast the 2-logarithm of a number, rounded upward to an
 integer. */
+/*快速计算一个数字的2对数，向上舍入为一个整数。 */
 UNIV_INLINE
 ulint
 ut_2_log(
@@ -163,6 +165,7 @@ ut_2_log(
 
 /*****************************************************************
 Calculates 2 to power n. */
+/*计算2到n的幂。 */
 UNIV_INLINE
 ulint
 ut_2_exp(
