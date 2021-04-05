@@ -29,9 +29,9 @@ the base node from the count). TYPE should be the list node type name. */
 类型应为列表节点类型名称。*/
 #define UT_LIST_BASE_NODE_T(TYPE)\
 struct {\
-	ulint	count;	/* count of nodes in list */\
-	TYPE *	start;	/* pointer to list start, NULL if empty */\
-	TYPE *	end;	/* pointer to list end, NULL if empty */\
+	ulint	count;	/* count of nodes in list */ /*列表中的节点数*/\
+	TYPE *	start;	/* pointer to list start, NULL if empty */ /*指向列表开始的指针，如果为空则为NULL*/\
+	TYPE *	end;	/* pointer to list end, NULL if empty */ /*指向列表结束的指针，如果为空则为NULL*/\
 }\
 
 /***********************************************************************
@@ -65,13 +65,13 @@ struct LRU_node_struct {
 #define UT_LIST_NODE_T(TYPE)\
 struct {\
 	TYPE *	prev;	/* pointer to the previous node,\
-			NULL if start of list */\
-	TYPE *	next;	/* pointer to next node, NULL if end of list */\
+			NULL if start of list */ /*指向上一个节点的指针，如果是列表开头，则为空*/\
+	TYPE *	next;	/* pointer to next node, NULL if end of list */ /*指向下一个节点的指针，如果是列表结尾，则为空*/\
 }\
 
 /***********************************************************************
 Initializes the base node of a two-way list. */
-
+/* 初始化双向列表的基节点 */
 #define UT_LIST_INIT(BASE)\
 {\
 	(BASE).count = 0;\
@@ -83,7 +83,10 @@ Initializes the base node of a two-way list. */
 Adds the node as the first element in a two-way linked list.
 BASE has to be the base node (not a pointer to it). N has to be
 the pointer to the node to be added to the list. NAME is the list name. */
-
+/*将节点作为双向链表中的第一个元素添加。
+BASE必须是BASE节点（不是指向它的指针）。
+N必须是指向要添加到列表的节点的指针。
+NAME是列表名称。*/
 #define UT_LIST_ADD_FIRST(NAME, BASE, N)\
 {\
 	ut_ad(N);\
@@ -103,7 +106,11 @@ the pointer to the node to be added to the list. NAME is the list name. */
 Adds the node as the last element in a two-way linked list.
 BASE has to be the base node (not a pointer to it). N has to be
 the pointer to the node to be added to the list. NAME is the list name. */
-
+/*
+将节点添加为双向链表中的最后一个元素。
+BASE必须是BASE节点（不是指向它的指针）。
+N必须是指向要添加到列表的节点的指针。
+NAME是列表名称。 */
 #define UT_LIST_ADD_LAST(NAME, BASE, N)\
 {\
 	ut_ad(N);\
@@ -123,7 +130,9 @@ the pointer to the node to be added to the list. NAME is the list name. */
 Inserts a NODE2 after NODE1 in a list.
 BASE has to be the base node (not a pointer to it). NAME is the list
 name, NODE1 and NODE2 are pointers to nodes. */
-
+/*在列表中的NODE1之后插入NODE2。
+BASE必须是BASE节点（不是指向它的指针）。
+名单上有你的名字name、NODE1和NODE2是指向节点的指针。*/
 #define UT_LIST_INSERT_AFTER(NAME, BASE, NODE1, NODE2)\
 {\
 	ut_ad(NODE1);\
@@ -144,7 +153,12 @@ name, NODE1 and NODE2 are pointers to nodes. */
 Removes a node from a two-way linked list. BASE has to be the base node
 (not a pointer to it). N has to be the pointer to the node to be removed
 from the list. NAME is the list name. */
-
+/*
+从双向链表中删除节点。
+BASE必须是BASE节点（不是指向它的指针）。
+N必须是指向要删除的节点的指针从名单上。
+NAME是列表名称。
+*/
 #define UT_LIST_REMOVE(NAME, BASE, N)\
 {\
 	ut_ad(N);\
@@ -165,42 +179,42 @@ from the list. NAME is the list name. */
 /************************************************************************
 Gets the next node in a two-way list. NAME is the name of the list
 and N is pointer to a node. */
-
+/*获取双向列表中的下一个节点。NAME是列表的名称N是指向一个节点的指针。*/
 #define UT_LIST_GET_NEXT(NAME, N)\
 	(((N)->NAME).next)
 
 /************************************************************************
 Gets the previous node in a two-way list. NAME is the name of the list
 and N is pointer to a node. */
-
+/*获取双向列表中的上一个节点。NAME是列表的名称N是指向一个节点的指针。*/
 #define UT_LIST_GET_PREV(NAME, N)\
 	(((N)->NAME).prev)
 
 /************************************************************************
 Alternative macro to get the number of nodes in a two-way list, i.e.,
 its length. BASE is the base node (not a pointer to it). */
-
-#define UT_LIST_GET_LEN(BASE)\
+/*用于获取双向列表中的节点数的可选宏，i.e.，它的长度。BASE是基节点（不是指向它的指针）。 */
+#define UT_LIST_GET_LE(NBASE)\
 	(BASE).count
 
 /************************************************************************
 Gets the first node in a two-way list, or returns NULL,
 if the list is empty. BASE is the base node (not a pointer to it). */
-
+/*获取双向列表中的第一个节点，或返回NULL，如果列表为空。BASE是基节点（不是指向它的指针）。*/
 #define UT_LIST_GET_FIRST(BASE)\
 	(BASE).start
 
 /************************************************************************
 Gets the last node in a two-way list, or returns NULL,
 if the list is empty. BASE is the base node (not a pointer to it). */
-
+/*获取双向列表中的最后一个节点，或返回NULL，如果列表为空。BASE是基节点（不是指向它的指针）。*/
 #define UT_LIST_GET_LAST(BASE)\
 	(BASE).end
 
 /************************************************************************
 Checks the consistency of a two-way list. NAME is the name of the list,
 TYPE is the node type, and BASE is the base node (not a pointer to it). */
-
+/*检查双向列表的一致性。NAME是列表的名称，TYPE是节点类型，BASE是基节点（不是指向它的指针）。*/
 #define UT_LIST_VALIDATE(NAME, TYPE, BASE)\
 {\
 	ulint	ut_list_i_313;\

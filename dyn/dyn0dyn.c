@@ -13,7 +13,7 @@ Created 2/5/1996 Heikki Tuuri
 
 /****************************************************************
 Adds a new block to a dyn array. */
-
+/* 向dyn数组添加新块。*/
 dyn_block_t*
 dyn_array_add_block(
 /*================*/
