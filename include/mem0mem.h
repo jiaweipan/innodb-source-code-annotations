@@ -5,7 +5,7 @@ The memory management
 
 Created 6/9/1994 Heikki Tuuri
 *******************************************************/
-
+/*内存管理*/
 #ifndef mem0mem_h
 #define mem0mem_h
 
@@ -21,20 +21,23 @@ Created 6/9/1994 Heikki Tuuri
 /* -------------------- MEMORY HEAPS ----------------------------- */
 
 /* The info structure stored at the beginning of a heap block */
+/* 存储在堆块开头的信息结构 */
 typedef struct mem_block_info_struct mem_block_info_t;
 
 /* A block of a memory heap consists of the info structure
 followed by an area of memory */
+/* 内存堆的块由信息结构和内存区域组成*/
 typedef mem_block_info_t	mem_block_t;
 
 /* A memory heap is a nonempty linear list of memory blocks */
+/* 内存堆是内存块的非空线性列表 */
 typedef mem_block_t	mem_heap_t;
 
 /* Types of allocation for memory heaps: DYNAMIC means allocation from the
 dynamic memory pool of the C compiler, BUFFER means allocation from the index
 page buffer pool; the latter method is used for very big heaps */
-
-#define MEM_HEAP_DYNAMIC	0	/* the most common type */
+/*内存堆的分配类型：动态意味着从C编译器的动态内存池分配，缓冲意味着从索引页缓冲池分配；后一种方法用于非常大的堆*/
+#define MEM_HEAP_DYNAMIC	0	/* the most common type */ /*最常见的类型*/
 #define MEM_HEAP_BUFFER		1
 #define MEM_HEAP_BTR_SEARCH	2	/* this flag can be ORed to the
 					previous */
@@ -43,17 +46,20 @@ page buffer pool; the latter method is used for very big heaps */
 the size is not specified, i.e., 0 is given as the parameter in the call of
 create. The standard size is the maximum size of the blocks used for
 allocations of small buffers. */
+/*以下起始大小用于内存堆中的第一个块，如果未指定大小，即在调用中给定0作为参数创建。
+标准大小是用于小缓冲区分配的最大尺寸。 */
 
 #define MEM_BLOCK_START_SIZE            64
 #define MEM_BLOCK_STANDARD_SIZE         8192
 
 /* If a memory heap is allowed to grow into the buffer pool, the following
 is the maximum size for a single allocated buffer: */
+/* 如果允许内存堆增长到缓冲池中，则单个已分配缓冲区的最大大小：*/
 #define MEM_MAX_ALLOC_IN_BUF		(UNIV_PAGE_SIZE - 200)
 
 /**********************************************************************
 Initializes the memory system. */
-
+/*初始化内存系统*/
 void
 mem_init(
 /*=====*/
@@ -61,21 +67,21 @@ mem_init(
 /******************************************************************
 Use this macro instead of the corresponding function! Macro for memory
 heap creation. */
-
+/*使用此宏而不是相应的函数！内存宏堆创建。*/
 #define mem_heap_create(N)    mem_heap_create_func(\
 						(N), NULL, MEM_HEAP_DYNAMIC,\
 						IB__FILE__, __LINE__)
 /******************************************************************
 Use this macro instead of the corresponding function! Macro for memory
 heap creation. */
-
+/*使用此宏而不是相应的函数！内存宏堆创建。*/
 #define mem_heap_create_in_buffer(N)	mem_heap_create_func(\
 						(N), NULL, MEM_HEAP_BUFFER,\
 						IB__FILE__, __LINE__)
 /******************************************************************
 Use this macro instead of the corresponding function! Macro for memory
 heap creation. */
-
+/*使用此宏而不是相应的函数！内存宏堆创建。*/
 #define mem_heap_create_in_btr_search(N) mem_heap_create_func(\
 					(N), NULL, MEM_HEAP_BTR_SEARCH |\
 						MEM_HEAP_BUFFER,\
@@ -85,7 +91,9 @@ Use this macro instead of the corresponding function! Macro for fast
 memory heap creation. An initial block of memory B is given by the
 caller, N is its size, and this memory block is not freed by
 mem_heap_free. See the parameter comment in mem_heap_create_func below. */
-
+/*使用此宏而不是相应的函数！快速宏内存堆创建。
+内存B的初始块由调用者，N是它的大小，这个内存块不是由内存堆空闲。
+请参阅下面 mem_heap_create_func中的参数注释。*/
 #define mem_heap_fast_create(N, B)	mem_heap_create_func(\
 						(N), (B), MEM_HEAP_DYNAMIC,\
 						IB__FILE__, __LINE__)
@@ -101,6 +109,9 @@ NOTE: Use the corresponding macros instead of this function. Creates a
 memory heap which allocates memory from dynamic space. For debugging
 purposes, takes also the file name and line as argument in the debug
 version. */
+/*注意：使用相应的宏而不是此函数。
+创建从动态空间分配内存的内存堆。
+出于调试目的，还将文件名和行作为调试版本中的参数。*/
 UNIV_INLINE
 mem_heap_t*
 mem_heap_create_func(
@@ -122,6 +133,9 @@ mem_heap_create_func(
 				block is not unintentionally erased
 				(if allocated in the stack), before
 				the memory heap is explicitly freed. */
+				/*例如，如果需要非常快的创建，调用方可以从堆栈中保留一些内存，并将其作为初始块传递给堆：
+				那么在创建时不需要malloc的OS调用。
+				注意：来电者在内存堆被显式释放之前，必须确保初始块没有被无意中擦除（如果在堆栈中分配）。 */
 	ulint	type,		/* in: MEM_HEAP_DYNAMIC or MEM_HEAP_BUFFER */ 
 	char*   file_name,	/* in: file name where created */
 	ulint	line		/* in: line where created */
