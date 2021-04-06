@@ -5,7 +5,7 @@ The memory management
 
 Created 6/8/1994 Heikki Tuuri
 *************************************************************************/
-
+/*内存管理*/
 #include "mem0dbg.ic"
 
 #include "mem0pool.h"
@@ -203,6 +203,7 @@ mem_heap_get_heap_top(
 Frees the space in a memory heap exceeding the pointer given. The
 pointer must have been acquired from mem_heap_get_heap_top. The first
 memory block of the heap is not freed. */
+/*释放内存堆中超过给定指针的空间。指针必须是从mem_heap_get_heap_top获取的。堆的第一个内存块没有被释放。*/
 UNIV_INLINE
 void
 mem_heap_free_heap_top(
@@ -300,6 +301,7 @@ mem_heap_empty(
 /*********************************************************************
 Returns a pointer to the topmost element in a memory heap. The size of the
 element must be given. */
+/*返回指向内存堆中最顶层元素的指针。大小必须给定元素。*/
 UNIV_INLINE
 void*
 mem_heap_get_top(
@@ -518,6 +520,9 @@ mem_alloc_func(
 	for the buffer requested by the caller, the buffer will be in the
 	first block and thus we can calculate the pointer to the heap from
 	the pointer to the buffer when we free the memory buffer. */
+	/*请注意，当我们在堆中创建的第一个块足以容纳调用者请求的缓冲区时，
+	缓冲区将位于第一个块中，因此当我们释放内存缓冲区时，
+	我们可以从缓冲区的指针计算到堆的指针。*/
 
 	buf = mem_heap_alloc(heap, n);
 

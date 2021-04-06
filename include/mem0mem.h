@@ -123,6 +123,8 @@ mem_heap_create_func(
 				0 creates a default size block;
 				if init_block is not NULL, n tells
 				its size in bytes */
+				/*所需的起始块大小，这意味着大小为n的单个用户缓冲区将适合该块，
+				0将创建默认大小的块；如果init_block块不为空，则n以字节表示其大小*/
 	void*	init_block,	/* in: if very fast creation is
 				wanted, the caller can reserve some
 				memory from its stack, for example,
@@ -135,7 +137,7 @@ mem_heap_create_func(
 				the memory heap is explicitly freed. */
 				/*例如，如果需要非常快的创建，调用方可以从堆栈中保留一些内存，并将其作为初始块传递给堆：
 				那么在创建时不需要malloc的OS调用。
-				注意：来电者在内存堆被显式释放之前，必须确保初始块没有被无意中擦除（如果在堆栈中分配）。 */
+				注意：调用者在内存堆被显式释放之前，必须确保初始块没有被无意中擦除（如果在堆栈中分配）。 */
 	ulint	type,		/* in: MEM_HEAP_DYNAMIC or MEM_HEAP_BUFFER */ 
 	char*   file_name,	/* in: file name where created */
 	ulint	line		/* in: line where created */
@@ -143,6 +145,7 @@ mem_heap_create_func(
 /*********************************************************************
 NOTE: Use the corresponding macro instead of this function.
 Frees the space occupied by a memory heap. */
+/*注意：使用相应的宏而不是此函数。释放内存堆占用的空间。*/
 UNIV_INLINE
 void
 mem_heap_free_func(
@@ -153,6 +156,7 @@ mem_heap_free_func(
 );
 /*******************************************************************
 Allocates n bytes of memory from a memory heap. */
+/*从内存堆中分配n个字节的内存。*/
 UNIV_INLINE
 void*
 mem_heap_alloc(
@@ -165,6 +169,7 @@ mem_heap_alloc(
 				<= MEM_MAX_ALLOC_IN_BUF */
 /*********************************************************************
 Returns a pointer to the heap top. */
+/*返回指向堆顶的指针。*/
 UNIV_INLINE
 byte*
 mem_heap_get_heap_top(
@@ -175,6 +180,9 @@ mem_heap_get_heap_top(
 Frees the space in a memory heap exceeding the pointer given. The
 pointer must have been acquired from mem_heap_get_heap_top. The first
 memory block of the heap is not freed. */
+/*释放内存堆中超过给定指针的空间。
+指针必须是从mem_heap_get_heap_top获取的。
+第一个堆的内存块未释放。 */
 UNIV_INLINE
 void
 mem_heap_free_heap_top(
@@ -183,6 +191,7 @@ mem_heap_free_heap_top(
 	byte*		old_top);/* in: pointer to old top of heap */
 /*********************************************************************
 Empties a memory heap. The first memory block of the heap is not freed. */
+/*清空内存堆。堆的第一个内存块没有被释放。*/
 UNIV_INLINE
 void
 mem_heap_empty(
@@ -191,6 +200,7 @@ mem_heap_empty(
 /*********************************************************************
 Returns a pointer to the topmost element in a memory heap.
 The size of the element must be given. */
+/*返回指向内存堆中最顶层元素的指针。必须给出元素的大小。*/
 UNIV_INLINE
 void*
 mem_heap_get_top(
@@ -201,6 +211,7 @@ mem_heap_get_top(
 /*********************************************************************
 Frees the topmost element in a memory heap.
 The size of the element must be given. */
+/*释放内存堆中最顶层的元素。必须给出元素的大小。*/
 UNIV_INLINE
 void
 mem_heap_free_top(
@@ -209,6 +220,7 @@ mem_heap_free_top(
 	ulint           n);     /* in: size of the topmost element */
 /*********************************************************************
 Returns the space in bytes occupied by a memory heap. */
+/*返回内存堆占用的空间（字节）。*/
 UNIV_INLINE
 ulint
 mem_heap_get_size(
@@ -217,12 +229,12 @@ mem_heap_get_size(
 /******************************************************************
 Use this macro instead of the corresponding function!
 Macro for memory buffer allocation */
-
+/*使用此宏而不是相应的函数！内存缓冲区分配宏*/
 #define mem_alloc(N)    mem_alloc_func((N), IB__FILE__, __LINE__)
 /******************************************************************
 Use this macro instead of the corresponding function!
 Macro for memory buffer allocation */
-
+/*使用此宏而不是相应的函数！内存缓冲区分配宏*/
 #define mem_alloc_noninline(N)    mem_alloc_func_noninline(\
 					  (N), IB__FILE__, __LINE__)
 /*******************************************************************
@@ -230,6 +242,9 @@ NOTE: Use the corresponding macro instead of this function.
 Allocates a single buffer of memory from the dynamic memory of
 the C compiler. Is like malloc of C. The buffer must be freed 
 with mem_free. */
+/*注意：使用相应的宏而不是此函数。
+从C编译器的动态内存中分配一个内存缓冲区。
+类似于C的malloc。缓冲区必须用mem_free释放。*/
 UNIV_INLINE
 void*
 mem_alloc_func(
@@ -245,7 +260,9 @@ NOTE: Use the corresponding macro instead of this function.
 Allocates a single buffer of memory from the dynamic memory of
 the C compiler. Is like malloc of C. The buffer must be freed 
 with mem_free. */
-
+/*注意：使用相应的宏而不是此函数。
+从C编译器的动态内存中分配一个内存缓冲区。
+类似于C的malloc。缓冲区必须用mem_free释放。*/
 void*
 mem_alloc_func_noninline(
 /*=====================*/
@@ -258,12 +275,13 @@ mem_alloc_func_noninline(
 /******************************************************************
 Use this macro instead of the corresponding function!
 Macro for memory buffer freeing */
-
+/*使用此宏而不是相应的函数！用于释放内存缓冲区的宏 */
 #define mem_free(PTR)   mem_free_func((PTR), IB__FILE__, __LINE__)
 /*******************************************************************
 NOTE: Use the corresponding macro instead of this function.
 Frees a single buffer of storage from
 the dynamic memory of C compiler. Similar to free of C. */
+/*注意：使用相应的宏而不是此函数。从C编译器的动态内存中释放一个存储缓冲区。类似于C的free。*/
 UNIV_INLINE
 void
 mem_free_func(
@@ -274,6 +292,7 @@ mem_free_func(
 );
 /*******************************************************************
 Implements realloc. */
+/*实现 realloc */
 UNIV_INLINE
 void*
 mem_realloc(
@@ -287,7 +306,7 @@ mem_realloc(
 /**********************************************************************
 Goes through the list of all allocated mem blocks, checks their magic
 numbers, and reports possible corruption. */
-
+/*检查所有分配内存块的列表，检查它们的幻数，并报告可能的损坏。*/
 void
 mem_validate_all_blocks(void);
 /*=========================*/
@@ -296,7 +315,7 @@ mem_validate_all_blocks(void);
 /*#######################################################################*/
 	
 /* The info header of a block in a memory heap */
-
+/* 内存堆中块的信息头 */
 struct mem_block_info_struct {
 	ulint   magic_n;/* magic number for debugging */
 	char	file_name[8];/* file name where the mem heap was created */
@@ -335,6 +354,7 @@ struct mem_block_info_struct {
 #define MEM_FREED_BLOCK_MAGIC_N	547711122
 
 /* Header size for a memory heap block */
+/* 内存堆块的头大小*/
 #define MEM_BLOCK_HEADER_SIZE   ut_calc_align(sizeof(mem_block_info_t),\
 							UNIV_MEM_ALIGNMENT)
 #include "mem0dbg.h"

@@ -5,7 +5,7 @@ The memory management
 
 Created 6/9/1994 Heikki Tuuri
 *************************************************************************/
-
+/*内存管理*/
 
 #include "mem0mem.h"
 #ifdef UNIV_NONINL
@@ -74,11 +74,42 @@ The memory in the buffers is initialized to a random byte sequence.
 After freeing, all the blocks in the heap are set to random bytes
 to help us discover errors which result from the use of
 buffers in an already freed heap. */
+/*
+内存管理
+内存管理的基本元素称为内存堆。内存堆在概念上是一个堆栈，可以从中分配内存。堆栈可能无限增长。
+可以释放堆栈的顶部元素，也可以一次释放整个堆栈。
+内存堆概念的优点是我们可以避免使用C的malloc和free函数，这些函数非常昂贵，
+例如，在Solaris+GCC系统（50 MHz Sparc，1993）上，这两个函数需要3微秒，在Win NT+100MHz奔腾上，2.5微秒。
+当我们使用内存堆时，我们可以一次分配更大的内存块，从而减少开销。
+当我们从索引页缓冲池分配内存时，该方法的效率会稍微高一些，因为我们可以快速声明一个新页。
+这称为缓冲区分配。当我们从C环境的动态内存中分配内存时，我们称之为动态分配。
+
+内存堆的默认操作方式如下。
+首先，在创建堆时，分配一个初始内存块。在动态分配中，这可能是大约50字节。
+如果需要更多的空间，则分配额外的块并将它们放入链表中。
+在初始块之后，每个分配的块的大小是前一个块的两倍，直到达到阈值，之后块的大小保持不变。
+当然，一个例外是调用方请求的内存缓冲区的大小大于阈值。在这种情况下，必须分配一个足够大的块。
+
+堆的物理排列方式是，如果当前块已满，则会分配一个新块，并始终作为最后一个块插入到块链中。
+在内存管理的调试版本中，所有分配的堆都保存在一个列表中（作为哈希表实现）。
+因此，我们可以注意到调用方是否试图释放已经释放的堆。另外，给调用者的每个缓冲区在开始处包含start字段，在缓冲区的末尾包含trailer字段。
+
+“开始”字段包含以下内容：
+A.字段长度的sizeof（ulint）字节（按标准字节顺序）
+B.校验字段的sizeof（ulint）字节（随机数）
+“结尾”字段包含：
+A.检查字段的sizeof（ulint）字节（与开始时的随机数相同）
+
+因此，我们可以注意到是否有东西被复制到缓冲区的边界上，这是非法的。
+缓冲区中的内存初始化为随机字节序列。
+释放后，堆中的所有块都设置为随机字节，以帮助我们发现由于在已释放的堆中使用缓冲区而导致的错误。
+*/
 
 #ifdef MEM_PERIODIC_CHECK	
 
 ibool					mem_block_list_inited;
 /* List of all mem blocks allocated; protected by the mem_comm_pool mutex */
+/* 分配的所有内存块的列表；受mem_comm_pool mutex保护*/
 UT_LIST_BASE_NODE_T(mem_block_t)	mem_block_list;
 
 #endif
@@ -88,7 +119,9 @@ NOTE: Use the corresponding macro instead of this function.
 Allocates a single buffer of memory from the dynamic memory of
 the C compiler. Is like malloc of C. The buffer must be freed 
 with mem_free. */
-
+/*注意：使用相应的宏而不是此函数。
+从C编译器的动态内存中分配一个内存缓冲区。就像C的malloc。
+缓冲区必须用mem_free释放。*/
 void*
 mem_alloc_func_noninline(
 /*=====================*/
@@ -104,7 +137,7 @@ mem_alloc_func_noninline(
 
 /*******************************************************************
 Creates a memory heap block where data can be allocated. */
-
+/*创建可以在其中分配数据的内存堆块。*/
 mem_block_t*
 mem_heap_create_block(
 /*==================*/
