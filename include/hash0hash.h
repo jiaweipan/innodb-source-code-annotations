@@ -5,7 +5,7 @@ The simple hash table utility
 
 Created 5/20/1997 Heikki Tuuri
 *******************************************************/
-
+/*简单哈希表公用程序*/
 #ifndef hash0hash_h
 #define hash0hash_h
 
@@ -21,7 +21,7 @@ typedef void*	hash_node_t;
 /*****************************************************************
 Creates a hash table with >= n array cells. The actual number
 of cells is chosen to be a prime number slightly bigger than n. */
-
+/*创建包含>=n个数组单元格的哈希表。实际数量细胞数被选为比n稍大的素数。*/
 hash_table_t*
 hash_create(
 /*========*/
@@ -29,7 +29,7 @@ hash_create(
 	ulint	n);	/* in: number of array cells */
 /*****************************************************************
 Creates a mutex array to protect a hash table. */
-
+/*创建互斥数组以保护哈希表。*/
 void
 hash_create_mutexes(
 /*================*/
@@ -39,13 +39,14 @@ hash_create_mutexes(
 					mutexes: used in the debug version */
 /*****************************************************************
 Frees a hash table. */
-
+/*释放哈希表。*/
 void
 hash_table_free(
 /*============*/
 	hash_table_t*	table);	/* in, own: hash table */
 /******************************************************************
 Calculates the hash value from a folded value. */
+/*从折叠值计算哈希值。*/
 UNIV_INLINE
 ulint
 hash_calc_hash(
@@ -55,7 +56,7 @@ hash_calc_hash(
 	hash_table_t*	table);	/* in: hash table */
 /***********************************************************************
 Inserts a struct to a hash table. */
-
+/*将结构插入哈希表。*/
 #define HASH_INSERT(TYPE, NAME, TABLE, FOLD, DATA)\
 {\
 	hash_cell_t*	cell3333;\
@@ -83,7 +84,7 @@ Inserts a struct to a hash table. */
 
 /***********************************************************************
 Deletes a struct from a hash table. */
-
+/*从哈希表中删除结构。*/
 #define HASH_DELETE(TYPE, NAME, TABLE, FOLD, DATA)\
 {\
 	hash_cell_t*	cell3333;\
@@ -110,17 +111,18 @@ Deletes a struct from a hash table. */
 
 /***********************************************************************
 Gets the first struct in a hash chain, NULL if none. */
-
+/*获取哈希链中的第一个结构，如果没有，则为NULL。*/
 #define HASH_GET_FIRST(TABLE, HASH_VAL)\
 	(hash_get_nth_cell(TABLE, HASH_VAL)->node)
 
 /***********************************************************************
 Gets the next struct in a hash chain, NULL if none. */
-
+/*获取哈希链中的下一个结构，如果没有则为NULL。*/
 #define HASH_GET_NEXT(NAME, DATA)	((DATA)->NAME)
 
 /************************************************************************
 Looks for a struct in a hash table. */
+/*在哈希表中查找结构。*/
 #define HASH_SEARCH(NAME, TABLE, FOLD, DATA, TEST)\
 {\
 \
@@ -139,6 +141,7 @@ Looks for a struct in a hash table. */
 
 /****************************************************************
 Gets the nth cell in a hash table. */
+/*获取哈希表中的第n个单元格。 */
 UNIV_INLINE
 hash_cell_t*
 hash_get_nth_cell(
@@ -158,7 +161,7 @@ hash_get_n_cells(
 Deletes a struct which is stored in the heap of the hash table, and compacts
 the heap. The fold value must be stored in the struct NODE in a field named
 'fold'. */
-
+/*删除存储在哈希表堆中的结构，并压缩堆。fold值必须存储在struct节点中名为“fold”的字段中。 */
 #define HASH_DELETE_AND_COMPACT(TYPE, NAME, TABLE, NODE)\
 {\
 	TYPE*		node111;\
@@ -176,25 +179,26 @@ the heap. The fold value must be stored in the struct NODE in a field named
 \
 	/* If the node to remove is not the top node in the heap, compact the\
 	heap of nodes by moving the top node in the place of NODE. */\
-\
+\	/*如果要移除的节点不是堆中的顶部节点，则通过将顶部节点移动到节点所在的位置来压缩节点堆。*/\
+\  
 	if (NODE != top_node111) {\
 \
-		/* Copy the top node in place of NODE */\
-\
+		/* Copy the top node in place of NODE */ /*复制顶部节点以代替节点*/\
+\        
 		*(NODE) = *top_node111;\
 \
 		cell111 = hash_get_nth_cell(TABLE,\
 				hash_calc_hash(top_node111->fold, TABLE));\
 \
-		/* Look for the pointer to the top node, to update it */\
+		/* Look for the pointer to the top node, to update it */ /*查找指向顶部节点的指针以更新它*/\
 \
 		if (cell111->node == top_node111) {\
-			/* The top node is the first in the chain */\
+			/* The top node is the first in the chain */ /*顶部节点是链中的第一个节点*/\
 \
 			cell111->node = NODE;\
 		} else {\
 			/* We have to look for the predecessor of the top\
-			node */\
+			node */ /*我们必须寻找顶层节点的前置*/\
 			node111 = cell111->node;\
 \
 			while (top_node111 != HASH_GET_NEXT(NAME, node111)) {\
@@ -202,20 +206,20 @@ the heap. The fold value must be stored in the struct NODE in a field named
 				node111 = HASH_GET_NEXT(NAME, node111);\
 			}\
 \
-			/* Now we have the predecessor node */\
+			/* Now we have the predecessor node */ /*现在我们有了前置节点*/\
 \
 			node111->NAME = NODE;\
 		}\
 	}\
 \
-	/* Free the space occupied by the top node */\
+	/* Free the space occupied by the top node */ /*释放顶部节点占用的空间 */ \
 \
 	mem_heap_free_top(hash_get_heap(TABLE, fold111), sizeof(TYPE));\
 }
 
 /***********************************************************************
 Calculates the number of stored structs in a hash table. */
-
+/*计算哈希表中存储的结构数。 */
 #define HASH_GET_N_NODES(TYPE, NAME, TABLE, N)\
 {\
 	hash_cell_t*	cell3333;\
