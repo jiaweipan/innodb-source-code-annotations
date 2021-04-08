@@ -10,7 +10,7 @@ Created 8/18/1994 Heikki Tuuri
 #include "mem0mem.h"
 
 /* The hash table external chain node */
-
+/*具有外部链的哈希表*/
 typedef struct ha_node_struct ha_node_t;
 
 struct ha_node_struct {
@@ -21,7 +21,7 @@ struct ha_node_struct {
 
 /***************************************************************
 Deletes a hash node. */
-
+/*删除一个哈希结点*/
 void
 ha_delete_hash_node(
 /*================*/
@@ -30,6 +30,7 @@ ha_delete_hash_node(
 
 /**********************************************************************
 Gets a hash node data. */
+/*获得哈希结点数据*/
 UNIV_INLINE
 void*
 ha_node_get_data(
@@ -42,6 +43,7 @@ ha_node_get_data(
 
 /**********************************************************************
 Sets hash node data. */
+/*设置哈希结点数据*/
 UNIV_INLINE
 void
 ha_node_set_data(
@@ -54,6 +56,7 @@ ha_node_set_data(
 
 /**********************************************************************
 Gets the next node in a hash chain. */
+/*获得哈希链的下一个节点*/
 UNIV_INLINE
 ha_node_t*
 ha_chain_get_next(
@@ -69,6 +72,7 @@ ha_chain_get_next(
 
 /**********************************************************************
 Gets the first node in a hash chain. */
+/*获得哈希链的第一个结点*/
 UNIV_INLINE
 ha_node_t*
 ha_chain_get_first(
@@ -82,6 +86,7 @@ ha_chain_get_first(
 
 /*****************************************************************
 Looks for an element in a hash table. */
+/*在哈希表中查找元素。*/
 UNIV_INLINE
 ha_node_t*
 ha_search(
@@ -112,6 +117,7 @@ ha_search(
 
 /*****************************************************************
 Looks for an element in a hash table. */
+/*在哈希表中查找元素。 */
 UNIV_INLINE
 void*
 ha_search_and_get_data(
@@ -142,6 +148,7 @@ ha_search_and_get_data(
 
 /*****************************************************************
 Returns the next matching hash table node in chain. */
+/*返回链中下一个匹配的哈希表节点。*/
 UNIV_INLINE
 ha_node_t*
 ha_next(
@@ -174,6 +181,7 @@ ha_next(
 
 /*************************************************************
 Looks for an element when we know the pointer to the data. */
+/*当我们知道指向数据的指针时查找元素*/
 UNIV_INLINE
 ha_node_t*
 ha_search_with_data(
@@ -205,6 +213,7 @@ ha_search_with_data(
 /*************************************************************
 Looks for an element when we know the pointer to the data, and updates
 the pointer to data, if found. */
+/*当我们知道指向数据的指针时查找元素，如果找到，则更新指向数据的指针。*/
 UNIV_INLINE
 void
 ha_search_and_update_if_found(
@@ -228,6 +237,7 @@ ha_search_and_update_if_found(
 /*************************************************************
 Looks for an element when we know the pointer to the data, and deletes
 it from the hash table, if found. */
+/*当我们知道指向数据的指针时，查找元素，如果找到，则从哈希表中删除它。 */
 UNIV_INLINE
 ibool
 ha_search_and_delete_if_found(
@@ -255,6 +265,7 @@ ha_search_and_delete_if_found(
 /*****************************************************************
 Reserves the necessary hash table mutex and inserts an entry into the hash
 table. */
+/*保留必要的哈希表互斥，并在哈希表中插入一个条目*/
 UNIV_INLINE
 ibool
 ha_insert_for_fold_mutex(

@@ -5,7 +5,7 @@ The hash table with external chains
 
 Created 8/22/1994 Heikki Tuuri
 *************************************************************************/
-
+/*具有外部链的哈希表*/
 #include "ha0ha.h"
 #ifdef UNIV_NONINL
 #include "ha0ha.ic"
@@ -16,7 +16,7 @@ Created 8/22/1994 Heikki Tuuri
 /*****************************************************************
 Creates a hash table with >= n array cells. The actual number of cells is
 chosen to be a prime number slightly bigger than n. */
-
+/*创建包含>=n个数组单元格的哈希表。实际的单元数被选为一个略大于n的素数。 */
 hash_table_t*
 ha_create(
 /*======*/
@@ -61,7 +61,7 @@ ha_create(
 
 /*****************************************************************
 Checks that a hash table node is in the chain. */
-
+/*检查哈希表节点是否在链中。*/
 ibool
 ha_node_in_chain(
 /*=============*/
@@ -90,7 +90,7 @@ ha_node_in_chain(
 Inserts an entry into a hash table. If an entry with the same fold number
 is found, its node is updated to point to the new data, and no new node
 is inserted. */
-
+/*将条目插入哈希表。如果找到具有相同折叠编号的条目，则更新其节点以指向新数据，并且不插入新节点。*/
 ibool
 ha_insert_for_fold(
 /*===============*/
@@ -167,7 +167,7 @@ ha_insert_for_fold(
 
 /***************************************************************
 Deletes a hash node. */
-
+/*从哈希表中删除条目。*/
 void
 ha_delete_hash_node(
 /*================*/
@@ -179,7 +179,7 @@ ha_delete_hash_node(
 
 /*****************************************************************
 Deletes an entry from a hash table. */
-
+/*从哈希表中删除条目。*/
 void
 ha_delete(
 /*======*/
@@ -202,7 +202,7 @@ ha_delete(
 /*********************************************************************
 Removes from the chain determined by fold all nodes whose data pointer
 points to the page given. */
-
+/*从由fold决定的链中删除其数据指针指向给定页的所有节点。*/
 void
 ha_remove_all_nodes_to_page(
 /*========================*/
@@ -236,7 +236,7 @@ ha_remove_all_nodes_to_page(
 
 /*****************************************************************
 Validates a hash table. */
-
+/*验证哈希表。*/
 ibool
 ha_validate(
 /*========*/
@@ -265,7 +265,7 @@ ha_validate(
 
 /*****************************************************************
 Prints info of a hash table. */
-
+/*打印哈希表的信息。*/
 void
 ha_print_info(
 /*==========*/
