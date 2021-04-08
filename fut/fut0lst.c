@@ -5,7 +5,7 @@ File-based list utilities
 
 Created 11/28/1995 Heikki Tuuri
 ***********************************************************************/
-
+/*基于文件列表的公共代码*/
 #include "fut0lst.h"
 
 #ifdef UNIV_NONINL

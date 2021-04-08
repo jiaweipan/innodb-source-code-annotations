@@ -5,6 +5,7 @@ File-based utilities
 
 Created 12/13/1995 Heikki Tuuri
 ***********************************************************************/
+/*基于文件的公共代码*/
 
 #include "fut0fut.h"
 

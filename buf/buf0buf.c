@@ -722,7 +722,7 @@ buf_page_reset_file_page_was_freed(
 
 /************************************************************************
 This is the general function used to get access to a database page. */
-
+/*这是用于访问数据库页的常规函数。*/
 buf_frame_t*
 buf_page_get_gen(
 /*=============*/

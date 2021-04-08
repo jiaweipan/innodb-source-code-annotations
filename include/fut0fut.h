@@ -5,7 +5,7 @@ File-based utilities
 
 Created 12/13/1995 Heikki Tuuri
 ***********************************************************************/
-
+/*基于文件的公共代码*/
 
 #ifndef fut0fut_h
 #define fut0fut_h
@@ -17,6 +17,7 @@ Created 12/13/1995 Heikki Tuuri
 
 /************************************************************************
 Gets a pointer to a file address and latches the page. */
+/*获取指向文件地址的指针并锁定页。*/
 UNIV_INLINE
 byte*
 fut_get_ptr(

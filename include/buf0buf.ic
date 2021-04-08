@@ -627,6 +627,9 @@ Adds latch level info for the rw-lock protecting the buffer frame. This
 should be called in the debug version after a successful latching of a
 page if we know the latching order level of the acquired latch. If
 UNIV_SYNC_DEBUG is not defined, compiles to an empty function. */
+/*为保护缓冲帧的rw锁添加闩锁级别信息。
+如果我们知道所获取的锁存的锁存顺序级别，那么在成功锁存页面之后，应该在调试版本中调用该命令。
+如果未定义UNIV_SYNC_DEBUG，则编译为空函数。*/
 UNIV_INLINE
 void
 buf_page_dbg_add_level(

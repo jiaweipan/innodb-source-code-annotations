@@ -5,7 +5,7 @@ The simple hash table utility
 
 Created 5/20/1997 Heikki Tuuri
 *******************************************************/
-
+/*简单哈希表公用程序*/
 #include "hash0hash.h"
 #ifdef UNIV_NONINL
 #include "hash0hash.ic"
