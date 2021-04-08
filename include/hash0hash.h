@@ -245,6 +245,7 @@ Calculates the number of stored structs in a hash table. */
 
 /****************************************************************
 Gets the mutex index for a fold value in a hash table. */
+/*获取哈希表中fold值的互斥索引。*/
 UNIV_INLINE
 ulint
 hash_get_mutex_no(
@@ -254,6 +255,7 @@ hash_get_mutex_no(
 	ulint 		fold);	/* in: fold */
 /****************************************************************
 Gets the nth heap in a hash table. */
+/*获取哈希表中的第n个堆。*/
 UNIV_INLINE
 mem_heap_t*
 hash_get_nth_heap(
@@ -263,6 +265,7 @@ hash_get_nth_heap(
 	ulint 		i);	/* in: index of the heap */
 /****************************************************************
 Gets the heap for a fold value in a hash table. */
+/*获取哈希表中fold值的堆。*/
 UNIV_INLINE
 mem_heap_t*
 hash_get_heap(
@@ -272,6 +275,7 @@ hash_get_heap(
 	ulint 		fold);	/* in: fold */
 /****************************************************************
 Gets the nth mutex in a hash table. */
+/*获取哈希表中的第n个互斥体。*/
 UNIV_INLINE
 mutex_t*
 hash_get_nth_mutex(
@@ -281,6 +285,7 @@ hash_get_nth_mutex(
 	ulint 		i);	/* in: index of the mutex */
 /****************************************************************
 Gets the mutex for a fold value in a hash table. */
+/*获取哈希表中fold值的互斥锁。*/
 UNIV_INLINE
 mutex_t*
 hash_get_mutex(
@@ -290,7 +295,7 @@ hash_get_mutex(
 	ulint 		fold);	/* in: fold */
 /****************************************************************
 Reserves the mutex for a fold value in a hash table. */
-
+/*为哈希表中的fold值占用互斥锁。*/
 void
 hash_mutex_enter(
 /*=============*/
@@ -298,7 +303,7 @@ hash_mutex_enter(
 	ulint 		fold);	/* in: fold */
 /****************************************************************
 Releases the mutex for a fold value in a hash table. */
-
+/*为哈希表中的fold值释放互斥锁。*/
 void
 hash_mutex_exit(
 /*============*/
@@ -306,14 +311,14 @@ hash_mutex_exit(
 	ulint 		fold);	/* in: fold */
 /****************************************************************
 Reserves all the mutexes of a hash table, in an ascending order. */
-
+/*按升序占用哈希表的所有mutex。*/
 void
 hash_mutex_enter_all(
 /*=================*/
 	hash_table_t* 	table);	/* in: hash table */
 /****************************************************************
 Releases all the mutexes of a hash table. */
-
+/*释放哈希表的所有mutex。*/
 void
 hash_mutex_exit_all(
 /*================*/
@@ -325,17 +330,18 @@ struct hash_cell_struct{
 };
 
 /* The hash table structure */
+/* 哈希表结构*/
 struct hash_table_struct {
-	ulint		n_cells;/* number of cells in the hash table */
-	hash_cell_t*	array;	/* pointer to cell array */
+	ulint		n_cells;/* number of cells in the hash table *//*哈希表中的单元格数*/
+	hash_cell_t*	array;	/* pointer to cell array */ /*指向单元格数组的指针*/
 	ulint		n_mutexes;/* if mutexes != NULL, then the number of
-				mutexes, must be a power of 2 */
+				mutexes, must be a power of 2 *//*如果互斥！=NULL，则互斥锁的数目必须是2的幂 */
 	mutex_t*	mutexes;/* NULL, or an array of mutexes used to
-				protect segments of the hash table */
+				protect segments of the hash table */ /*NULL，或用于保护哈希表段的互斥量数组*/
 	mem_heap_t**	heaps;	/* if this is non-NULL, hash chain nodes for
 				external chaining can be allocated from these
 				memory heaps; there are then n_mutexes many of
-				these heaps */
+				these heaps */ /*如果该值为非空，则可以从这些内存堆中分配用于外部链接的哈希链节点；然后这些堆中会有n_mutexes个 */
 	mem_heap_t*	heap;
 	ulint		magic_n;
 };

@@ -93,7 +93,7 @@ mutex_test_and_set(
 	syntax. The 'l' after the mnemonics denotes a 32-bit operation.
 	The line after the code tells which values come out of the asm
 	code, and the second line tells the input to the asm code. */
-
+	/*在汇编中，我们使用所谓的AT&T语法，其中操作数的顺序与普通的Intel语法相反。助记符后面的“l”表示32位操作。操作代码后面的一行指示哪些值来自asm代码，第二行指示asm代码的输入。*/
 	asm volatile("movl $1, %%eax; xchgl (%%ecx), %%eax" :
 	              "=eax" (res), "=m" (*lw) :
 	              "ecx" (lw));

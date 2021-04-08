@@ -10,6 +10,7 @@ Created 5/20/1997 Heikki Tuuri
 
 /****************************************************************
 Gets the nth cell in a hash table. */
+/*获取哈希表中的第n个单元格。 */
 UNIV_INLINE
 hash_cell_t*
 hash_get_nth_cell(
@@ -25,6 +26,7 @@ hash_get_nth_cell(
 
 /*****************************************************************
 Returns the number of cells in a hash table. */
+/*返回哈希表中的单元格数。*/
 UNIV_INLINE
 ulint
 hash_get_n_cells(
@@ -37,6 +39,7 @@ hash_get_n_cells(
 
 /******************************************************************
 Calculates the hash value from a folded value. */
+/*从folded值计算哈希值。*/
 UNIV_INLINE
 ulint
 hash_calc_hash(
@@ -50,6 +53,7 @@ hash_calc_hash(
 
 /****************************************************************
 Gets the mutex index for a fold value in a hash table. */
+/*获取哈希表中fold值的互斥索引。*/
 UNIV_INLINE
 ulint
 hash_get_mutex_no(
@@ -63,6 +67,7 @@ hash_get_mutex_no(
 
 /****************************************************************
 Gets the nth heap in a hash table. */
+/*获取哈希表中的第n个堆。*/
 UNIV_INLINE
 mem_heap_t*
 hash_get_nth_heap(
@@ -78,6 +83,7 @@ hash_get_nth_heap(
 
 /****************************************************************
 Gets the heap for a fold value in a hash table. */
+/*获取哈希表中fold值的堆。*/
 UNIV_INLINE
 mem_heap_t*
 hash_get_heap(

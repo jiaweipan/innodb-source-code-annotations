@@ -15,7 +15,7 @@ Created 5/20/1997 Heikki Tuuri
 
 /****************************************************************
 Reserves the mutex for a fold value in a hash table. */
-
+/*为哈希表中的fold值占用互斥锁。*/
 void
 hash_mutex_enter(
 /*=============*/
@@ -27,7 +27,7 @@ hash_mutex_enter(
 
 /****************************************************************
 Releases the mutex for a fold value in a hash table. */
-
+/*为哈希表中的fold值释放互斥锁。*/
 void
 hash_mutex_exit(
 /*============*/
@@ -39,7 +39,7 @@ hash_mutex_exit(
 
 /****************************************************************
 Reserves all the mutexes of a hash table, in an ascending order. */
-
+/*按升序占用哈希表的所有mutex。*/
 void
 hash_mutex_enter_all(
 /*=================*/
@@ -55,7 +55,7 @@ hash_mutex_enter_all(
 
 /****************************************************************
 Releases all the mutexes of a hash table. */
-
+/*释放哈希表的所有mutex。*/
 void
 hash_mutex_exit_all(
 /*================*/
@@ -72,7 +72,7 @@ hash_mutex_exit_all(
 /*****************************************************************
 Creates a hash table with >= n array cells. The actual number of cells is
 chosen to be a prime number slightly bigger than n. */
-
+/*创建包含>=n个数组单元格的哈希表。实际的单元数被选为一个略大于n的素数。 */
 hash_table_t*
 hash_create(
 /*========*/
@@ -112,7 +112,7 @@ hash_create(
 
 /*****************************************************************
 Frees a hash table. */
-
+/*释放哈希表。*/
 void
 hash_table_free(
 /*============*/
@@ -126,7 +126,7 @@ hash_table_free(
 
 /*****************************************************************
 Creates a mutex array to protect a hash table. */
-
+/*创建互斥数组以保护哈希表。 */
 void
 hash_create_mutexes(
 /*================*/

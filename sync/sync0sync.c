@@ -212,7 +212,7 @@ Creates, or rather, initializes a mutex object in a specified memory
 location (which must be appropriately aligned). The mutex is initialized
 in the reset state. Explicit freeing of the mutex with mutex_free is
 necessary only if the memory block containing it is freed. */
-
+/*在指定的内存位置（必须适当对齐）创建或初始化互斥对象。互斥锁在重置状态下初始化。只有在包含mutex_free的内存块被释放时，才需要显式释放mutex。*/
 void
 mutex_create_func(
 /*==============*/

@@ -22,6 +22,7 @@ ut_min(
 
 /**********************************************************
 Calculates the maximum of two ulints. */
+/*计算两个ULINT的最大值。*/
 UNIV_INLINE
 ulint
 ut_max(
@@ -60,6 +61,7 @@ ut_pair_min(
 
 /**********************************************************
 Compares two ulints. */
+/*比较两个ulints*/
 UNIV_INLINE
 int
 ut_ulint_cmp(
@@ -79,6 +81,7 @@ ut_ulint_cmp(
 
 /***********************************************************
 Compares two pairs of ulints. */
+/*比较两对ulints的值*/
 UNIV_INLINE
 int
 ut_pair_cmp(
@@ -104,6 +107,7 @@ ut_pair_cmp(
 
 /*****************************************************************
 Calculates fast the remainder when divided by a power of two. */
+/*当被二的幂除时，快速计算余数。*/
 UNIV_INLINE
 ulint
 ut_2pow_remainder(
@@ -118,6 +122,7 @@ ut_2pow_remainder(
 
 /*****************************************************************
 Calculates fast a value rounded to a multiple of a power of 2. */
+/*快速计算四舍五入为2的幂的倍数的值。 */
 UNIV_INLINE
 ulint
 ut_2pow_round(
@@ -178,6 +183,7 @@ ut_2_exp(
 
 /*****************************************************************
 Calculates fast the number rounded up to the nearest power of 2. */
+/*快速计算四舍五入到最接近的2次方的数字。*/
 UNIV_INLINE
 ulint
 ut_2_power_up(

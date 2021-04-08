@@ -127,6 +127,7 @@ ut_rnd_gen_ibool(void)
 The following function generates a hash value for a ulint integer
 to a hash table of size table_size, which should be a prime
 or some random number for the hash table to work reliably. */
+/*下面的函数为一个ulint整数生成一个散列值，该散列值为表大小的散列值，该散列值应该是一个素数或某个随机数，以便该散列表可靠地工作。*/
 UNIV_INLINE
 ulint
 ut_hash_ulint(
@@ -142,6 +143,7 @@ ut_hash_ulint(
 
 /*****************************************************************
 Folds a pair of ulints. */
+/*折叠一对ulints。*/
 UNIV_INLINE
 ulint
 ut_fold_ulint_pair(
