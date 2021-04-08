@@ -17,62 +17,65 @@ Created 10/25/1995 Heikki Tuuri
 #include "os0file.h"
 
 /* 'null' (undefined) page offset in the context of file spaces */
+/* 文件空间上下文中的“null”（未定义）页偏移量 */
 #define	FIL_NULL	ULINT32_UNDEFINED
 
 /* Space address data type; this is intended to be used when
 addresses accurate to a byte are stored in file pages. If the page part
 of the address is FIL_NULL, the address is considered undefined. */
-
+/*空间地址数据类型；当精确到一个字节的地址存储在文件页中时使用。如果地址的页部分为FIL_NULL，则认为地址未定义。*/
 typedef	byte	fil_faddr_t;	/* 'type' definition in C: an address
-				stored in a file page is a string of bytes */
-#define FIL_ADDR_PAGE	0	/* first in address is the page offset */
-#define	FIL_ADDR_BYTE	4	/* then comes 2-byte byte offset within page*/
+				stored in a file page is a string of bytes */ /*C中的“type”定义：文件页中存储的地址是一个字节字符串 */
+#define FIL_ADDR_PAGE	0	/* first in address is the page offset */ /*地址中的第一个是页偏移量*/
+#define	FIL_ADDR_BYTE	4	/* then comes 2-byte byte offset within page*/ /*然后是页面中的2字节偏移量*/
 
-#define	FIL_ADDR_SIZE	6	/* address size is 6 bytes */
+#define	FIL_ADDR_SIZE	6	/* address size is 6 bytes */ /*地址大小为6字节 */
 
 /* A struct for storing a space address FIL_ADDR, when it is used
 in C program data structures. */
-
+/*一种用于存储空间地址FIL_ADDR的结构，当它用于C程序的数据结构时。 */
 typedef struct fil_addr_struct	fil_addr_t;
 struct fil_addr_struct{
-	ulint	page;		/* page number within a space */
-	ulint	boffset;	/* byte offset within the page */
+	ulint	page;		/* page number within a space */ /*空格内的页码*/
+	ulint	boffset;	/* byte offset within the page */ /*页内的字节偏移量 */
 };
 
 /* Null file address */
+/* 空文件地址 */
 extern fil_addr_t	fil_addr_null;
 
 /* The byte offsets on a file page for various variables */
-#define FIL_PAGE_SPACE		0	/* space id the page belongs to */
-#define FIL_PAGE_OFFSET		4	/* page offset inside space */
+/*文件页上各种变量的字节偏移量*/
+#define FIL_PAGE_SPACE		0	/* space id the page belongs to */ /*页所属的空间id*/
+#define FIL_PAGE_OFFSET		4	/* page offset inside space */ /*页面内部空间偏移*/
 #define FIL_PAGE_PREV		8	/* if there is a 'natural' predecessor
-					of the page, its offset */
+					of the page, its offset */  /*如果页面有一个“自然”的前置页，那么它的偏移量*/
 #define FIL_PAGE_NEXT		12	/* if there is a 'natural' successor
-					of the page, its offset */
+					of the page, its offset */ /*如果页面有一个“自然”的前置页，那么它的偏移量*/
 #define FIL_PAGE_LSN		16	/* lsn of the end of the newest
-					modification log record to the page */
+					modification log record to the page */ /*最新修改日志记录到页的结尾的lsn */
 #define	FIL_PAGE_TYPE		24	/* file page type: FIL_PAGE_INDEX,...,
-					2 bytes */
+					2 bytes */ /*文件页类型：文件页索引，…，2字节*/
 #define FIL_PAGE_FILE_FLUSH_LSN	26	/* this is only defined for the
 					first page in a data file: the file
 					has been flushed to disk at least up
-					to this lsn */
+					to this lsn */ /*这只为数据文件中的第一页定义：文件至少已刷新到此lsn*/
 #define FIL_PAGE_ARCH_LOG_NO	34	/* this is only defined for the
 					first page in a data file: the latest
 					archived log file number when the
-					flush lsn above was written */
-#define FIL_PAGE_DATA		38	/* start of the data on the page */
+					flush lsn above was written */ /*这只为数据文件中的第一页定义：写入上述flush lsn时的最新存档日志文件号*/
+#define FIL_PAGE_DATA		38	/* start of the data on the page */ /*页面上数据的开头*/
 
-/* File page trailer */
+/* File page trailer */ /*文件页尾部*/
 #define FIL_PAGE_END_LSN	8	/* this should be same as
-					FIL_PAGE_LSN */
+					FIL_PAGE_LSN */ /*这应该和FIL_PAGE_LSN一样*/
 #define FIL_PAGE_DATA_END	8
 
-/* File page types */
+/* File page types */ /*文件页类型*/
 #define FIL_PAGE_INDEX		17855
 #define FIL_PAGE_UNDO_LOG	2
 
-/* Space types */
+/* Space types */ /*空间类型*/
 #define FIL_TABLESPACE 		501
 #define FIL_LOG			502
 
