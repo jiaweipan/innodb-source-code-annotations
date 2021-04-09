@@ -8,6 +8,7 @@ Created 12/18/1995 Heikki Tuuri
 
 /***************************************************************************
 Checks if a page address is an extent descriptor page address. */
+/*检查页地址是否是扩展描述符页地址。*/
 UNIV_INLINE
 ibool
 fsp_descr_page(

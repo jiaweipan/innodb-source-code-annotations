@@ -76,7 +76,42 @@ the file cannot be closed. We take the file nodes with pending i/o-operations
 out of the LRU-list and keep a count of pending operations. When an operation
 completes, we decrement the count and return the file node to the LRU-list if
 the count drops to zero. */
+/*      底层文件系统
+文件系统负责提供对数据库表空间和日志的快速读/写访问。
+但是，文件的创建和删除是在其他更了解操作逻辑的模块中完成的。
+文件的大小不必被数据库块大小整除，因为我们可能只保留最后一个未完成的块。
+将新文件追加到表空间时，还将指定文件的最大大小。
+目前，我们认为最好在创建文件时将文件扩展到其最大大小，
+因为这样可以避免在表空间需要更多空间时动态扩展文件。
 
+块在表空间中的位置由32位无符号整数指定。
+链中的文件被认为是连锁的，地址n对应的块是连锁文件中的第n个块（其中第一个块被命名为第0个块，
+不考虑文件末尾的不完整块片段）。表空间可以通过在链的末尾附加一个新文件来扩展。
+
+我们的表空间概念类似于Oracle。
+
+为了提高磁盘传输的速度，有时会使用一种称为磁盘条带化的技术。
+这意味着逻辑块地址以循环方式划分到多个磁盘上。
+windowsnt支持磁盘条带化，因此我们不需要在数据库中支持它。
+磁盘条带化是在RAID磁盘的硬件中实现的。我们的结论是没有必要在数据库中实现它。
+Oracle 7也不支持磁盘条带化。
+
+在某些数据库站点上使用的另一个技巧是用原始磁盘替换表空间文件，
+也就是说，整个物理磁盘驱动器或其分区作为单个文件打开，
+并通过从磁盘或分区开始计算的字节偏移量来访问。
+在一些关于数据库调优的书籍中建议这样做，以提高i/o速度。
+使用原始磁盘当然可以防止操作系统分割磁盘空间，但这并不清楚
+
+如果它真的增加了速度。我们在Pentium 100 MHz+NT+NTFS文件系统+EIDE Conner磁盘上测量了从文件读取时与从原始磁盘读取时的速度差别，只有微不足道的差别。
+
+为了快速访问表空间或日志文件，我们将数据结构放在哈希表中。
+每个表空间和日志文件都有一个唯一的32位标识符。
+
+有些操作系统不支持同时打开多个文件，尽管NT似乎至少可以容纳900个打开的文件。
+因此，我们将打开的文件放在LRU列表中。如果我们需要打开另一个文件，
+我们可以关闭LRU列表末尾的文件。当文件的i/o操作挂起时，无法关闭该文件。
+我们将具有挂起的i/o操作的文件节点从LRU列表中取出，并保留挂起操作的计数。
+当一个操作完成时，我们减少计数，如果计数降到零，则将文件节点返回到LRU列表。*/
 ulint	fil_n_pending_log_flushes		= 0;
 ulint	fil_n_pending_tablespace_flushes	= 0;
 
@@ -832,6 +867,8 @@ fil_space_release_free_extents(
 Prepares a file node for i/o. Opens the file if it is closed. Updates the
 pending i/o's field in the node and the system appropriately. Takes the node
 off the LRU list if it is in the LRU list. */
+/*为i/o准备文件节点。如果文件已关闭，则打开该文件。
+适当地更新节点和系统中挂起的i/o字段。如果节点在LRU列表中，则将其从LRU列表中移除。*/
 static
 void
 fil_node_prepare_for_io(
@@ -911,6 +948,8 @@ fil_node_prepare_for_io(
 Updates the data structures when an i/o operation finishes. Updates the
 pending i/os field in the node and the system appropriately. Puts the node
 in the LRU list if there are no other pending i/os. */
+/*在i/o操作完成时更新数据结构。适当地更新节点和系统中的挂起i/O字段。
+如果没有其他挂起的i/O，则将节点置于LRU列表中。*/
 static
 void
 fil_node_complete_io(
@@ -1029,6 +1068,9 @@ loop:
 	a read by reading from the insert buffer, it may need to
 	post another read. But if the maximum number of files
 	are already open, it cannot proceed from here! */
+	/*请注意，存在挂起的可能性这里：
+	如果读取i/o处理程序线程需要通过从插入缓冲区读取来完成一次读取，
+	它可能需要发布另一次读取。但是如果已经打开了最大数量的文件，就不能从这里继续！*/
 	
 	mutex_enter(&(system->mutex));
 	
@@ -1038,12 +1080,12 @@ loop:
 	    	/* We are not doing an ibuf operation: leave a
 	    	safety margin of openable files for possible ibuf
 	    	merges needed in page read completion */
-
+	    	/*我们没有执行ibuf操作：为页面读取完成过程中可能需要的ibuf合并保留可打开文件的安全裕度*/
 		mutex_exit(&(system->mutex));
 
 		/* Wake the i/o-handler threads to make sure pending
 		i/o's are handled and eventually we can open the file */
-		
+		/*唤醒i/o处理程序线程，以确保挂起的i/o得到处理，最终我们可以打开该文件*/
 		os_aio_simulated_wake_handler_threads();
 
 		os_thread_sleep(100000);
@@ -1201,7 +1243,7 @@ Waits for an aio operation to complete. This function is used to write the
 handler for completed requests. The aio array of pending requests is divided
 into segments (see os0file.c for more info). The thread specifies which
 segment it wants to wait for. */
-
+/*等待aio操作完成。此函数用于为已完成的请求编写处理程序。未决请求的aio数组被划分为多个段（有关更多信息，请参见os0file.c）。线程指定要等待的段。*/
 void
 fil_aio_wait(
 /*=========*/
@@ -1259,7 +1301,7 @@ fil_aio_wait(
 
 /**************************************************************************
 Flushes to disk possible writes cached by the OS. */
-
+/*将操作系统缓存的可能写操作刷新到磁盘。*/
 void
 fil_flush(
 /*======*/
@@ -1298,7 +1340,8 @@ fil_flush(
 			handle is still open: we assume that the OS
 			will not crash or trap even if we pass a handle
 			to a closed file below in os_file_flush! */
-
+			/*请注意，当我们释放了上面的互斥锁后，还不能确定句柄的文件是否仍处于打开状态：
+			我们假设操作系统不会崩溃或陷入陷阱，即使我们在os_file_flush中将句柄传递给下面的关闭文件！*/
 			/* printf("Flushing to file %s\n", node->name); */
 			
 			os_file_flush(file);
@@ -1321,7 +1364,7 @@ fil_flush(
 /**************************************************************************
 Flushes to disk writes in file spaces of the given type possibly cached by
 the OS. */
-
+/*刷新到给定类型的文件空间中的磁盘写入，这些文件空间可能由操作系统缓存。*/
 void
 fil_flush_file_spaces(
 /*==================*/
