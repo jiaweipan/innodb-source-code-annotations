@@ -1041,7 +1041,11 @@ synchronous aio array of the specified size. The combined number of segments
 in the three first aio arrays is the parameter n_segments given to the
 function. The caller must create an i/o handler thread for each segment in
 the four first arrays, but not for the sync aio array. */
-
+/*初始化异步io系统。为non-ibuf 读写创建单独的aio数组，
+为ibuf i/o创建第三个aio数组（只有一个段），
+为日志读写创建两个aio数组（一个段），以及指定大小的同步aio数组。
+前三个aio数组中的段的组合数是给定给函数的参数n_segments。
+调用者必须为前四个数组中的每个段创建一个i/o处理程序线程，但不能为sync aio数组创建。*/
 void
 os_aio_init(
 /*========*/
