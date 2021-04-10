@@ -1262,7 +1262,9 @@ Initializes a page to the buffer buf_pool. The page is usually not read
 from a file even if it cannot be found in the buffer buf_pool. This is one
 of the functions which perform to a block a state transition NOT_USED =>
 FILE_PAGE (the other is buf_page_init_for_read above). */
-
+/*将页初始化为缓冲区buf_pool。
+通常不会从文件中读取页，即使在buffer buf_pool中找不到。
+这是一个函数，它执行一个块的状态转换NOT_USED=>FILE_PAGE（另一个是buf_page_init_for_read above）。 */
 buf_frame_t*
 buf_page_create(
 /*============*/

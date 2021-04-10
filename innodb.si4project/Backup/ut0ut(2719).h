@@ -78,7 +78,6 @@ ut_2pow_remainder(
 	ulint	m);	/* in: divisor; power of 2 */
 /*****************************************************************
 Calculates fast value rounded to a multiple of a power of 2. */
-/*计算四舍五入为2的幂的倍数的快速值。*/
 UNIV_INLINE
 ulint
 ut_2pow_round(

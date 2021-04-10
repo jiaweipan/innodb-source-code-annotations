@@ -190,7 +190,7 @@ buf_page_get_known_nowait(
 	mtr_t*		mtr);	/* in: mini-transaction */
 /************************************************************************
 This is the general function used to get access to a database page. */
-/*这是用于访问数据库页的常规函数。 */
+
 buf_frame_t*
 buf_page_get_gen(
 /*=============*/

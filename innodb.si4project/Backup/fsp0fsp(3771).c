@@ -1,11 +1,11 @@
- /**********************************************************************
+/**********************************************************************
 File space management
 
 (c) 1995 Innobase Oy
 
 Created 11/29/1995 Heikki Tuuri
 ***********************************************************************/
-/*文件空间管理*/
+
 #include "fsp0fsp.h"
 
 #ifdef UNIV_NONINL
@@ -31,114 +31,107 @@ Created 11/29/1995 Heikki Tuuri
 typedef	byte	fsp_header_t;
 typedef	byte	xdes_t;		
 
-/*			SPACE HEADER	空间头	
+/*			SPACE HEADER		
 			============
 
 File space header data structure: this data structure is contained in the
 first page of a space. The space for this header is reserved in every extent
 descriptor page, but used only in the first. */
-/*文件空间头数据结构：此数据结构包含在空间的第一页中。
-此标头的空间在每个扩展描述符页中保留，但仅在第一个页中使用。*/
+
 #define FSP_HEADER_OFFSET	FIL_PAGE_DATA	/* Offset of the space header
-						within a file page */ /*文件页内空间标头的偏移量*/
+						within a file page */
 /*-------------------------------------*/
 #define FSP_NOT_USED		0	/* this field contained a value up to
 					which we know that the modifications
 					in the database have been flushed to
 					the file space; not used now */
-					/*此字段包含一个值，我们知道数据库中的修改已刷新到文件空间；现在未使用 */
 #define	FSP_SIZE		8	/* Current size of the space in
-					pages */ /*页面中空间的当前大小*/
+					pages */
 #define	FSP_FREE_LIMIT		12	/* Minimum page number for which the
 					free list has not been initialized:
 					the pages >= this limit are, by
-					definition free */ /*空闲列表尚未包含的最小页码初始化：页面>=根据定义，这一限制是空闲的*/
+					definition free */
 #define	FSP_LOWEST_NO_WRITE	16	/* The lowest page offset for which
 					the page has not been written to disk
 					(if it has been written, we know that
 					the OS has really reserved the
 					physical space for the page) */
-					/*页尚未写入磁盘的最低页偏移量（如果已写入，我们知道操作系统已为页保留了物理空间）*/
 #define	FSP_FRAG_N_USED		20	/* number of used pages in the
-					FSP_FREE_FRAG list */ /*FSP_FREE_FRAG列表中使用的页面数*/
-#define	FSP_FREE		24	/* 空闲区列表 */
+					FSP_FREE_FRAG list */
+#define	FSP_FREE		24	/* list of free extents */
 #define	FSP_FREE_FRAG		(24 + FLST_BASE_NODE_SIZE)
 					/* list of partially free extents not
-					belonging to any segment */ /*不属于任何段的部分空闲范围列表*/
+					belonging to any segment */
 #define	FSP_FULL_FRAG		(24 + 2 * FLST_BASE_NODE_SIZE)
 					/* list of full extents not belonging
-					to any segment */ /*不属于任何段的部分空闲范围列表*/
+					to any segment */
 #define FSP_SEG_ID		(24 + 3 * FLST_BASE_NODE_SIZE)
 					/* 8 bytes which give the first unused
-					segment id */ /*8个字节，给出第一个未使用的段id*/
+					segment id */
 #define FSP_SEG_INODES_FULL	(32 + 3 * FLST_BASE_NODE_SIZE)
 					/* list of pages containing segment
 					headers, where all the segment inode
-					slots are reserved */ /*包含段头的页面列表，其中所有段inode插槽是保留的*/
+					slots are reserved */
 #define FSP_SEG_INODES_FREE	(32 + 4 * FLST_BASE_NODE_SIZE)
 					/* list of pages containing segment
 					headers, where not all the segment
-					header slots are reserved */ /*包含段头的页面列表，其中所有段头插槽是空闲的*/
+					header slots are reserved */
 /*-------------------------------------*/
-/* File space header size */ /*文件空间头大小*/
+/* File space header size */
 #define	FSP_HEADER_SIZE		(32 + 5 * FLST_BASE_NODE_SIZE)
 
 #define	FSP_FREE_ADD		4	/* this many free extents are added
 					to the free list from above
-					FSP_FREE_LIMIT at a time */ 
-					/*这许多空闲扩展数据块一次从FSP_FREE_LIMIT以上添加到空闲列表中*/
-/*			FILE SEGMENT INODE 文件段索引节点
+					FSP_FREE_LIMIT at a time */
+
+					
+/*			FILE SEGMENT INODE
 			==================
 
 Segment inode which is created for each segment in a tablespace. NOTE: in
 purge we assume that a segment having only one currently used page can be
 freed in a few steps, so that the freeing cannot fill the file buffer with
 bufferfixed file pages. */
-/*为表空间中的每个段创建的段inode。
-注意：在purge中，我们假设只有一个当前使用的页面的段可以在几个步骤中释放，
-这样释放就不能用缓冲区固定的文件页面填充文件缓冲区。 */
 
 typedef	byte	fseg_inode_t;
 
 #define FSEG_INODE_PAGE_NODE	FSEG_PAGE_DATA
 					/* the list node for linking
-					segment inode pages */ 
-					/*用于链接段索引节点页的列表节点*/
+					segment inode pages */
+
 #define FSEG_ARR_OFFSET		(FSEG_PAGE_DATA + FLST_NODE_SIZE)
 /*-------------------------------------*/
 #define	FSEG_ID			0	/* 8 bytes of segment id: if this is
 					ut_dulint_zero, it means that the
 					header is unused */
-					/*8字节的段id：如果这是ut_dulint_zero，则表示头未使用*/
 #define FSEG_NOT_FULL_N_USED	8
 					/* number of used segment pages in
-					the FSEG_NOT_FULL list */ /*FSEG_NOT_FULL中使用的段页数*/
+					the FSEG_NOT_FULL list */
 #define	FSEG_FREE		12
 					/* list of free extents of this
-					segment */ /*这个段的空闲区列表*/
+					segment */
 #define	FSEG_NOT_FULL		(12 + FLST_BASE_NODE_SIZE)
-					/* list of partially free extents */ /*部分空闲区列表*/
+					/* list of partially free extents */
 #define	FSEG_FULL		(12 + 2 * FLST_BASE_NODE_SIZE)
-					/* list of full extents */ /*满区列表*/
+					/* list of full extents */
 #define	FSEG_MAGIC_N		(12 + 3 * FLST_BASE_NODE_SIZE)
-					/* magic number used in debugging */  /*调试中使用的幻数*/
+					/* magic number used in debugging */
 #define	FSEG_FRAG_ARR		(16 + 3 * FLST_BASE_NODE_SIZE)
 					/* array of individual pages
 					belonging to this segment in fsp
-					fragment extent lists */ /*fragment区列表中属于此段的单个页的数组*/
+					fragment extent lists */
 #define FSEG_FRAG_ARR_N_SLOTS	(FSP_EXTENT_SIZE / 2)
 					/* number of slots in the array for
-					the fragment pages */ /*fragment页数组中的插槽数 */
+					the fragment pages */
 #define	FSEG_FRAG_SLOT_SIZE	4	/* a fragment page slot contains its
 					page number within space, FIL_NULL
-					means that the slot is not in use */ 
-					/*片段页槽在空格中包含其页码，FIL_NULL表示该槽未被使用 */
+					means that the slot is not in use */
 /*-------------------------------------*/
 #define FSEG_INODE_SIZE	(16 + 3 * FLST_BASE_NODE_SIZE + FSEG_FRAG_ARR_N_SLOTS * FSEG_FRAG_SLOT_SIZE)
 
 #define FSP_SEG_INODES_PER_PAGE	((UNIV_PAGE_SIZE - FSEG_ARR_OFFSET - 10) / FSEG_INODE_SIZE)
 				/* Number of segment inodes which fit on a
-				single page */ /*适合单个页面的段索引节点数             */
+				single page */
 
 #define FSEG_MAGIC_N_VALUE	97937874
 					
@@ -151,75 +144,65 @@ typedef	byte	fseg_inode_t;
 					be added to the segment in
 					fseg_alloc_free_page. Otherwise, we
 					use unused pages of the segment. */
-					/*如果此值为x，则如果段中未使用但保留的页数小于保留页数*1/x，
-					并且至少有FSEG_FRAG_LIMIT个已使用页面，
-					则允许在fseg_alloc_free_page中向段添加新的空区。
-					否则，我们将使用段中未使用的页面。*/
+					
 #define FSEG_FRAG_LIMIT		FSEG_FRAG_ARR_N_SLOTS
 					/* If the segment has >= this many
 					used pages, it may be expanded by
 					allocating extents to the segment;
 					until that only individual fragment
 					pages are allocated from the space */
-                    /*如果段有>=这么多已用页，则可以通过将扩展数据块分配给段来扩展它；
-                    直到从空间中只分配单个片段页为止*/
+
 #define	FSEG_FREE_LIST_LIMIT	40	/* If the reserved size of a segment
 					is at least this many extents, we
 					allow extents to be put to the free
 					list of the extent: at most
 					FSEG_FREE_LIST_MAX_LEN many */
-					/*如果一个段的保留大小至少是这么多个区段，
-					那么我们允许区段放入区段的空闲列表：最多FSEG_FREE_LIST_MAX_LEN many */
 #define	FSEG_FREE_LIST_MAX_LEN	4
 					
 
-/*			EXTENT DESCRIPTOR 区描述符
+/*			EXTENT DESCRIPTOR
 			=================
 
 File extent descriptor data structure: contains bits to tell which pages in
 the extent are free and which contain old tuple version to clean. */
-/*文件区描述符数据结构：包含位来指示扩展中的哪些页是空闲的，哪些包含要清除的旧元组版本。*/
 
 /*-------------------------------------*/
 #define	XDES_ID			0	/* The identifier of the segment
-					to which this extent belongs */ /*此区所属的段的标识符*/
+					to which this extent belongs */
 #define XDES_FLST_NODE		8	/* The list node data structure
-					for the descriptors */ /*描述符的列表节点数据结构*/
+					for the descriptors */
 #define	XDES_STATE		(FLST_NODE_SIZE + 8)
 					/* contains state information
-					of the extent */ /*包含范围的状态信息*/
+					of the extent */
 #define	XDES_BITMAP		(FLST_NODE_SIZE + 12)
 					/* Descriptor bitmap of the pages
-					in the extent */ /*范围中页的描述符位图*/
+					in the extent */
 /*-------------------------------------*/
 					
-#define	XDES_BITS_PER_PAGE	2	/* How many bits are there per page */ /*每页有多少位*/
+#define	XDES_BITS_PER_PAGE	2	/* How many bits are there per page */
 #define	XDES_FREE_BIT		0	/* Index of the bit which tells if
-					the page is free */ /*指示页面是否空闲的位的索引 */
+					the page is free */
 #define	XDES_CLEAN_BIT		1	/* NOTE: currently not used!
 					Index of the bit which tells if
 					there are old versions of tuples
-					on the page */ /*注：目前未使用！位的索引，它告诉页面上是否有元组的旧版本 */
-/* States of a descriptor */ /*描述符的状态*/
-#define	XDES_FREE		1	/* extent is in free list of space */ /*区位于空间的空闲链表中*/
+					on the page */
+/* States of a descriptor */
+#define	XDES_FREE		1	/* extent is in free list of space */
 #define	XDES_FREE_FRAG		2	/* extent is in free fragment list of
-					space */ /*区位于空间的空闲碎片链表中*/
+					space */
 #define	XDES_FULL_FRAG		3	/* extent is in full fragment list of
-					space */ /*区位于空间的满碎片链表中*/
-#define	XDES_FSEG		4	/* extent belongs to a segment */ /*区属于段*/
+					space */
+#define	XDES_FSEG		4	/* extent belongs to a segment */
 
 /* File extent data structure size in bytes. The "+ 7 ) / 8" part in the
 definition rounds the number of bytes upward. */
-/*文件区数据结构大小（字节）。中的“+7）/8”部分定义向上舍入字节数。*/
 #define	XDES_SIZE	(XDES_BITMAP + (FSP_EXTENT_SIZE * XDES_BITS_PER_PAGE + 7) / 8)
 
 /* Offset of the descriptor array on a descriptor page */
-/*描述符页上描述符数组的偏移量*/
 #define	XDES_ARR_OFFSET		(FSP_HEADER_OFFSET + FSP_HEADER_SIZE)
 					
 /**************************************************************************
 Returns an extent to the free list of a space. */
-/*返回空间的空闲列表的一个区。*/
 static
 void
 fsp_free_extent(
@@ -229,7 +212,6 @@ fsp_free_extent(
 	mtr_t*		mtr);	/* in: mtr */
 /**************************************************************************
 Frees an extent of a segment to the space free list. */
-/*释放一个段的区给空间的空闲链表*/
 static
 void
 fseg_free_extent(
@@ -241,7 +223,6 @@ fseg_free_extent(
 /**************************************************************************
 Calculates the number of pages reserved by a segment, and how
 many pages are currently used. */
-/*计算段保留的页数以及当前使用的页数。*/
 static
 ulint
 fseg_n_reserved_pages_low(
@@ -253,7 +234,6 @@ fseg_n_reserved_pages_low(
 /************************************************************************
 Marks a page used. The page must reside within the extents of the given
 segment. */
-/*标记使用的页面。页必须位于给定的段。 */
 static
 void
 fseg_mark_page_used(
@@ -266,7 +246,6 @@ fseg_mark_page_used(
 Returns the first extent descriptor for a segment. We think of the extent
 lists of the segment catenated in the order FSEG_FULL -> FSEG_NOT_FULL
 -> FSEG_FREE. */
-/*返回段的第一个扩展描述符。我们认为按FSEG_FULL -> FSEG_NOT_FULL-> FSEG_FREE顺序链接的段的列表*/
 static
 xdes_t*
 fseg_get_first_extent(
@@ -280,9 +259,6 @@ Puts new extents to the free list if
 there are free extents above the free limit. If an extent happens
 to contain an extent descriptor page, the extent is put to
 the FSP_FREE_FRAG list with the page marked as used. */
-/*如果有超出空闲列表限制的空闲区，则将新区放入空闲列表。
-如果一个扩展数据块恰好包含一个扩展描述符页，
-那么该扩展数据块将被放入FSP_FREE_FRAG列表中，并将该页标记为used。*/
 static
 void
 fsp_fill_free_list(
@@ -294,7 +270,6 @@ fsp_fill_free_list(
 Allocates a single free page from a segment. This function implements
 the intelligent allocation strategy which tries to minimize file space
 fragmentation. */
-/*从段中分配单个空闲页。此函数实现智能分配策略，该策略尝试最小化文件空间碎片。*/
 static
 ulint
 fseg_alloc_free_page_low(
@@ -313,12 +288,11 @@ fseg_alloc_free_page_low(
 
 /**************************************************************************
 Gets a pointer to the space header and x-locks its page. */
-/*获取指向空间标头的指针并x锁定其页。*/
 UNIV_INLINE
 fsp_header_t*
 fsp_get_space_header(
 /*=================*/
-			/* out: pointer to the space header, page x-locked */ /*获取指向空间标头的指针并x锁定其页。*/
+			/* out: pointer to the space header, page x-locked */
 	ulint	id,	/* in: space id */
 	mtr_t*	mtr)	/* in: mtr */
 {
@@ -335,7 +309,6 @@ fsp_get_space_header(
 
 /**************************************************************************
 Gets a descriptor bit of a page. */
-/*获取页的描述符位。*/
 UNIV_INLINE
 ibool
 xdes_get_bit(
@@ -369,7 +342,6 @@ xdes_get_bit(
 
 /**************************************************************************
 Sets a descriptor bit of a page. */
-/*设置页的描述符位。*/
 UNIV_INLINE
 void
 xdes_set_bit(
@@ -408,7 +380,6 @@ xdes_set_bit(
 Looks for a descriptor bit having the desired value. Starts from hint
 and scans upward; at the end of the extent the search is wrapped to
 the start of the extent. */
-/*查找具有所需值的描述符位。从提示开始向上扫描；在区段的末尾，搜索被包装到区段的开头。*/
 UNIV_INLINE
 ulint
 xdes_find_bit(
@@ -448,7 +419,6 @@ xdes_find_bit(
 /**************************************************************************
 Looks for a descriptor bit having the desired value. Scans the extent in
 a direction opposite to xdes_find_bit. */
-/*查找具有所需值的描述符位。沿与xdes_find_bit相反的方向扫描范围。*/
 UNIV_INLINE
 ulint
 xdes_find_bit_downward(
@@ -487,7 +457,6 @@ xdes_find_bit_downward(
 
 /**************************************************************************
 Returns the number of used pages in a descriptor. */
-/*返回描述符中使用的页数。*/
 UNIV_INLINE
 ulint
 xdes_get_n_used(
@@ -513,7 +482,6 @@ xdes_get_n_used(
 
 /**************************************************************************
 Returns true if extent contains no used pages. */
-/*如果扩展数据块不包含已用页，则返回true。 */
 UNIV_INLINE
 ibool
 xdes_is_free(
@@ -532,7 +500,6 @@ xdes_is_free(
 
 /**************************************************************************
 Returns true if extent contains no free pages. */
-/*如果区段不包含空闲页，则返回true。*/
 UNIV_INLINE
 ibool
 xdes_is_full(
@@ -551,7 +518,6 @@ xdes_is_full(
 
 /**************************************************************************
 Sets the state of an xdes. */
-/*设置xdes的状态。 */
 UNIV_INLINE
 void
 xdes_set_state(
@@ -571,7 +537,6 @@ xdes_set_state(
 
 /**************************************************************************
 Gets the state of an xdes. */
-/*获得xdes的状态。 */
 UNIV_INLINE
 ulint
 xdes_get_state(
@@ -589,7 +554,6 @@ xdes_get_state(
 
 /**************************************************************************
 Inits an extent descriptor to the free and clean state. */
-/*将扩展描述符初始化为自由和干净状态。 */
 UNIV_INLINE
 void
 xdes_init(
@@ -613,7 +577,6 @@ xdes_init(
 
 /************************************************************************
 Calculates the page where the descriptor of a page resides. */
-/*计算页描述符所在的页。*/
 UNIV_INLINE
 ulint
 xdes_calc_descriptor_page(
@@ -629,7 +592,6 @@ xdes_calc_descriptor_page(
 
 /************************************************************************
 Calculates the descriptor index within a descriptor page. */
-/*计算描述符页中的描述符索引。*/
 UNIV_INLINE
 ulint
 xdes_calc_descriptor_index(
@@ -647,9 +609,6 @@ descriptor resides is x-locked. If the page offset is equal to the free limit
 of the space, adds new extents from above the free limit to the space free
 list, if not free limit == space size. This adding is necessary to make the
 descriptor defined, as they are uninitialized above the free limit. */
-/*获取指向页的范围描述符的指针。extent描述符所在的页是x锁定的。
-如果页偏移量等于空间的可用限制，则从可用限制上方向空间可用列表中添加新的扩展数据块（如果不是可用限制==空间大小）。
-这种添加对于定义描述符是必要的，因为它们在自由限制之上未初始化。*/
 UNIV_INLINE
 xdes_t*
 xdes_get_descriptor_with_space_hdr(
@@ -713,9 +672,6 @@ the free limit of the space, adds new extents from above the free limit
 to the space free list, if not free limit == space size. This adding
 is necessary to make the descriptor defined, as they are uninitialized
 above the free limit. */
-/*获取指向页的extent描述符的指针。extent描述符所在的页是x锁定的。
-如果页偏移量等于空间的可用限制，则从可用限制上方向空间可用列表中添加新的extent数据块（如果不是可用限制==空间大小）。
-这种添加对于定义描述符是必要的，因为它们在自由限制之上未初始化。*/
 static
 xdes_t*
 xdes_get_descriptor(
@@ -742,7 +698,6 @@ xdes_get_descriptor(
 Gets pointer to a the extent descriptor if the file address
 of the descriptor list node is known. The page where the
 extent descriptor resides is x-locked. */
-/*如果描述符列表节点的文件地址已知，则获取指向扩展描述符的指针。扩展描述符所在的页是x锁定的。*/
 UNIV_INLINE
 xdes_t*
 xdes_lst_get_descriptor(
@@ -766,7 +721,6 @@ xdes_lst_get_descriptor(
 /************************************************************************
 Gets pointer to the next descriptor in a descriptor list and x-locks its
 page. */
-/*获取指向描述符列表中下一个描述符的指针，并x锁定其页。*/
 UNIV_INLINE
 xdes_t*
 xdes_lst_get_next(
@@ -786,7 +740,6 @@ xdes_lst_get_next(
 
 /************************************************************************
 Returns page offset of the first page in extent described by a descriptor. */
-/*返回描述符描述的范围中第一页的页偏移量。*/
 UNIV_INLINE
 ulint
 xdes_get_offset(
@@ -804,7 +757,6 @@ xdes_get_offset(
 
 /***************************************************************
 Inits a file page whose prior contents should be ignored. */
-/*初始化应忽略其先前内容的文件页。*/
 static
 void
 fsp_init_file_page_low(
@@ -831,7 +783,7 @@ fsp_init_file_page_low(
 
 /***************************************************************
 Inits a file page whose prior contents should be ignored. */
-/*初始化应忽略其先前内容的文件页。*/
+
 void
 fsp_init_file_page(
 /*===============*/
@@ -845,7 +797,7 @@ fsp_init_file_page(
 	
 /***************************************************************
 Parses a redo log record of a file page init. */
-/*解析文件页初始化的重做日志记录。*/
+
 byte*
 fsp_parse_init_file_page(
 /*=====================*/
@@ -865,7 +817,7 @@ fsp_parse_init_file_page(
 
 /**************************************************************************
 Initializes the fsp system. */
-/*初始化fsp系统。*/
+
 void
 fsp_init(void)
 /*==========*/
@@ -876,7 +828,7 @@ fsp_init(void)
 /**************************************************************************
 Initializes the space header of a new created space and creates also the
 insert buffer tree root. */
-/*初始化新创建的空间的空间头并创建插入缓冲区树根。*/
+
 void
 fsp_header_init(
 /*============*/
@@ -898,6 +850,7 @@ fsp_header_init(
 	buf_page_dbg_add_level(page, SYNC_FSP_PAGE);
 
 	/* The prior contents of the file page should be ignored */
+
 	fsp_init_file_page(page, mtr);
 
 	header = FSP_HEADER_OFFSET + page;
@@ -923,7 +876,7 @@ fsp_header_init(
 
 /**************************************************************************
 Increases the space size field of a space. */
-/*增加空间的“空间大小”字段。*/
+
 void
 fsp_header_inc_size(
 /*================*/
@@ -949,8 +902,6 @@ fsp_header_inc_size(
 Puts new extents to the free list if there are free extents above the free
 limit. If an extent happens to contain an extent descriptor page, the extent
 is put to the FSP_FREE_FRAG list with the page marked as used. */
-/*如果有超出free limit的free extents，则将new extents放入free list。
-如果一个extents数据块恰好包含一个扩展描述符页，那么该扩展数据块将被放入FSP_FREE_FRAG列表中，并将该页标记为used。*/
 static
 void
 fsp_fill_free_list(
@@ -972,7 +923,6 @@ fsp_fill_free_list(
 	ut_ad(header && mtr);
 	
 	/* Check if we can fill free list from above the free list limit */
-	/* 检查我们是否能在free list limit以上填写free list*/
 	size = mtr_read_ulint(header + FSP_SIZE, MLOG_4BYTES, mtr);
 	limit = mtr_read_ulint(header + FSP_FREE_LIMIT, MLOG_4BYTES, mtr);
 
@@ -987,7 +937,7 @@ fsp_fill_free_list(
 			/* We are going to initialize a new descriptor page
 			and a new ibuf bitmap page: the prior contents of the
 			pages should be ignored. */
-			/*我们将初始化一个新的描述符页和一个新的ibuf位图页：应该忽略这些页以前的内容*/
+
 			if (i > 0) {
 				descr_page = buf_page_create(space, i, mtr);
 				buf_page_dbg_add_level(descr_page,
@@ -1002,7 +952,7 @@ fsp_fill_free_list(
 			mini-transaction because it is low in the latching
 			order, and we must be able to release the its latch
 			before returning from the fsp routine */
-			/*在一个单独的小事务中初始化ibuf页，因为它的锁存顺序很低，我们必须能够在从fsp例程返回之前释放its锁存*/
+			
 			mtr_start(&ibuf_mtr);
 
 			ibuf_page = buf_page_create(space,

@@ -313,12 +313,11 @@ fseg_alloc_free_page_low(
 
 /**************************************************************************
 Gets a pointer to the space header and x-locks its page. */
-/*获取指向空间标头的指针并x锁定其页。*/
 UNIV_INLINE
 fsp_header_t*
 fsp_get_space_header(
 /*=================*/
-			/* out: pointer to the space header, page x-locked */ /*获取指向空间标头的指针并x锁定其页。*/
+			/* out: pointer to the space header, page x-locked */
 	ulint	id,	/* in: space id */
 	mtr_t*	mtr)	/* in: mtr */
 {
@@ -335,7 +334,6 @@ fsp_get_space_header(
 
 /**************************************************************************
 Gets a descriptor bit of a page. */
-/*获取页的描述符位。*/
 UNIV_INLINE
 ibool
 xdes_get_bit(
@@ -369,7 +367,6 @@ xdes_get_bit(
 
 /**************************************************************************
 Sets a descriptor bit of a page. */
-/*设置页的描述符位。*/
 UNIV_INLINE
 void
 xdes_set_bit(
@@ -408,7 +405,6 @@ xdes_set_bit(
 Looks for a descriptor bit having the desired value. Starts from hint
 and scans upward; at the end of the extent the search is wrapped to
 the start of the extent. */
-/*查找具有所需值的描述符位。从提示开始向上扫描；在区段的末尾，搜索被包装到区段的开头。*/
 UNIV_INLINE
 ulint
 xdes_find_bit(
@@ -448,7 +444,6 @@ xdes_find_bit(
 /**************************************************************************
 Looks for a descriptor bit having the desired value. Scans the extent in
 a direction opposite to xdes_find_bit. */
-/*查找具有所需值的描述符位。沿与xdes_find_bit相反的方向扫描范围。*/
 UNIV_INLINE
 ulint
 xdes_find_bit_downward(
@@ -487,7 +482,6 @@ xdes_find_bit_downward(
 
 /**************************************************************************
 Returns the number of used pages in a descriptor. */
-/*返回描述符中使用的页数。*/
 UNIV_INLINE
 ulint
 xdes_get_n_used(
@@ -513,7 +507,6 @@ xdes_get_n_used(
 
 /**************************************************************************
 Returns true if extent contains no used pages. */
-/*如果扩展数据块不包含已用页，则返回true。 */
 UNIV_INLINE
 ibool
 xdes_is_free(
@@ -532,7 +525,6 @@ xdes_is_free(
 
 /**************************************************************************
 Returns true if extent contains no free pages. */
-/*如果区段不包含空闲页，则返回true。*/
 UNIV_INLINE
 ibool
 xdes_is_full(
@@ -551,7 +543,6 @@ xdes_is_full(
 
 /**************************************************************************
 Sets the state of an xdes. */
-/*设置xdes的状态。 */
 UNIV_INLINE
 void
 xdes_set_state(
@@ -571,7 +562,6 @@ xdes_set_state(
 
 /**************************************************************************
 Gets the state of an xdes. */
-/*获得xdes的状态。 */
 UNIV_INLINE
 ulint
 xdes_get_state(
@@ -589,7 +579,6 @@ xdes_get_state(
 
 /**************************************************************************
 Inits an extent descriptor to the free and clean state. */
-/*将扩展描述符初始化为自由和干净状态。 */
 UNIV_INLINE
 void
 xdes_init(
@@ -613,7 +602,6 @@ xdes_init(
 
 /************************************************************************
 Calculates the page where the descriptor of a page resides. */
-/*计算页描述符所在的页。*/
 UNIV_INLINE
 ulint
 xdes_calc_descriptor_page(
@@ -629,7 +617,6 @@ xdes_calc_descriptor_page(
 
 /************************************************************************
 Calculates the descriptor index within a descriptor page. */
-/*计算描述符页中的描述符索引。*/
 UNIV_INLINE
 ulint
 xdes_calc_descriptor_index(
@@ -647,9 +634,6 @@ descriptor resides is x-locked. If the page offset is equal to the free limit
 of the space, adds new extents from above the free limit to the space free
 list, if not free limit == space size. This adding is necessary to make the
 descriptor defined, as they are uninitialized above the free limit. */
-/*获取指向页的范围描述符的指针。extent描述符所在的页是x锁定的。
-如果页偏移量等于空间的可用限制，则从可用限制上方向空间可用列表中添加新的扩展数据块（如果不是可用限制==空间大小）。
-这种添加对于定义描述符是必要的，因为它们在自由限制之上未初始化。*/
 UNIV_INLINE
 xdes_t*
 xdes_get_descriptor_with_space_hdr(
@@ -713,9 +697,6 @@ the free limit of the space, adds new extents from above the free limit
 to the space free list, if not free limit == space size. This adding
 is necessary to make the descriptor defined, as they are uninitialized
 above the free limit. */
-/*获取指向页的extent描述符的指针。extent描述符所在的页是x锁定的。
-如果页偏移量等于空间的可用限制，则从可用限制上方向空间可用列表中添加新的extent数据块（如果不是可用限制==空间大小）。
-这种添加对于定义描述符是必要的，因为它们在自由限制之上未初始化。*/
 static
 xdes_t*
 xdes_get_descriptor(
@@ -742,7 +723,6 @@ xdes_get_descriptor(
 Gets pointer to a the extent descriptor if the file address
 of the descriptor list node is known. The page where the
 extent descriptor resides is x-locked. */
-/*如果描述符列表节点的文件地址已知，则获取指向扩展描述符的指针。扩展描述符所在的页是x锁定的。*/
 UNIV_INLINE
 xdes_t*
 xdes_lst_get_descriptor(
@@ -766,7 +746,6 @@ xdes_lst_get_descriptor(
 /************************************************************************
 Gets pointer to the next descriptor in a descriptor list and x-locks its
 page. */
-/*获取指向描述符列表中下一个描述符的指针，并x锁定其页。*/
 UNIV_INLINE
 xdes_t*
 xdes_lst_get_next(
@@ -786,7 +765,6 @@ xdes_lst_get_next(
 
 /************************************************************************
 Returns page offset of the first page in extent described by a descriptor. */
-/*返回描述符描述的范围中第一页的页偏移量。*/
 UNIV_INLINE
 ulint
 xdes_get_offset(
@@ -804,7 +782,6 @@ xdes_get_offset(
 
 /***************************************************************
 Inits a file page whose prior contents should be ignored. */
-/*初始化应忽略其先前内容的文件页。*/
 static
 void
 fsp_init_file_page_low(
@@ -831,7 +808,7 @@ fsp_init_file_page_low(
 
 /***************************************************************
 Inits a file page whose prior contents should be ignored. */
-/*初始化应忽略其先前内容的文件页。*/
+
 void
 fsp_init_file_page(
 /*===============*/
@@ -845,7 +822,7 @@ fsp_init_file_page(
 	
 /***************************************************************
 Parses a redo log record of a file page init. */
-/*解析文件页初始化的重做日志记录。*/
+
 byte*
 fsp_parse_init_file_page(
 /*=====================*/
@@ -865,7 +842,7 @@ fsp_parse_init_file_page(
 
 /**************************************************************************
 Initializes the fsp system. */
-/*初始化fsp系统。*/
+
 void
 fsp_init(void)
 /*==========*/
@@ -876,7 +853,7 @@ fsp_init(void)
 /**************************************************************************
 Initializes the space header of a new created space and creates also the
 insert buffer tree root. */
-/*初始化新创建的空间的空间头并创建插入缓冲区树根。*/
+
 void
 fsp_header_init(
 /*============*/
@@ -898,6 +875,7 @@ fsp_header_init(
 	buf_page_dbg_add_level(page, SYNC_FSP_PAGE);
 
 	/* The prior contents of the file page should be ignored */
+
 	fsp_init_file_page(page, mtr);
 
 	header = FSP_HEADER_OFFSET + page;
@@ -923,7 +901,7 @@ fsp_header_init(
 
 /**************************************************************************
 Increases the space size field of a space. */
-/*增加空间的“空间大小”字段。*/
+
 void
 fsp_header_inc_size(
 /*================*/
@@ -949,8 +927,6 @@ fsp_header_inc_size(
 Puts new extents to the free list if there are free extents above the free
 limit. If an extent happens to contain an extent descriptor page, the extent
 is put to the FSP_FREE_FRAG list with the page marked as used. */
-/*如果有超出free limit的free extents，则将new extents放入free list。
-如果一个extents数据块恰好包含一个扩展描述符页，那么该扩展数据块将被放入FSP_FREE_FRAG列表中，并将该页标记为used。*/
 static
 void
 fsp_fill_free_list(
@@ -972,7 +948,6 @@ fsp_fill_free_list(
 	ut_ad(header && mtr);
 	
 	/* Check if we can fill free list from above the free list limit */
-	/* 检查我们是否能在free list limit以上填写free list*/
 	size = mtr_read_ulint(header + FSP_SIZE, MLOG_4BYTES, mtr);
 	limit = mtr_read_ulint(header + FSP_FREE_LIMIT, MLOG_4BYTES, mtr);
 
@@ -987,7 +962,7 @@ fsp_fill_free_list(
 			/* We are going to initialize a new descriptor page
 			and a new ibuf bitmap page: the prior contents of the
 			pages should be ignored. */
-			/*我们将初始化一个新的描述符页和一个新的ibuf位图页：应该忽略这些页以前的内容*/
+
 			if (i > 0) {
 				descr_page = buf_page_create(space, i, mtr);
 				buf_page_dbg_add_level(descr_page,
@@ -1002,7 +977,7 @@ fsp_fill_free_list(
 			mini-transaction because it is low in the latching
 			order, and we must be able to release the its latch
 			before returning from the fsp routine */
-			/*在一个单独的小事务中初始化ibuf页，因为它的锁存顺序很低，我们必须能够在从fsp例程返回之前释放its锁存*/
+			
 			mtr_start(&ibuf_mtr);
 
 			ibuf_page = buf_page_create(space,
