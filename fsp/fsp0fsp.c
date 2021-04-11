@@ -67,7 +67,7 @@ descriptor page, but used only in the first. */
 					belonging to any segment */ /*不属于任何段的部分空闲范围列表*/
 #define	FSP_FULL_FRAG		(24 + 2 * FLST_BASE_NODE_SIZE)
 					/* list of full extents not belonging
-					to any segment */ /*不属于任何段的部分空闲范围列表*/
+					to any segment */ /*不属于任何段的滿范围列表*/
 #define FSP_SEG_ID		(24 + 3 * FLST_BASE_NODE_SIZE)
 					/* 8 bytes which give the first unused
 					segment id */ /*8个字节，给出第一个未使用的段id*/
@@ -1031,7 +1031,7 @@ fsp_fill_free_list(
 			/* The first page in the extent is a descriptor page
 			and the second is an ibuf bitmap page: mark them
 			used */
-
+			/*扩展数据块中的第一页是描述符页，第二页是ibuf位图页：标记它们已使用*/
 			xdes_set_bit(descr, XDES_FREE_BIT, 0, FALSE, mtr);
 			xdes_set_bit(descr, XDES_FREE_BIT,
 					FSP_IBUF_BITMAP_OFFSET, FALSE, mtr);
@@ -1055,6 +1055,7 @@ fsp_fill_free_list(
 
 /**************************************************************************
 Allocates a new free extent. */
+/*分配新的空闲区。*/
 static
 xdes_t*
 fsp_alloc_free_extent(
@@ -1104,6 +1105,7 @@ fsp_alloc_free_extent(
 
 /**************************************************************************
 Allocates a single free page from a space. The page is marked as used. */
+/*从空间中分配单个空闲页。该页被标记为已使用。*/
 static
 ulint
 fsp_alloc_free_page(
@@ -1127,12 +1129,14 @@ fsp_alloc_free_page(
 	header = fsp_get_space_header(space, mtr);
 
 	/* Get the hinted descriptor */
+	/* 获取暗示的描述符 */
 	descr = xdes_get_descriptor_with_space_hdr(header, space, hint, mtr);
 
 	if (descr && (xdes_get_state(descr, mtr) == XDES_FREE_FRAG)) {
 		/* Ok, we can take this extent */
 	} else {
 		/* Else take the first extent in free_frag list */
+		/* 否则取自由碎片列表中的第一个区段 */
 		first = flst_get_first(header + FSP_FREE_FRAG, mtr);
 
 		if (fil_addr_is_null(first)) {
@@ -1142,7 +1146,9 @@ fsp_alloc_free_page(
 			extent containing a descriptor page is added to the
 			FREE_FRAG list. But we will allocate our page from the
 			the free extent anyway. */
-			
+			/*没有部分完整的片段：分配一个空闲区段并将其添加到空闲片段列表。
+			请注意，分配可能会产生一个副作用，即将包含描述符页的区段添加到FREE_FRAG列表中。
+			但无论如何，我们将从空闲区分配页面。*/
 			descr = fsp_alloc_free_extent(space, hint, mtr);
 
 			if (descr == NULL) {
@@ -1164,6 +1170,7 @@ fsp_alloc_free_page(
 
 	/* Now we have in descr an extent with at least one free page. Look
 	for a free page in the extent. */
+	/*现在我们在descr中有一个至少有一个空闲页的区段。在扩展区中查找免费页。 */
 
 	free = xdes_find_bit(descr, XDES_FREE_BIT, TRUE,
 						hint % FSP_EXTENT_SIZE, mtr);
@@ -1179,6 +1186,7 @@ fsp_alloc_free_page(
 									mtr);
 	if (xdes_is_full(descr, mtr)) {
 		/* The fragment is full: move it to another list */
+		/* 片段已满：将其移到另一个列表  */
 		flst_remove(header + FSP_FREE_FRAG, descr + XDES_FLST_NODE,
 									mtr);
 		xdes_set_state(descr, XDES_FULL_FRAG, mtr);
@@ -1195,7 +1203,7 @@ fsp_alloc_free_page(
 	/* Initialize the allocated page to the buffer pool, so that it can
 	be obtained immediately with buf_page_get without need for a disk
 	read. */
-	
+	/*初始化分配给缓冲池的页，这样就可以用buf_page_get立即获得它，而不需要磁盘读取。*/
 	buf_page_create(space, page_no, mtr);
 
 	page = buf_page_get(space, page_no, RW_X_LATCH, mtr);	
@@ -1203,6 +1211,7 @@ fsp_alloc_free_page(
 	buf_page_dbg_add_level(page, SYNC_FSP_PAGE);
 
 	/* Prior contents of the page should be ignored */
+	/* 应忽略页面的先前内容 */
 	fsp_init_file_page(page, mtr);
 	
 	return(page_no);
@@ -1210,6 +1219,7 @@ fsp_alloc_free_page(
 
 /**************************************************************************
 Frees a single page of a space. The page is marked as free and clean. */
+/*释放空间中的一页。该页被标记为自由和干净。*/
 static
 void
 fsp_free_page(
@@ -1269,6 +1279,7 @@ fsp_free_page(
 
 /**************************************************************************
 Returns an extent to the free list of a space. */
+/*返回空间的可用列表的extent。*/
 static
 void
 fsp_free_extent(
@@ -1295,6 +1306,7 @@ fsp_free_extent(
 
 /**************************************************************************
 Returns the nth inode slot on an inode page. */
+/*返回inode页上的第n个inode插槽。*/
 UNIV_INLINE
 fseg_inode_t*
 fsp_seg_inode_page_get_nth_inode(
@@ -1313,6 +1325,7 @@ fsp_seg_inode_page_get_nth_inode(
 
 /**************************************************************************
 Looks for a used segment inode on a segment inode page. */ 
+/*在段索引节点页上查找使用过的段索引节点。*/
 static
 ulint
 fsp_seg_inode_page_find_used(
@@ -1342,6 +1355,7 @@ fsp_seg_inode_page_find_used(
 
 /**************************************************************************
 Looks for an unused segment inode on a segment inode page. */ 
+/*在段索引节点页上查找未使用的段索引节点。*/
 static
 ulint
 fsp_seg_inode_page_find_free(
@@ -1372,6 +1386,7 @@ fsp_seg_inode_page_find_free(
 
 /**************************************************************************
 Allocates a new file segment inode page. */
+/*分配一个新的文件段节点页。*/
 static
 ibool
 fsp_alloc_seg_inode_page(
@@ -1414,6 +1429,7 @@ fsp_alloc_seg_inode_page(
 
 /**************************************************************************
 Allocates a new file segment inode. */
+/*分配一个新的文件段节点。*/
 static
 fseg_inode_t*
 fsp_alloc_seg_inode(
@@ -1431,7 +1447,7 @@ fsp_alloc_seg_inode(
 	
 	if (flst_get_len(space_header + FSP_SEG_INODES_FREE, mtr) == 0) {
 		/* Allocate a new segment inode page */
-
+		/*分配一个新的文件段节点页。*/
 		success = fsp_alloc_seg_inode_page(space_header, mtr);
 
 		if (!success) {
@@ -1456,7 +1472,7 @@ fsp_alloc_seg_inode(
 
 		/* There are no other unused headers left on the page: move it
 		to another list */
-
+		/*页面上没有其他未使用的标题：将其移动到另一个列表*/
 		flst_remove(space_header + FSP_SEG_INODES_FREE,
 				page + FSEG_INODE_PAGE_NODE, mtr);
 
@@ -1469,6 +1485,7 @@ fsp_alloc_seg_inode(
 
 /**************************************************************************
 Frees a file segment inode. */
+/*释放一个文件段inode。*/
 static
 void
 fsp_free_seg_inode(
@@ -1513,6 +1530,7 @@ fsp_free_seg_inode(
 
 /**************************************************************************
 Returns the file segment inode, page x-latched. */
+/*返回文件段inode，第x-latched页。 */
 static
 fseg_inode_t*
 fseg_inode_get(
@@ -1537,6 +1555,7 @@ fseg_inode_get(
 
 /**************************************************************************
 Gets the page number from the nth fragment page slot. */
+/*获取第n个fragment页槽中的页号。 */
 UNIV_INLINE
 ulint
 fseg_get_nth_frag_page_no(
@@ -1556,6 +1575,7 @@ fseg_get_nth_frag_page_no(
 
 /**************************************************************************
 Sets the page number in the nth fragment page slot. */
+/*設置第n个fragment页槽中的页号。 */
 UNIV_INLINE
 void
 fseg_set_nth_frag_page_no(
@@ -1576,6 +1596,7 @@ fseg_set_nth_frag_page_no(
 
 /**************************************************************************
 Finds a fragment page slot which is free. */
+/*找到一个可用的fragment页槽。*/
 static
 ulint
 fseg_find_free_frag_page_slot(
@@ -1604,6 +1625,7 @@ fseg_find_free_frag_page_slot(
 
 /**************************************************************************
 Finds a fragment page slot which is used and last in the array. */
+/*查找已使用且最后一个在阵列中的分段页槽。 */
 static
 ulint
 fseg_find_last_used_frag_page_slot(
@@ -1633,6 +1655,7 @@ fseg_find_last_used_frag_page_slot(
 
 /**************************************************************************
 Calculates reserved fragment page slots. */
+/*计算保留的fragment 页槽。 */
 static
 ulint
 fseg_get_n_frag_pages(
@@ -1657,7 +1680,7 @@ fseg_get_n_frag_pages(
 
 /**************************************************************************
 Creates a new segment. */
-
+/*创建一个新segment。*/
 page_t*
 fseg_create_general(
 /*================*/
@@ -1669,6 +1692,7 @@ fseg_create_general(
 			this is != 0, the page must belong to another segment,
 			if this is 0, a new page will be allocated and it
 			will belong to the created segment */
+			/*放置段标题的页面：如果是！=0，则该页必须属于另一个段，如果为0，则将分配一个新页，且该页将属于已创建的段*/
 	ulint	byte_offset, /* in: byte offset of the created segment header
 			on the page */
 	ibool	has_done_reservation, /* in: TRUE if the caller has
@@ -1677,6 +1701,8 @@ fseg_create_general(
 			one for the inode and, then there other for the
 			segment) is no need to do the check for this
 			individual operation */
+			/*如果调用者已经用fsp_reserve_free_extents(至少两个extents:一个用于索引节点，
+			另一个用于段)保留了页面，则为TRUE，不需要对这个单独的操作进行检查*/
 	mtr_t*	mtr)	/* in: mtr */
 {
 	fsp_header_t*	space_header;
@@ -1705,7 +1731,7 @@ fseg_create_general(
 	if (rw_lock_get_x_lock_count(latch) == 1) {
 		/* This thread did not own the latch before this call: free
 		excess pages from the insert buffer free list */
-
+		/*这个线程在调用之前不拥有锁存器:从插入缓冲区空闲列表中释放多余的页面*/
 		ibuf_free_excess_pages(space);
 	}
 
@@ -1728,7 +1754,7 @@ fseg_create_general(
 
 	/* Read the next segment id from space header and increment the
 	value in space header */
-
+    /*从空格头读取下一个段id，并在空格头中增加值*/
 	seg_id = mtr_read_dulint(space_header + FSP_SEG_ID, MLOG_8BYTES, mtr);
 
 	mlog_write_dulint(space_header + FSP_SEG_ID, ut_dulint_add(seg_id, 1),
@@ -1782,7 +1808,7 @@ funct_exit:
 
 /**************************************************************************
 Creates a new segment. */
-
+/*创建一个新segment。*/
 page_t*
 fseg_create(
 /*========*/
@@ -1804,6 +1830,7 @@ fseg_create(
 /**************************************************************************
 Calculates the number of pages reserved by a segment, and how many pages are
 currently used. */
+/*计算一个段保留的页面数量，以及当前使用的页面数量。*/
 static
 ulint
 fseg_n_reserved_pages_low(
@@ -1834,7 +1861,7 @@ fseg_n_reserved_pages_low(
 /**************************************************************************
 Calculates the number of pages reserved by a segment, and how many pages are
 currently used. */
-
+/*计算一个段保留的页面数量，以及当前使用的页面数量。*/
 ulint
 fseg_n_reserved_pages(
 /*==================*/
@@ -1866,6 +1893,9 @@ Tries to fill the free list of a segment with consecutive free extents.
 This happens if the segment is big enough to allow extents in the free list,
 the free list is empty, and the extents can be allocated consecutively from
 the hint onward. */
+/*尝试用连续的空闲区段填充段的空闲列表。
+如果段足够大，可以允许空闲列表中的区段，空闲列表为空，
+并且可以从提示开始连续地分配区段，就会发生这种情况。*/
 static
 void
 fseg_fill_free_list(
@@ -1926,6 +1956,8 @@ fseg_fill_free_list(
 Allocates a free extent for the segment: looks first in the free list of the
 segment, then tries to allocate from the space free list. NOTE that the extent
 returned still resides in the segment free list, it is not yet taken off it! */
+/*为段分配一个空闲区:首先在段的空闲列表中查找，然后尝试从空间空闲列表中分配。
+注意，返回的区段仍然驻留在段空闲列表中，它还没有被删除!*/
 static
 xdes_t*
 fseg_alloc_free_extent(
@@ -1974,6 +2006,7 @@ fseg_alloc_free_extent(
 Allocates a single free page from a segment. This function implements
 the intelligent allocation strategy which tries to minimize file space
 fragmentation. */
+/*从段中分配一个空闲页。该函数实现了试图最小化文件空间碎片的智能分配策略*/
 static
 ulint
 fseg_alloc_free_page_low(
@@ -1988,6 +2021,7 @@ fseg_alloc_free_page_low(
 				inserted there in order, into which
 				direction they go alphabetically: FSP_DOWN,
 				FSP_UP, FSP_NO_DIR */
+				/*如果由于索引页分割而需要新页，并且记录按字母顺序插入其中:FSP_DOWN、FSP_UP、FSP_NO_DIR*/
 	mtr_t*		mtr)	/* in: mtr handle */
 {
 	dulint		seg_id;
@@ -2021,7 +2055,7 @@ fseg_alloc_free_page_low(
 		descr = xdes_get_descriptor(space, hint, mtr);
 	}
  
-	/* In the big if-else below we look for ret_page and ret_descr */
+	/* In the big if-else below we look for ret_page and ret_descr */ /*在下面的if-else中，我们查找ret_page和ret_descr*/
 	/*-------------------------------------------------------------*/ 
 	if ((xdes_get_state(descr, mtr) == XDES_FSEG)
 	           && (0 == ut_dulint_cmp(mtr_read_dulint(descr + XDES_ID,
@@ -2031,7 +2065,7 @@ fseg_alloc_free_page_low(
 				hint % FSP_EXTENT_SIZE, mtr) == TRUE)) {
 
 		/* 1. We can take the hinted page
-		=================================*/
+		=================================*/ /*1.我们可以得到提示的那一页*/
 		ret_descr = descr;
 		ret_page = hint;
 	/*-------------------------------------------------------------*/ 
@@ -2042,7 +2076,7 @@ fseg_alloc_free_page_low(
 		/* 2. We allocate the free extent from space and can take
 		=========================================================
 		the hinted page
-		===============*/
+		===============*/ /*2.我们从空间中分配自由区段，并可以使用所提示的页面*/
 		ret_descr = fsp_alloc_free_extent(space, hint, mtr);
 
 		ut_a(ret_descr == descr);
@@ -2069,7 +2103,8 @@ fseg_alloc_free_page_low(
 		in the if-condition to ret_descr) and take the lowest or
 		========================================================
 		highest page in it, depending on the direction
-		==============================================*/
+		==============================================*/ 
+		/*3.我们取任意的空闲区段(在上面的if条件中已经分配给ret_descr)，并根据方向取其中最低或最高的页。*/
 		ret_page = xdes_get_offset(ret_descr);	
 
 		if (direction == FSP_DOWN) {
@@ -2087,7 +2122,7 @@ fseg_alloc_free_page_low(
 		hinted page (and the extent already belongs to the
 		==================================================
 		segment)
-		========*/
+		========*/ /*4.我们可以从与所暗示的页面相同的区段中获取页面(并且区段已经属于这个段)*/
 		ret_descr = descr;
 		ret_page = xdes_get_offset(ret_descr) +
 				xdes_find_bit(ret_descr, XDES_FREE_BIT, TRUE,
@@ -2095,7 +2130,7 @@ fseg_alloc_free_page_low(
 	/*-------------------------------------------------------------*/ 
 	} else if (reserved - used > 0) {
 		/* 5. We take any unused page from the segment
-		==============================================*/
+		==============================================*/ /*5.我们从段中取出任何未使用的页*/
 		if (flst_get_len(seg_inode + FSEG_NOT_FULL, mtr) > 0) {
 			first = flst_get_first(seg_inode + FSEG_NOT_FULL,
 									mtr);
@@ -2112,7 +2147,7 @@ fseg_alloc_free_page_low(
 	/*-------------------------------------------------------------*/ 
 	} else if (used < FSEG_FRAG_LIMIT) {
 		/* 6. We allocate an individual page from the space
-		===================================================*/
+		===================================================*/ /*6.我们从空间中分配一个单独的页面*/
 		ret_page = fsp_alloc_free_page(space, hint, mtr);
 		ret_descr = NULL;
 		
@@ -2120,7 +2155,7 @@ fseg_alloc_free_page_low(
 		
 		if (ret_page != FIL_NULL) {
 			/* Put the page in the fragment page array of the
-			segment */
+			segment */ /*将该页放到段的fragment页数组中*/
 			n = fseg_find_free_frag_page_slot(seg_inode, mtr);
 			ut_a(n != FIL_NULL);
 
@@ -2130,7 +2165,7 @@ fseg_alloc_free_page_low(
 	/*-------------------------------------------------------------*/ 
 	} else {
 		/* 7. We allocate a new extent and take its first page
-		======================================================*/
+		======================================================*/ /*7.我们分配一个新的区并获取它的第一页*/
 		ret_descr = fseg_alloc_free_extent(seg_inode, space, mtr);
 
 		if (ret_descr == NULL) {
@@ -2150,7 +2185,7 @@ fseg_alloc_free_page_low(
 
 		/* Initialize the allocated page to buffer pool, so that it
 		can be obtained immediately with buf_page_get without need
-		for a disk read */
+		for a disk read *//*将已分配的页面初始化到缓冲池，这样就可以通过buf_page_get立即获得它，而不需要读取磁盘*/
 	
 		page = buf_page_create(space, ret_page, mtr);
 
@@ -2163,8 +2198,8 @@ fseg_alloc_free_page_low(
 	
 		/* At this point we know the extent and the page offset.
 		The extent is still in the appropriate list (FSEG_NOT_FULL
-		or FSEG_FREE), and the page is not yet marked as used. */
-		
+		or FSEG_FREE), and the page is not yet marked as used. */ 
+		/*此时，我们知道了范围和页偏移量。该区段仍然在适当的列表中(FSEG_NOT_FULL或FSEG_FREE)，该页还没有被标记为已使用。*/		
 		ut_ad(xdes_get_descriptor(space, ret_page, mtr) == ret_descr);
 		ut_ad(xdes_get_bit(ret_descr, XDES_FREE_BIT,
 				ret_page % FSP_EXTENT_SIZE, mtr) == TRUE);
@@ -2179,7 +2214,7 @@ fseg_alloc_free_page_low(
 Allocates a single free page from a segment. This function implements
 the intelligent allocation strategy which tries to minimize file space
 fragmentation. */
-
+/*从段中分配一个空闲页。该函数实现了试图最小化文件空间碎片的智能分配策略。*/
 ulint
 fseg_alloc_free_page_general(
 /*=========================*/
@@ -2244,7 +2279,7 @@ fseg_alloc_free_page_general(
 Allocates a single free page from a segment. This function implements
 the intelligent allocation strategy which tries to minimize file space
 fragmentation. */
-
+/*从段中分配一个空闲页。该函数实现了试图最小化文件空间碎片的智能分配策略。*/
 ulint
 fseg_alloc_free_page(
 /*=================*/
@@ -2282,7 +2317,13 @@ will not succeed, but the latter two allocations will succeed, if possible.
 The purpose is to avoid dead end where the database is full but the
 user cannot free any space because these freeing operations temporarily
 reserve some space. */ 
-
+/*保留表空间中的空闲页。所有可能使用表空间中的几个页面的小事务都应该事先调用这个函数，并保留足够的空闲区，
+这样它们就可以完全执行它们的操作，比如B-tree页面分割。保留必须通过函数fil_space_release_free_extents来释放!
+下面的alloc_type有以下含义:FSP_NORMAL表示可能会导致更多空间使用的操作，
+比如在b树中插入;FSP_UNDO表示分配回滚日志:如果我们正在删除行，那么这个分配将在长期运行中导致更少的空间使用(在清除后);
+fsp_cleanup意味着在物理记录删除(如清除)或其他清理操作中完成的分配，这将在长期运行中导致更少的空间使用。
+我们倾向于后两种类型的分配:当空间不足时，FSP_NORMAL分配不会成功，但如果可能的话，后两种分配会成功。
+这样做的目的是避免出现数据库已满但用户无法释放任何空间的死胡同，因为这些释放操作临时保留了一些空间。*/
 ibool
 fsp_reserve_free_extents(
 /*=====================*/
@@ -2320,8 +2361,8 @@ fsp_reserve_free_extents(
 
 	/* Below we play safe when counting free extents above the free limit:
 	some of them will contain extent descriptor pages, and therefore
-	will not be free extents */
-
+	will not be free extents *//*下面我们在计算超过自由限制的自由区段时要谨慎:
+	其中一些将包含区段描述符页，因此不是自由区段*/
 	n_free_up = (size - free_limit) / FSP_EXTENT_SIZE;
 
 	if (n_free_up > 0) {
@@ -2336,7 +2377,8 @@ fsp_reserve_free_extents(
 		/* We reserve 1 extent + 4 % of the space size to undo logs
 		and 1 extent + 1 % to cleaning operations; NOTE: this source
 		code is duplicated in the function below! */
-
+		/*我们保留1个区段+ 4%的空间大小用于撤销日志，
+		保留1个区段+ 1%的空间大小用于清理操作;注意:这个源代码在下面的函数中是重复的!*/
 		reserve = 2 + ((size / FSP_EXTENT_SIZE) * 5) / 100;
 
 		if (n_free <= reserve + n_ext) {
@@ -2345,7 +2387,7 @@ fsp_reserve_free_extents(
 		}
 	} else if (alloc_type == FSP_UNDO) {
 		/* We reserve 1 % of the space size to cleaning operations */
-
+		/* 我们预留百分之一的空间用于清洁作业*/
 		reserve = 1 + ((size / FSP_EXTENT_SIZE) * 1) / 100;
 
 		if (n_free <= reserve + n_ext) {
@@ -2364,7 +2406,8 @@ This function should be used to get information on how much we still
 will be able to insert new data to the database without running out the
 tablespace. Only free extents are taken into account and we also subtract
 the safety margin required by the above function fsp_reserve_free_extents. */
-
+/*这个函数应该用来获取在不耗尽表空间的情况下还能向数据库插入多少新数据的信息。
+只考虑了空闲区段，我们还减去了上面函数fsp_reserve_free_extents所需的安全余量。*/
 ulint
 fsp_get_available_space_in_free_extents(
 /*====================================*/
@@ -2401,7 +2444,8 @@ fsp_get_available_space_in_free_extents(
 
 	/* Below we play safe when counting free extents above the free limit:
 	some of them will contain extent descriptor pages, and therefore
-	will not be free extents */
+	will not be free extents *//*下面我们在计算超过自由限制的自由区段时要谨慎:
+	其中一些将包含区段描述符页，因此不是自由区段*/
 
 	n_free_up = (size - free_limit) / FSP_EXTENT_SIZE;
 
@@ -2416,7 +2460,8 @@ fsp_get_available_space_in_free_extents(
 	/* We reserve 1 extent + 4 % of the space size to undo logs
 	and 1 extent + 1 % to cleaning operations; NOTE: this source
 	code is duplicated in the function above! */
-
+	/*我们保留1个区段+ 4%的空间大小用于撤销日志，
+		保留1个区段+ 1%的空间大小用于清理操作;注意:这个源代码在下面的函数中是重复的!*/
 	reserve = 2 + ((size / FSP_EXTENT_SIZE) * 5) / 100;
 
 	if (reserve > n_free) {
@@ -2429,7 +2474,7 @@ fsp_get_available_space_in_free_extents(
 	
 /************************************************************************
 Marks a page used. The page must reside within the extents of the given
-segment. */
+segment. */ /*标记所使用的页面。页面必须驻留在给定段的范围内。*/
 static
 void
 fseg_mark_page_used(
@@ -2483,7 +2528,7 @@ fseg_mark_page_used(
 }
 
 /**************************************************************************
-Frees a single page of a segment. */
+Frees a single page of a segment. */ /*释放段中的单个页。*/
 static
 void
 fseg_free_page_low(
@@ -2504,7 +2549,7 @@ fseg_free_page_low(
 
 	/* Drop search system page hash index if the page is found in
 	the pool and is hashed */
-
+    /*如果页面在池中找到并经过散列处理，则删除搜索系统页面散列索引*/
 	btr_search_drop_page_hash_when_freed(space, page);
 
 	descr = xdes_get_descriptor(space, page, mtr);
