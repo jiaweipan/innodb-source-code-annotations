@@ -2612,7 +2612,7 @@ fseg_free_page_low(
 
 /**************************************************************************
 Frees a single page of a segment. */
-
+/*释放段中的单个页。*/
 void
 fseg_free_page(
 /*===========*/
@@ -2639,6 +2639,7 @@ fseg_free_page(
 
 /**************************************************************************
 Frees an extent of a segment to the space free list. */
+/*释放段中的单个页。*/
 static
 void
 fseg_free_extent(
@@ -2713,7 +2714,8 @@ Frees part of a segment. This function can be used to free a segment by
 repeatedly calling this function in different mini-transactions. Doing
 the freeing in a single mini-transaction might result in too big a
 mini-transaction. */
-
+/*释放段的一部分。这个函数可以通过在不同的小事务中反复调用这个函数来释放一个段。
+在单个迷你交易中进行释放可能会导致一个太大的迷你交易。*/
 ibool
 fseg_free_step(
 /*===========*/
@@ -2786,7 +2788,7 @@ fseg_free_step(
 /**************************************************************************
 Frees part of a segment. Differs from fseg_free_step because this function
 leaves the header page unfreed. */
-
+/*释放段的一部分。不同于fseg_free_step，因为这个函数没有释放头页。*/
 ibool
 fseg_free_step_not_header(
 /*======================*/
@@ -2846,7 +2848,7 @@ fseg_free_step_not_header(
 /***********************************************************************
 Frees a segment. The freeing is performed in several mini-transactions,
 so that there is no danger of bufferfixing too many buffer pages. */
-
+/*释放一段。释放是在几个小事务中执行的，这样就不会有缓冲修复太多缓冲页的危险。*/
 void
 fseg_free(
 /*======*/
@@ -2884,6 +2886,7 @@ fseg_free(
 Returns the first extent descriptor for a segment. We think of the extent
 lists of the segment catenated in the order FSEG_FULL -> FSEG_NOT_FULL
 -> FSEG_FREE. */
+/*返回段的第一个区段描述符。我们认为段的区段列表是按照FSEG_FULL -> FSEG_NOT_FULL-> FSEG_FREE顺序连接的。*/
 static
 xdes_t*
 fseg_get_first_extent(
@@ -2926,7 +2929,7 @@ fseg_get_first_extent(
 }
 
 /***********************************************************************
-Validates a segment. */
+Validates a segment. *//*验证一段。*/
 static
 ibool
 fseg_validate_low(
@@ -3024,7 +3027,7 @@ fseg_validate_low(
 }
 	
 /***********************************************************************
-Validates a segment. */
+Validates a segment. *//*验证一段。*/
 
 ibool
 fseg_validate(
@@ -3049,7 +3052,7 @@ fseg_validate(
 }
 
 /***********************************************************************
-Writes info of a segment. */
+Writes info of a segment. */ /*写一个段的信息。*/
 static
 void
 fseg_print_low(
@@ -3099,7 +3102,7 @@ fseg_print_low(
 }
 
 /***********************************************************************
-Writes info of a segment. */
+Writes info of a segment. */ /*写一个段的信息。*/
 
 void
 fseg_print(
@@ -3121,7 +3124,7 @@ fseg_print(
 
 /***********************************************************************
 Validates the file space system and its segments. */
-
+/*验证文件空间系统及其段。*/
 ibool
 fsp_validate(
 /*=========*/
@@ -3345,7 +3348,7 @@ fsp_validate(
 
 /***********************************************************************
 Prints info of a file space. */
-
+/*打印文件空间信息。*/
 void
 fsp_print(
 /*======*/
