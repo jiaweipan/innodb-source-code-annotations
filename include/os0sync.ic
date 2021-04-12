@@ -13,6 +13,7 @@ Created 9/6/1995 Heikki Tuuri
 #ifndef _WIN32
 /**************************************************************
 Acquires ownership of a fast mutex. */
+/*获得快速互斥锁的所有权*/
 UNIV_INLINE
 ulint
 os_fast_mutex_trylock(
