@@ -6,6 +6,7 @@ synchronization primitives.
 
 Created 9/6/1995 Heikki Tuuri
 *******************************************************/
+/*操作系统同步原语的接口。*/
 #ifndef os0sync_h
 #define os0sync_h
 
