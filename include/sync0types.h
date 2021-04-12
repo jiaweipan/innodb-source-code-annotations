@@ -5,7 +5,7 @@ Global types for sync
 
 Created 9/5/1995 Heikki Tuuri
 *******************************************************/
-
+/*用于同步的全局类型*/
 #ifndef sync0types_h
 #define sync0types_h
 

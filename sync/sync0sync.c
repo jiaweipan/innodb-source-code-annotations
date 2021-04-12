@@ -5,7 +5,7 @@ Mutex, the basic synchronization primitive
 
 Created 9/5/1995 Heikki Tuuri
 *******************************************************/
-
+/*互斥，基本的同步原语*/
 #include "sync0sync.h"
 #ifdef UNIV_NONINL
 #include "sync0sync.ic"
@@ -17,7 +17,7 @@ Created 9/5/1995 Heikki Tuuri
 #include "buf0types.h"
 
 /*
-	REASONS FOR IMPLEMENTING THE SPIN LOCK MUTEX
+	REASONS FOR IMPLEMENTING THE SPIN LOCK MUTEX  实现旋转锁的原因
 	============================================
 
 Semaphore operations in operating systems are slow: Solaris on a 1993 Sparc

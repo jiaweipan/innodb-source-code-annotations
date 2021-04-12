@@ -5,10 +5,10 @@ Mutex, the basic synchronization primitive
 
 Created 9/5/1995 Heikki Tuuri
 *******************************************************/
-
+/*互斥，基本的同步原语*/
 /**********************************************************************
 Sets the waiters field in a mutex. */
-
+/*设置互斥锁中的waiter字段。*/
 void
 mutex_set_waiters(
 /*==============*/
@@ -18,7 +18,7 @@ mutex_set_waiters(
 Reserves a mutex for the current thread. If the mutex is reserved, the
 function spins a preset time (controlled by SYNC_SPIN_ROUNDS) waiting
 for the mutex before suspending the thread. */
-
+/*为当前线程保留一个互斥锁。如果互斥锁被保留，函数在挂起线程之前旋转一个预先设定的时间(由SYNC_SPIN_ROUNDS控制)来等待互斥锁。*/
 void
 mutex_spin_wait(
 /*============*/
@@ -27,7 +27,7 @@ mutex_spin_wait(
 	ulint		line);	/* in: line where requested */
 /**********************************************************************
 Sets the debug information for a reserved mutex. */
-
+/*为保留的互斥锁设置调试信息。*/
 void
 mutex_set_debug_info(
 /*=================*/
@@ -36,7 +36,7 @@ mutex_set_debug_info(
 	ulint		line);		/* in: line where requested */
 /**********************************************************************
 Releases the threads waiting in the primary wait array for this mutex. */
-
+/*释放在主等待数组中等待这个互斥锁的线程。*/
 void
 mutex_signal_object(
 /*================*/
@@ -45,6 +45,7 @@ mutex_signal_object(
 /**********************************************************************
 Performs an atomic test-and-set instruction to the lock_word field of a
 mutex. */
+/*对互斥锁的lock_word字段执行原子测试和设置指令。*/
 UNIV_INLINE
 ulint
 mutex_test_and_set(
@@ -56,7 +57,7 @@ mutex_test_and_set(
 #ifdef _WIN32
 	ulint	res;
 	ulint*	lw;		/* assembler code is used to ensure that
-				lock_word is loaded from memory */
+				lock_word is loaded from memory */ /*汇编代码用于确保lock_word从内存中加载*/
 	ut_ad(mutex);
 	ut_ad(sizeof(ulint) == 4);
 
@@ -78,7 +79,10 @@ mutex_test_and_set(
 	LOCKed instructions serialize all instruction execution, and,
 	consequently, also memory operations. This is confirmed in Intel
 	Software Dev. Manual, Vol. 3. */
-
+    /*下面的栅栏会阻止这个线程在提交test-and-set操作之前读取由互斥锁保护的数据结构，但是栅栏显然是不需要的:
+	Andy Glew在1997年8月10日给comp.arch新闻组的一篇文章中说，在P6中，像XCHG这样的锁定指令建立了一个关于内存读写的栅栏，
+	因此不需要一个显式的栅栏。在P5中，他似乎同意先前的新闻组公告，即锁定指令序列化所有指令执行，因此也序列化内存操作。
+	已在《英特尔软件开发手册》第3卷中确认。*/
 	/* mutex_fence(); */
 
 	return(res);
@@ -93,7 +97,8 @@ mutex_test_and_set(
 	syntax. The 'l' after the mnemonics denotes a 32-bit operation.
 	The line after the code tells which values come out of the asm
 	code, and the second line tells the input to the asm code. */
-	/*在汇编中，我们使用所谓的AT&T语法，其中操作数的顺序与普通的Intel语法相反。助记符后面的“l”表示32位操作。操作代码后面的一行指示哪些值来自asm代码，第二行指示asm代码的输入。*/
+	/*在汇编中，我们使用所谓的AT&T语法，其中操作数的顺序与普通的Intel语法相反。
+	助记符后面的“l”表示32位操作。操作代码后面的一行指示哪些值来自asm代码，第二行指示asm代码的输入。*/
 	asm volatile("movl $1, %%eax; xchgl (%%ecx), %%eax" :
 	              "=eax" (res), "=m" (*lw) :
 	              "ecx" (lw));
@@ -114,6 +119,7 @@ mutex_test_and_set(
 /**********************************************************************
 Performs a reset instruction to the lock_word field of a mutex. This
 instruction also serializes memory operations to the program order. */
+/*对互斥锁的lock_word字段执行重置指令。这条指令也将内存操作按程序顺序序列化。*/
 UNIV_INLINE
 void
 mutex_reset_lock_word(
@@ -144,7 +150,7 @@ mutex_reset_lock_word(
 	              "ecx" (lw) :
 		      "eax");	/* gcc does not seem to understand
 				that our asm code resets eax: tell it
-				explicitly that after the third ':' */
+				explicitly that after the third ':' */ /*gcc似乎不理解我们的asm代码重置eax:明确地告诉它在第三个“:”之后*/
 #else
 	mutex->lock_word = 0;
 
@@ -153,7 +159,7 @@ mutex_reset_lock_word(
 }
 
 /**********************************************************************
-Gets the value of the lock word. */
+Gets the value of the lock word. */ /*获取锁字的值。*/
 UNIV_INLINE
 ulint
 mutex_get_lock_word(
@@ -170,7 +176,7 @@ volatile ulint*	ptr;		/* declared volatile to ensure that
 }
 
 /**********************************************************************
-Gets the waiters field in a mutex. */
+Gets the waiters field in a mutex. */ /*获取互斥锁中的waiter字段。*/
 UNIV_INLINE
 ulint
 mutex_get_waiters(
@@ -190,6 +196,7 @@ volatile ulint*	ptr;		/* declared volatile to ensure that
 
 /**********************************************************************
 Unlocks a mutex owned by the current thread. */
+/*解锁当前线程拥有的互斥锁。*/
 UNIV_INLINE
 void
 mutex_exit(
@@ -216,7 +223,9 @@ mutex_exit(
 	sync_arr_wake_threads_if_sema_free()
 	to wake up possible hanging threads if
 	they are missed in mutex_signal_object. */
-
+    /*问题:我们假设mutex_reset_lock word是一个内存障碍，也就是说，当我们下一步读取等待者字段时，读取必须在重置后在内存中序列化。
+	推测的处理器可能会先执行读操作，这可能会使等待的线程无限期地挂起。
+	我们当前的解决方案每10秒调用sync_arr_wake_threads_if_sema_free()来唤醒可能挂起的线程，如果它们在mutex_signal_object中丢失了。*/
 	if (mutex_get_waiters(mutex) != 0) {
 		
 		mutex_signal_object(mutex);
@@ -231,6 +240,7 @@ mutex_exit(
 Locks a mutex for the current thread. If the mutex is reserved, the function
 spins a preset time (controlled by SYNC_SPIN_ROUNDS), waiting for the mutex
 before suspending the thread. */
+/*为当前线程锁定互斥锁。如果互斥锁被保留，函数旋转一个预设的时间(由SYNC_SPIN_ROUNDS控制)，在挂起线程之前等待互斥锁。*/
 UNIV_INLINE
 void
 mutex_enter_func(
@@ -243,7 +253,7 @@ mutex_enter_func(
 
 	/* Note that we do not peek at the value of lock_word before trying
 	the atomic test_and_set; we could peek, and possibly save time. */
-	
+	/*注意，在尝试原子test_and_set之前，我们不会偷看lock_word的值;我们可以偷看，也许还能节省时间。*/
 	if (!mutex_test_and_set(mutex)) {
 
 		#ifdef UNIV_SYNC_DEBUG
