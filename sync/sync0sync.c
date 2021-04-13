@@ -57,8 +57,26 @@ loop is not too much.
 Empirical studies on the effect of spin time should be done for different
 platforms.
 
-	
-	IMPLEMENTATION OF THE MUTEX
+操作系统中的信号量操作很慢:在1993年的Sparc上执行Solaris操作需要3微秒(us)，在1995年的Pentium上执行Windows NT操作需要20微秒(us)。
+因此，我们必须实现我们自己的高效自旋锁互斥锁。未来的操作系统可能会提供高效的自旋锁，但我们不能指望它。
+
+实现自旋锁的另一个原因是，在多处理器系统上，让处理器运行一个等待信号量释放的循环比切换到另一个线程更有效。
+在上面提到的两个平台上，线程切换都需要我们25微秒(us)。请参阅格雷和路透社的书交易处理的背景。
+
+在挂起线程之前，自旋回路应该持续多久?在单处理器上，自旋没有任何帮助，因为如果拥有互斥锁的线程没有执行，它就不能被释放。自旋实际上是浪费资源。
+
+在多处理器中，我们不知道拥有互斥锁的线程是否正在执行。因此，只要互斥锁保护的操作通常在线程正在执行的情况下持续，那么旋转就有意义。
+如果到那时互斥锁还没有释放，我们可以假设拥有互斥锁的线程没有执行，然后挂起正在等待的线程。
+
+在当前的奔腾平台上，由互斥锁或读写锁保护的典型操作(不涉及i/o)可能持续1 - 20 us。最长的操作是在索引节点上进行二分搜索。
+
+我们得出的结论是，最好的选择是将旋转时间设置为20 us。这样系统就可以在多处理器上很好地工作。
+在单处理器上，我们必须确保由于互斥锁冲突而导致的线程切换不频繁。因为这浪费了太多的资源。如果线程开关不频繁，
+在旋转回路中浪费的20微秒(us)不是太多。
+
+对于旋转时间的影响，应针对不同的平台进行实证研究。	
+
+	IMPLEMENTATION OF THE MUTEX  互斥量的实现
 	===========================
 
 For background, see Curt Schimmel's book on Unix implementation on modern
@@ -106,17 +124,41 @@ or it reserves the mutex for itself. In any case, some thread (which may be
 also some earlier thread, not necessarily the one currently holding the mutex)
 will set the waiters field to 0 in mutex_exit, and then call
 sync_array_signal_object with the mutex as an argument. 
-Q.E.D. */
+Q.E.D. 
+有关背景信息，请参阅Curt Schimmel关于现代体系结构上Unix实现的书。实现的关键点是内存访问的原子性和序列化。
+test-and-set指令(Pentium中的XCHG)必须是原子的。由于新处理器可能有弱内存模型，内存引用的序列化也可能是必要的。
+奔腾的继承者P6至少有一种内存模型较弱的模式。据我们所知，在奔腾中，所有内存访问都是按程序顺序序列化的，我们不必担心内存模型。
+在其他处理器上，有一些特殊的机器指令，称为fence、memory barrier或storage barrier (Sparc中的STBAR)，它们可以用来序列化内存访问，
+使其按照程序顺序(相对于fence指令)发生。
+
+Leslie Lamport设计了一个“bakery算法”来实现互斥锁，而不需要原子测试和设置，但是他的算法应该针对弱内存模型进行修改。
+我们不使用Lamport的算法，因为我们猜测它比原子测试和设置要慢。
+
+我们的互斥锁实现如下:之后，我们对内存字执行原子的test-and-set指令。如果测试返回0，我们就知道我们先得到了锁。
+如果测试返回的值不为零，则其他线程会更快并获得锁:然后我们进行循环，读取内存字，等待它变为零。
+明智的做法是只读取循环中的字，而不是执行大量的test-and-set指令，因为它们会在缓存和主存之间生成内存流量。读循环只访问缓存，节省总线带宽。
+
+如果我们不能在指定的时间内获得互斥锁，我们在等待数组中保留一个单元，将互斥锁中的等待者字节设置为1。
+为了避免竞态条件,设置后等待者字节在暂停等待线程之前,我们仍然需要检查互斥保留,
+因为它可能发生的线程持有互斥锁刚刚发布了它并没有看到等待者字节设置为1,而导致其他的线程无限等待。
+
+引子1:当一个线程重置了它为等待互斥锁而保留的单元的事件后，一些线程最终会以互斥锁作为参数调用sync_array_signal_object。
+因此，无限的等待是不可能的。
+
+证明:在进行预约之后，线程将互斥锁中的waiter字段设置为1。然后它检查互斥锁是否仍然被某个线程保留，或者它为自己保留互斥锁。
+在任何情况下，一些线程(也可能是一些较早的线程，不一定是当前持有互斥锁的线程)将在mutex_exit中将wait_field设置为0，
+然后使用互斥锁作为参数调用sync_array_signal_object。
+*/
 
 ulint	sync_dummy			= 0;
 
 /* The number of system calls made in this module. Intended for performance
 monitoring. */
-
+/*在此模块中进行的系统调用数。用于性能监控。*/
 ulint	mutex_system_call_count		= 0;
 
 /* Number of spin waits on mutexes: for performance monitoring */
-
+/* 互斥体上的自旋等待数：用于性能监视 */
 ulint	mutex_spin_round_count		= 0;
 ulint	mutex_spin_wait_count		= 0;
 ulint	mutex_os_wait_count		= 0;
@@ -124,15 +166,19 @@ ulint	mutex_exit_count		= 0;
 
 /* The global array of wait cells for implementation of the database's own
 mutexes and read-write locks */
+/* 用于实现数据库自身的互斥锁和读写锁的全局等待单元数组 */
 sync_array_t*	sync_primary_wait_array;
 
 /* This variable is set to TRUE when sync_init is called */
+/* 调用sync_init时，此变量设置为TRUE */
 ibool	sync_initialized	= FALSE;
 
 /* Global list of database mutexes (not OS mutexes) created. */
+/* 创建的数据库互斥体（非操作系统互斥体）的全局列表。*/
 UT_LIST_BASE_NODE_T(mutex_t)	mutex_list;
 
 /* Mutex protecting the mutex_list variable */
+/* *Mutex保护mutex_list变量*/
 mutex_t		mutex_list_mutex;
 
 typedef struct sync_level_struct	sync_level_t;
@@ -140,31 +186,34 @@ typedef struct sync_thread_struct	sync_thread_t;
 
 /* The latch levels currently owned by threads are stored in this data
 structure; the size of this array is OS_THREAD_MAX_N */
-
+/*线程当前拥有的锁存级别存储在此数据结构中；此数组的大小为OS_THREAD_MAX_N */
 sync_thread_t*	sync_thread_level_arrays;
 
 /* Mutex protecting sync_thread_level_arrays */
+/* Mutex保护sync_thread_level_arrays变量*/
 mutex_t	sync_thread_mutex;
 
 /* Latching order checks start when this is set TRUE */
+/* 锁定顺序检查当设置为TRUE时开始*/
 ibool	sync_order_checks_on	= FALSE;
 
-/* Dummy mutex used to implement mutex_fence */
+/* 用于实现mutex_fence的虚拟互斥锁 */
 mutex_t	dummy_mutex_for_fence;
 
 struct sync_thread_struct{
 	os_thread_id_t	id;	/* OS thread id */
 	sync_level_t*	levels;	/* level array for this thread; if this is NULL
-				this slot is unused */
+				this slot is unused */ /*此线程的级别数组；如果为NULL，则此插槽未使用*/
 };
 
 /* Number of slots reserved for each OS thread in the sync level array */
+/*这个sync level array中为每个OS线程保留的插槽数*/
 #define SYNC_THREAD_N_LEVELS	10000
 
 struct sync_level_struct{
 	void*	latch;	/* pointer to a mutex or an rw-lock; NULL means that
-			the slot is empty */
-	ulint	level;	/* level of the latch in the latching order */
+			the slot is empty *//*指向互斥锁或rw锁的指针；NULL表示插槽为空*/
+	ulint	level;	/* level of the latch in the latching order */ /*latch锁顺序中latch锁的级别*/
 };
 
 
