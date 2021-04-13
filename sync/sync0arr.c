@@ -220,6 +220,7 @@ sync_array_create(
                 cell->wait_object = NULL;
 
                 /* Create an operating system event semaphore with no name */
+				/*创建一个没有名称的操作系统事件信号量*/
                 cell->event = os_event_create(NULL);
 		cell->event_set = FALSE; /* it is created in reset state */
 	}

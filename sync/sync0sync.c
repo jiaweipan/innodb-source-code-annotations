@@ -285,11 +285,11 @@ mutex_create_func(
 	mutex->cline = cline;
 	
 	/* Check that lock_word is aligned; this is important on Intel */
-
+    /* 检查锁字是否对齐；这在英特尔上很重要*/
 	ut_a(((ulint)(&(mutex->lock_word))) % 4 == 0);
 
 	/* NOTE! The very first mutexes are not put to the mutex list */
-
+	/* 注意！第一个互斥锁不会放入互斥锁列表*/
 	if ((mutex == &mutex_list_mutex) || (mutex == &sync_thread_mutex)) {
 
 	    	return;
@@ -306,7 +306,7 @@ mutex_create_func(
 Calling this function is obligatory only if the memory buffer containing
 the mutex is freed. Removes a mutex object from the mutex list. The mutex
 is checked to be in the reset state. */
-
+/*只有在包含互斥锁的内存缓冲区被释放时，才必须调用此函数。从互斥对象列表中删除互斥对象。检查互斥锁是否处于重置状态。*/
 void
 mutex_free(
 /*=======*/
@@ -328,14 +328,14 @@ mutex_free(
 	/* If we free the mutex protecting the mutex list (freeing is
 	not necessary), we have to reset the magic number AFTER removing
 	it from the list. */
-	
+	/*如果我们释放了保护互斥列表的互斥体（释放是没有必要的），我们必须在从列表中删除它之后重置幻数。*/
 	mutex->magic_n = 0;
 }
 
 /************************************************************************
 Tries to lock the mutex for the current thread. If the lock is not acquired
 immediately, returns with return value 1. */
-
+/*尝试锁定当前线程的互斥锁。如果没有立即获取锁，则返回返回值1。*/
 ulint
 mutex_enter_nowait(
 /*===============*/
@@ -364,7 +364,7 @@ mutex_enter_nowait(
 
 /**********************************************************************
 Checks that the mutex has been initialized. */
-
+/*检查互斥锁是否已初始化。*/
 ibool
 mutex_validate(
 /*===========*/
@@ -378,7 +378,7 @@ mutex_validate(
 
 /**********************************************************************
 Sets the waiters field in a mutex. */
-
+/*设置mutex中的waiters字段。*/
 void
 mutex_set_waiters(
 /*==============*/
@@ -399,7 +399,7 @@ volatile ulint*	ptr;		/* declared volatile to ensure that
 Reserves a mutex for the current thread. If the mutex is reserved, the
 function spins a preset time (controlled by SYNC_SPIN_ROUNDS), waiting
 for the mutex before suspending the thread. */
-
+/*为当前线程保留互斥锁。如果mutex是保留的，函数会旋转一个预设时间（由SYNC_SPIN_ROUNDS控制），在挂起线程之前等待mutex。*/
 void
 mutex_spin_wait(
 /*============*/
@@ -421,7 +421,8 @@ mutex_loop:
 	actual locking is always committed with atomic test-and-set. In
 	reality, however, all processors probably have an atomic read of a
 	memory word. */
-        
+        /*旋转等待锁字变为零。注意，我们不必假设对锁字的读访问是原子的，因为实际的锁总是通过原子测试和设置提交的。
+		然而，在现实中，所有的处理器可能都有一个存储字的原子读取。*/
 spin_loop:
 	mutex_spin_wait_count++;
 
@@ -466,7 +467,9 @@ spin_loop:
 	calling pthread_mutex_trylock (in mutex_test_and_set
 	implementation). Then we could end up spinning here indefinitely.
 	The following 'i++' stops this infinite spin. */
-
+    /*我们可能会出现这样的情况:lock_word为0，但OS快速互斥量仍然保留。
+	在FreeBSD上，操作系统似乎不会调度一个不断调用pthread_mutex_trylock的线程(在mutex_test_and_set实现中)。
+	那么我们就会无限期地在这里旋转。下面的“i++”停止了这种无限旋转。*/
 	i++;
         
 	if (i < SYNC_SPIN_ROUNDS) {
@@ -486,15 +489,17 @@ spin_loop:
 	reserve the cell and then set waiters field to 1. When threads are
 	released in mutex_exit, the waiters field is first set to zero and
 	then the event is set to the signaled state. */
-        
+   /*数组保留的内存顺序和waiter字段的更改非常重要:当挂起一个线程时，首先保留单元格，然后将waiter字段设置为1。
+   当线程在mutex_exit中释放时，首先将waiter字段设置为0，然后将事件设置为有信号状态。*/
 	mutex_set_waiters(mutex, 1);
 
 	/* Try to reserve still a few times */
+	/* 试着保留几次*/
 	for (i = 0; i < 4; i++) {
             if (mutex_test_and_set(mutex) == 0) {
 
                 /* Succeeded! Free the reserved wait cell */
-
+				/* 成功了!释放预留的等待单元*/
                 sync_array_free_cell(sync_primary_wait_array, index);
                 
 		#ifdef UNIV_SYNC_DEBUG
@@ -515,13 +520,14 @@ spin_loop:
                 /* Note that in this case we leave the waiters field
                 set to 1. We cannot reset it to zero, as we do not know
                 if there are other waiters. */
+				/*注意，在本例中，我们将waiter字段设置为1。我们不能将它重置为零，因为我们不知道是否有其他等待者。*/
             }
         }
 
         /* Now we know that there has been some thread holding the mutex
         after the change in the wait array and the waiters field was made.
 	Now there is no risk of infinite wait on the event. */
-
+        /*现在我们知道，在wait数组和waiter字段更改之后，已经有一些线程持有互斥锁。现在不存在无限等待事件的风险。*/
 	if (srv_print_latch_waits) {
 		printf(
 	"Thread %lu OS wait mutex at %lx cfile %s cline %lu rnds %lu\n",
@@ -539,7 +545,7 @@ spin_loop:
 
 /**********************************************************************
 Releases the threads waiting in the primary wait array for this mutex. */
-
+/*释放在主等待数组中等待这个互斥锁的线程。*/
 void
 mutex_signal_object(
 /*================*/
@@ -549,13 +555,13 @@ mutex_signal_object(
 
 	/* The memory order of resetting the waiters field and
 	signaling the object is important. See LEMMA 1 above. */
-
+    /*重置waiter字段和向对象发出信号的内存顺序很重要。参见上文引理1。*/
 	sync_array_signal_object(sync_primary_wait_array, mutex);
 }
 
 /**********************************************************************
 Sets the debug information for a reserved mutex. */
-
+/*为保留的互斥锁设置调试信息。*/
 void
 mutex_set_debug_info(
 /*=================*/
@@ -575,7 +581,7 @@ mutex_set_debug_info(
 
 /**********************************************************************
 Gets the debug information for a reserved mutex. */
-
+/*获取保留的互斥锁的调试信息。*/
 void
 mutex_get_debug_info(
 /*=================*/
@@ -594,7 +600,7 @@ mutex_get_debug_info(
 
 /**********************************************************************
 Sets the mutex latching level field. */
-
+/*设置互斥锁锁定级别字段。*/
 void
 mutex_set_level(
 /*============*/
@@ -607,7 +613,7 @@ mutex_set_level(
 /**********************************************************************
 Checks that the current thread owns the mutex. Works only in the debug
 version. */
-
+/*检查当前线程是否拥有互斥锁。仅在调试版本中有效。*/
 ibool
 mutex_own(
 /*======*/
@@ -631,7 +637,7 @@ mutex_own(
 
 /**********************************************************************
 Prints debug info of currently reserved mutexes. */
-
+/*打印当前保留的互斥锁的调试信息。*/
 void
 mutex_list_print_info(void)
 /*=======================*/
@@ -674,7 +680,7 @@ mutex_list_print_info(void)
 
 /**********************************************************************
 Counts currently reserved mutexes. Works only in the debug version. */
-
+/*计数当前保留的互斥对象。仅在调试版本中有效。*/
 ulint
 mutex_n_reserved(void)
 /*==================*/
@@ -706,14 +712,14 @@ mutex_n_reserved(void)
 	ut_a(count >= 1);
 
 	return(count - 1); /* Subtract one, because this function itself
-			   was holding one mutex (mutex_list_mutex) */
+			   was holding one mutex (mutex_list_mutex) */ /*减去1，因为这个函数本身持有一个互斥锁(mutex_list_mutex)*/
 #endif
 }
 
 /**********************************************************************
 Returns TRUE if no mutex or rw-lock is currently locked. Works only in
 the debug version. */
-
+/*如果当前没有互斥锁或rw-lock被锁定，则返回TRUE。仅在调试版本中有效。*/
 ibool
 sync_all_freed(void)
 /*================*/
@@ -734,6 +740,7 @@ sync_all_freed(void)
 
 /**********************************************************************
 Gets the value in the nth slot in the thread level arrays. */
+/*获取线程级数组中第n个槽中的值。*/
 static
 sync_thread_t*
 sync_thread_level_arrays_get_nth(
@@ -748,6 +755,7 @@ sync_thread_level_arrays_get_nth(
 
 /**********************************************************************
 Looks for the thread slot for the calling thread. */
+/*寻找调用线程的线程槽。*/
 static
 sync_thread_t*
 sync_thread_level_arrays_find_slot(void)
@@ -776,6 +784,7 @@ sync_thread_level_arrays_find_slot(void)
 
 /**********************************************************************
 Looks for an unused thread slot. */
+/*寻找未使用的线程槽。*/
 static
 sync_thread_t*
 sync_thread_level_arrays_find_free(void)
@@ -801,6 +810,7 @@ sync_thread_level_arrays_find_free(void)
 
 /**********************************************************************
 Gets the value in the nth slot in the thread level array. */
+/*获取线程级数组中第n个槽中的值。*/
 static
 sync_level_t*
 sync_thread_levels_get_nth(
@@ -817,7 +827,7 @@ sync_thread_levels_get_nth(
 
 /**********************************************************************
 Checks if all the level values stored in the level array are greater than
-the given limit. */
+the given limit. */ /*检查存储在级别数组中的所有级别值是否大于给定的限制。*/
 static
 ibool
 sync_thread_levels_g(
@@ -878,6 +888,7 @@ sync_thread_levels_g(
 
 /**********************************************************************
 Checks if the level value is stored in the level array. */
+/*检查级别值是否存储在级别数组中。*/
 static
 ibool
 sync_thread_levels_contain(
@@ -907,7 +918,7 @@ sync_thread_levels_contain(
 
 /**********************************************************************
 Checks that the level array for the current thread is empty. */
-
+/*检查当前线程的级别数组是否为空。*/
 ibool
 sync_thread_levels_empty_gen(
 /*=========================*/
@@ -970,7 +981,7 @@ sync_thread_levels_empty_gen(
 
 /**********************************************************************
 Checks that the level array for the current thread is empty. */
-
+/*检查当前线程的级别数组是否为空。*/
 ibool
 sync_thread_levels_empty(void)
 /*==========================*/
@@ -983,7 +994,8 @@ sync_thread_levels_empty(void)
 Adds a latch and its level in the thread level array. Allocates the memory
 for the array if called first time for this OS thread. Makes the checks
 against other latch levels stored in the array for this thread. */
-
+/*在线程级数组中添加锁存器及其级别。为这个操作系统线程第一次调用数组分配内存。
+对该线程存储在数组中的其他锁存级别进行检查。*/
 void
 sync_thread_add_level(
 /*==================*/
@@ -1041,7 +1053,9 @@ sync_thread_add_level(
 	B-tree height changes, then a leaf can change to an internal node
 	or the other way around. We do not know at present if this can cause
 	unnecessary assertion failures below. */
-
+    /*注意，_NODE和_LEAF级别存在一个问题:如果b树高度发生变化，那么叶子可能会变成内部节点，或者反过来。
+	我们目前不知道这是否会导致下面不必要的断言失败。* /
+*/
 	if (level == SYNC_NO_ORDER_CHECK) {
 		/* Do no order checking */
 
@@ -1165,7 +1179,7 @@ sync_thread_add_level(
 	
 /**********************************************************************
 Removes a latch from the thread level array if it is found there. */
-
+/*如果在线程级数组中找到锁存器，则删除它。*/
 ibool
 sync_thread_reset_level(
 /*====================*/
@@ -1227,7 +1241,7 @@ sync_thread_reset_level(
 	
 /**********************************************************************
 Initializes the synchronization data structures. */
-
+/*初始化同步数据结构。*/
 void
 sync_init(void)
 /*===========*/
@@ -1241,13 +1255,13 @@ sync_init(void)
 
 	/* Create the primary system wait array which is protected by an OS
 	mutex */
-
+    /*创建被OS互斥锁保护的主系统等待阵列*/
 	sync_primary_wait_array = sync_array_create(OS_THREAD_MAX_N,
 						    SYNC_ARRAY_OS_MUTEX);	
 
 	/* Create the thread latch level array where the latch levels
 	are stored for each OS thread */
-
+	/*创建线程锁存级别数组，其中为每个OS线程存储锁存级别*/
 	sync_thread_level_arrays = ut_malloc(OS_THREAD_MAX_N
 						* sizeof(sync_thread_t));
 	for (i = 0; i < OS_THREAD_MAX_N; i++) {
@@ -1257,7 +1271,7 @@ sync_init(void)
 	}
 
         /* Init the mutex list and create the mutex to protect it. */
-
+        /* 初始化互斥量列表并创建互斥量来保护它。*/
 	UT_LIST_INIT(mutex_list);
         mutex_create(&mutex_list_mutex);
         mutex_set_level(&mutex_list_mutex, SYNC_NO_ORDER_CHECK);
@@ -1280,7 +1294,7 @@ sync_init(void)
 
 /**********************************************************************
 Frees the resources in synchronization data structures. */
-
+/*释放同步数据结构中的资源。*/
 void
 sync_close(void)
 /*===========*/
@@ -1290,7 +1304,7 @@ sync_close(void)
 
 /***********************************************************************
 Prints wait info of the sync system. */
-
+/*打印同步系统的等待信息。*/
 void
 sync_print_wait_info(void)
 /*======================*/
@@ -1310,7 +1324,7 @@ sync_print_wait_info(void)
 
 /***********************************************************************
 Prints info of the sync system. */
-
+/*打印同步系统信息。*/
 void
 sync_print(void)
 /*============*/
