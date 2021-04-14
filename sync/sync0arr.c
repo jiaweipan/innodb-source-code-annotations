@@ -51,26 +51,28 @@ algorithm, because 10 000 events are created fast, but
 /* A cell where an individual thread may wait suspended
 until a resource is released. The suspending is implemented
 using an operating system event semaphore. */
+/*单个线程可以挂起的单元，直到资源被释放。挂起是使用操作系统事件信号量来实现的。*/
 struct sync_cell_struct {
         void*           wait_object;    /* pointer to the object the
                                         thread is waiting for; if NULL
-                                        the cell is free for use */
-	mutex_t*	old_wait_mutex;	/* the latest wait mutex in cell */
-	rw_lock_t*	old_wait_rw_lock;/* the latest wait rw-lock in cell */
+                                        the cell is free for use */ /*线程正在等待的对象的指针;如果为NULL，则该单元格可以自由使用*/
+	mutex_t*	old_wait_mutex;	/* the latest wait mutex in cell */ /*cell中最新的等待互斥锁*/
+	rw_lock_t*	old_wait_rw_lock;/* the latest wait rw-lock in cell */ /*cell中最新的等待rw-lock*/
         ulint		request_type;	/* lock type requested on the
-        				object */
+        				object */ /*对象上请求的锁类型*/
 	char*		file;		/* in debug version file where
 					requested */
 	ulint		line;		/* in debug version line where
 					requested */
 	os_thread_id_t	thread;		/* thread id of this waiting
-					thread */
+					thread */ /*等待线程的线程id*/
 	ibool		waiting;	/* TRUE if the thread has already
 					called sync_array_event_wait
 					on this cell but not yet
 					sync_array_free_cell (which
 					actually resets wait_object and thus
-					whole cell) */
+					whole cell) */ /*如果线程已经在这个单元上调用了sync_array_event_wait，
+					但还没有调用sync_array_free_cell(它实际上重置了wait_object，因此整个单元)，则为TRUE。*/
 	ibool		event_set;	/* TRUE if the event is set */
         os_event_t 	event;   	/* operating system event
                                         semaphore handle */
@@ -83,32 +85,36 @@ for an event allocated for the array without owning the
 protecting mutex (depending on the case: OS or database mutex), but
 all changes (set or reset) to the state of the event must be made
 while owning the mutex. */
+/*注意:线程可以在不拥有保护互斥锁的情况下等待分配给数组的事件(这取决于操作系统或数据库的互斥锁)，
+但是所有事件状态的改变(设置或重置)都必须在拥有互斥锁的情况下进行。*/
 struct sync_array_struct {
 	ulint		n_reserved;	/* number of currently reserved
-					cells in the wait array */
+					cells in the wait array */ /*等待数组中当前保留的单元格数*/
 	ulint		n_cells;	/* number of cells in the
-					wait array */
+					wait array *//*等待数组中的单元格数*/
 	sync_cell_t*	array;		/* pointer to wait array */
 	ulint		protection;	/* this flag tells which
-					mutex protects the data */
+					mutex protects the data */ /*这个标志告诉哪个互斥锁保护数据*/
 	mutex_t		mutex;		/* possible database mutex
-					protecting this data structure */
+					protecting this data structure */ /*可能数据库互斥锁保护这个数据结构*/
 	os_mutex_t	os_mutex;	/* Possible operating system mutex
 					protecting the data structure.
 					As this data structure is used in
 					constructing the database mutex,
 					to prevent infinite recursion
 					in implementation, we fall back to
-					an OS mutex. */
+					an OS mutex. */ /*可能的操作系统互斥锁保护数据结构。
+					由于这个数据结构用于构造数据库互斥锁，为了防止实现中的无限递归，我们又回到了OS互斥锁。*/
 	ulint		sg_count;	/* count of how many times an
-					object has been signalled */
+					object has been signalled */ /*计数一个物体被发出信号的次数*/
 	ulint		res_count;	/* count of cell reservations
-					since creation of the array */
+					since creation of the array */ /*自数组创建以来的单元格预订计数*/
 };
 
 /**********************************************************************
 This function is called only in the debug version. Detects a deadlock
 of one or more threads because of waits of semaphores. */
+/*这个函数只在调试版本中被调用。检测一个或多个线程因信号量等待而死锁。*/
 static
 ibool
 sync_array_detect_deadlock(
@@ -122,6 +128,7 @@ sync_array_detect_deadlock(
 
 /*********************************************************************
 Gets the nth cell in array. */
+/*获取数组中的第n个单元格*/
 static
 sync_cell_t*
 sync_array_get_nth_cell(
@@ -138,6 +145,7 @@ sync_array_get_nth_cell(
 
 /**********************************************************************
 Reserves the mutex semaphore protecting a sync array. */
+/*保留互斥信号量以保护同步数组。*/
 static
 void
 sync_array_enter(
@@ -159,6 +167,7 @@ sync_array_enter(
 
 /**********************************************************************
 Releases the mutex semaphore protecting a sync array. */
+/*释放保护同步数组的互斥信号量。*/
 static
 void
 sync_array_exit(
@@ -182,7 +191,7 @@ sync_array_exit(
 Creates a synchronization wait array. It is protected by a mutex
 which is automatically reserved when the functions operating on it
 are called. */
-
+/*创建同步等待数组。它由互斥锁保护，当对它进行操作的函数被调用时，互斥锁会自动保留。*/
 sync_array_t*
 sync_array_create(
 /*==============*/
@@ -237,7 +246,7 @@ sync_array_create(
 
 /**********************************************************************
 Frees the resources in a wait array. */
-
+/*释放等待数组中的资源。*/
 void
 sync_array_free(
 /*============*/
@@ -259,7 +268,7 @@ sync_array_free(
 	protection = arr->protection;
 
         /* Release the mutex protecting the wait array complex */
-
+        /* 释放保护等待数组的互斥锁*/
 	if (protection == SYNC_ARRAY_OS_MUTEX) {
 		os_mutex_free(arr->os_mutex);
 	} else if (protection == SYNC_ARRAY_MUTEX) {
@@ -275,7 +284,7 @@ sync_array_free(
 /************************************************************************
 Validates the integrity of the wait array. Checks
 that the number of reserved cells equals the count variable. */
-
+/*验证等待数组的完整性。检查保留的单元格数是否等于count变量。*/
 void
 sync_array_validate(
 /*================*/
@@ -302,6 +311,7 @@ sync_array_validate(
 
 /***********************************************************************
 Puts the cell event in set state. */
+/*将单元格事件置于设置状态。*/
 static
 void
 sync_cell_event_set(
@@ -314,6 +324,7 @@ sync_cell_event_set(
 
 /***********************************************************************
 Puts the cell event in reset state. */
+/*将单元格事件置于重置状态。*/
 static
 void
 sync_cell_event_reset(
@@ -327,7 +338,7 @@ sync_cell_event_reset(
 /**********************************************************************
 Reserves a wait array cell for waiting for an object.
 The event of the cell is reset to nonsignalled state. */
-
+/*为等待对象保留一个等待数组单元格。单元的事件被重置为无信号状态。*/
 void
 sync_array_reserve_cell(
 /*====================*/
@@ -396,7 +407,8 @@ This function should be called when a thread starts to wait on
 a wait array cell. In the debug version this function checks
 if the wait for a semaphore will result in a deadlock, in which
 case prints info and asserts. */
-
+/*当线程开始在等待数组单元格上等待时，应该调用这个函数。
+在调试版本中，该函数检查对信号量的等待是否会导致死锁，在这种情况下打印信息和断言。*/
 void
 sync_array_wait_event(
 /*==================*/
@@ -425,7 +437,7 @@ sync_array_wait_event(
 	we cannot acquire it at once, mutex_enter would call
 	recursively sync_array routines, leading to trouble.
 	rw_lock_debug_mutex freezes the debug lists. */
-
+    /*我们对下面的互斥量使用简单的enter，因为如果我们不能立即获取它，mutex_enter会递归地调用sync_array例程，从而导致麻烦。rw_lock_debug_mutex冻结调试列表。*/
 	rw_lock_debug_mutex_enter();
 
 	if (TRUE == sync_array_detect_deadlock(arr, cell, cell, 0)) {
@@ -445,6 +457,7 @@ sync_array_wait_event(
 
 /**********************************************************************
 Reports info of a wait array cell. */
+/*报告等待数组单元格的信息。*/
 static
 void
 sync_array_cell_print(
@@ -522,6 +535,7 @@ sync_array_cell_print(
 
 /**********************************************************************
 Looks for a cell with the given thread id. */
+/*查找具有给定线程id的单元格。*/
 static
 sync_cell_t*
 sync_array_find_thread(
@@ -550,6 +564,7 @@ sync_array_find_thread(
 
 /**********************************************************************
 Recursion step for deadlock detection. */
+/*用于死锁检测的递归步骤。*/
 static
 ibool
 sync_array_deadlock_step(
@@ -602,6 +617,7 @@ sync_array_deadlock_step(
 /**********************************************************************
 This function is called only in the debug version. Detects a deadlock
 of one or more threads because of waits of semaphores. */
+/*这个函数只在调试版本中被调用。检测一个或多个线程因信号量等待而死锁。*/
 static
 ibool
 sync_array_detect_deadlock(
@@ -792,7 +808,7 @@ sync_arr_cell_can_wake_up(
 /**********************************************************************
 Frees the cell. NOTE! sync_array_wait_event frees the cell
 automatically! */
-
+/*释放单元格。注意!sync_array_wait_event自动释放单元格!*/
 void
 sync_array_free_cell(
 /*=================*/
