@@ -5,7 +5,7 @@ The wait array used in synchronization primitives
 
 Created 9/5/1995 Heikki Tuuri
 *******************************************************/
-
+/*同步原语中使用的等待数组*/
 #include "sync0arr.h"
 #ifdef UNIV_NONINL
 #include "sync0arr.ic"
@@ -17,7 +17,7 @@ Created 9/5/1995 Heikki Tuuri
 #include "srv0srv.h"
 
 /*
-			WAIT ARRAY
+			WAIT ARRAY  等待数组
 			==========
 
 The wait array consists of cells each of which has an
@@ -39,6 +39,13 @@ because we can do with a very small number of OS events,
 say 200. In NT 3.51, allocating events seems to be a quadratic
 algorithm, because 10 000 events are created fast, but
 100 000 events takes a couple of minutes to create.
+等待数组由单元格组成，每个单元格都为其创建了一个操作系统事件对象。
+例如，等待互斥锁的线程可以在数组中保留一个单元并挂起自己，以等待事件被通知。
+当使用等待数组时，记得确保持有同步对象的某个线程最终会知道数组中有一个等待器，并向该对象发出信号，以防止无限等待。
+为什么我们选择实现一个等待数组?首先，为了使互斥锁更快，我们必须编写自己的互斥锁实现代码，只有在不常见的情况下才会使用速度较慢的操作系统原语。
+然后我们可以选择为每个互斥锁分配一个唯一的OS事件，这将会更简单，或者使用一个全局等待数组。
+在一些操作系统中，全局等待数组解决方案更有效和灵活，因为我们可以处理非常少量的操作系统事件，比如200个。
+在NT 3.51中，分配事件似乎是一种二次算法，因为可以快速创建10,000个事件，但创建100,000个事件需要几分钟。
 */
 
 /* A cell where an individual thread may wait suspended
