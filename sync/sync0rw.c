@@ -5,7 +5,7 @@ The read-write lock (for thread synchronization)
 
 Created 9/11/1995 Heikki Tuuri
 *******************************************************/
-
+/*读写锁(用于线程，而不是数据库事务)*/
 #include "sync0rw.h"
 #ifdef UNIV_NONINL
 #include "sync0rw.ic"
@@ -28,28 +28,31 @@ ulint	rw_x_os_wait_count	= 0;
 ulint	rw_x_exit_count		= 0;
 
 /* The global list of rw-locks */
+/* rw-locks的全局列表*/
 rw_lock_list_t	rw_lock_list;
 mutex_t		rw_lock_list_mutex;
 
 /* The global mutex which protects debug info lists of all rw-locks.
 To modify the debug info list of an rw-lock, this mutex has to be
 acquired in addition to the mutex protecting the lock. */
-
+/*保护所有rw锁的调试信息列表的全局互斥。为了修改rw-lock的调试信息列表，除了保护锁的互斥量之外，还必须获得这个互斥量。*/
 mutex_t		rw_lock_debug_mutex;
 os_event_t	rw_lock_debug_event;	/* If deadlock detection does not
 					get immediately the mutex, it may
-					wait for this event */
+					wait for this event */ /*如果死锁检测没有立即得到互斥锁，它可能会等待这个事件*/
 ibool		rw_lock_debug_waiters;	/* This is set to TRUE, if there may
-					be waiters for the event */
+					be waiters for the event */ /*如果事件中可能有等待者，则此设置为TRUE*/
 
 /**********************************************************************
 Creates a debug info struct. */
+/*创建一个调试信息结构体。*/
 static
 rw_lock_debug_t*
 rw_lock_debug_create(void);
 /*======================*/
 /**********************************************************************
 Frees a debug info struct. */
+/*释放一个调试信息结构体。*/
 static
 void
 rw_lock_debug_free(
@@ -58,6 +61,7 @@ rw_lock_debug_free(
 
 /**********************************************************************
 Creates a debug info struct. */
+/*创建一个调试信息结构体。*/
 static
 rw_lock_debug_t*
 rw_lock_debug_create(void)
@@ -68,6 +72,7 @@ rw_lock_debug_create(void)
 
 /**********************************************************************
 Frees a debug info struct. */
+/*释放一个调试信息结构体。*/
 static
 void
 rw_lock_debug_free(
@@ -82,7 +87,8 @@ Creates, or rather, initializes an rw-lock object in a specified memory
 location (which must be appropriately aligned). The rw-lock is initialized
 to the non-locked state. Explicit freeing of the rw-lock with rw_lock_free
 is necessary only if the memory block containing it is freed. */
-
+/*创建，或者更确切地说，在指定的内存位置(必须适当对齐)初始化rw-lock对象。
+rw-lock初始化为非锁定状态。只有当包含rw_lock_free的内存块被释放时，才需要使用rw_lock_free来显式地释放rw-lock。*/
 void
 rw_lock_create_func(
 /*================*/
@@ -93,7 +99,7 @@ rw_lock_create_func(
 	/* If this is the very first time a synchronization
 	object is created, then the following call initializes
 	the sync system. */
-
+	/*如果这是第一次创建同步对象，那么下面的调用将初始化同步系统。*/
 	mutex_create(rw_lock_get_mutex(lock));
 	mutex_set_level(rw_lock_get_mutex(lock), SYNC_NO_ORDER_CHECK);
 
@@ -131,7 +137,8 @@ rw_lock_create_func(
 Calling this function is obligatory only if the memory buffer containing
 the rw-lock is freed. Removes an rw-lock object from the global list. The
 rw-lock is checked to be in the non-locked state. */
-
+/*只有当包含rw-lock的内存缓冲区被释放时，才必须调用这个函数。
+从全局列表中删除rw-lock对象。rw-lock被检查为非锁定状态。*/
 void
 rw_lock_free(
 /*=========*/
@@ -156,7 +163,7 @@ rw_lock_free(
 /**********************************************************************
 Checks that the rw-lock has been initialized and that there are no
 simultaneous shared and exclusive locks. */
-
+/*检查rw-lock已经初始化，并且没有同时共享和排他锁。*/
 ibool
 rw_lock_validate(
 /*=============*/
@@ -186,7 +193,8 @@ Lock an rw-lock in shared mode for the current thread. If the rw-lock is
 locked in exclusive mode, or there is an exclusive lock request waiting,
 the function spins a preset time (controlled by SYNC_SPIN_ROUNDS), waiting
 for the lock, before suspending the thread. */
-
+/*在共享模式下为当前线程锁定rw-Lock。如果rw-lock被锁定在排他模式，
+或者有一个排他的锁请求正在等待，函数旋转一个预设的时间(由SYNC_SPIN_ROUNDS控制)，等待锁，然后挂起线程。*/
 void
 rw_lock_s_lock_spin(
 /*================*/
@@ -274,7 +282,9 @@ read was done. The ownership is moved because we want that the current
 thread is able to acquire a second x-latch which is stored in an mtr.
 This, in turn, is needed to pass the debug checks of index page
 operations. */
-
+/*这个函数在插入缓冲区中用于将缓冲区帧上x锁存器的所有权移动到当前线程。
+x锁存器是由缓冲区读取操作设置的，当读取完成时，它保护缓冲区帧。
+所有权被转移是因为我们希望当前线程能够获得存储在mtr中的第二个x锁存器。这反过来又需要通过索引页操作的调试检查。*/
 void
 rw_lock_x_lock_move_ownership(
 /*==========================*/
@@ -294,6 +304,7 @@ rw_lock_x_lock_move_ownership(
 
 /**********************************************************************
 Low-level function for acquiring an exclusive lock. */
+/*用于获取独占锁的低级函数。*/
 UNIV_INLINE
 ulint
 rw_lock_x_lock_low(
@@ -399,7 +410,10 @@ for the lock before suspending the thread. If the same thread has an x-lock
 on the rw-lock, locking succeed, with the following exception: if pass != 0,
 only a single x-lock may be taken on the lock. NOTE: If the same thread has
 an s-lock, locking does not succeed! */
-
+/*注意!使用相应的宏，而不是直接这个函数!在独占模式下为当前线程锁定rw- Lock。
+如果rw-lock被锁定在共享或排他模式，或者有一个排他的锁请求正在等待，函数旋转一个预设的时间(由SYNC_SPIN_ROUNDS控制)，
+在挂起线程之前等待锁。如果同一个线程在rw-lock上有一个x-lock，那么锁定成功，但是有以下的例外情况:
+如果pass != 0，那么只有一个x-lock可以在这个锁上执行。注意:如果同一个线程有s-lock，锁定不会成功!*/
 void
 rw_lock_x_lock_func(
 /*================*/
@@ -520,7 +534,8 @@ because the debug mutex is also acquired in sync0arr while holding the OS
 mutex protecting the sync array, and the ordinary mutex_enter might
 recursively call routines in sync0arr, leading to a deadlock on the OS
 mutex. */
-
+/*获取调试互斥锁。我们不能使用sync0sync中定义的互斥锁，因为在持有操作系统的互斥锁以保护同步数组的同时，
+调试互斥锁也在sync0arr中获得，普通的mutex_enter可能递归地调用sync0arr中的例程，导致操作系统的互斥锁。*/
 void
 rw_lock_debug_mutex_enter(void)
 /*==========================*/
@@ -547,7 +562,7 @@ loop:
 
 /**********************************************************************
 Releases the debug mutex. */
-
+/*释放调试互斥。*/
 void
 rw_lock_debug_mutex_exit(void)
 /*==========================*/

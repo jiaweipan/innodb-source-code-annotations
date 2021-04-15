@@ -11,7 +11,8 @@ Lock an rw-lock in shared mode for the current thread. If the rw-lock is
 locked in exclusive mode, or there is an exclusive lock request waiting,
 the function spins a preset time (controlled by SYNC_SPIN_ROUNDS),
 waiting for the lock before suspending the thread. */
-
+/*在共享模式下为当前线程锁定rw-Lock。如果rw-lock被锁定在排他模式，或者有一个排他的锁请求正在等待，
+函数旋转一个预设的时间(由SYNC_SPIN_ROUNDS控制)，在挂起线程之前等待锁。*/
 void
 rw_lock_s_lock_spin(
 /*================*/
@@ -22,7 +23,7 @@ rw_lock_s_lock_spin(
 	ulint		line);	/* in: line where requested */
 /**********************************************************************
 Inserts the debug information for an rw-lock. */
-
+/*为rw-lock插入调试信息。*/
 void
 rw_lock_add_debug_info(
 /*===================*/
@@ -33,7 +34,7 @@ rw_lock_add_debug_info(
 	ulint		line);		/* in: line where requested */
 /**********************************************************************
 Removes a debug information struct for an rw-lock. */
-
+/*移除rw-lock的调试信息结构。*/
 void
 rw_lock_remove_debug_info(
 /*======================*/
@@ -44,6 +45,7 @@ rw_lock_remove_debug_info(
 
 /************************************************************************
 Accessor functions for rw lock. */
+/*rw锁的访问函数。*/
 UNIV_INLINE
 ulint
 rw_lock_get_waiters(
@@ -107,6 +109,7 @@ rw_lock_get_mutex(
 /**********************************************************************
 Returns the value of writer_count for the lock. Does not reserve the lock
 mutex, so the caller must be sure it is not changed during the call. */
+/*返回锁的writer_count值。不保留锁互斥，因此调用者必须确保在调用过程中没有更改锁互斥。*/
 UNIV_INLINE
 ulint
 rw_lock_get_x_lock_count(
@@ -120,6 +123,7 @@ rw_lock_get_x_lock_count(
 /**********************************************************************
 Low-level function which tries to lock an rw-lock in s-mode. Performs no
 spinning. */
+/*试图在s模式下锁定rw-lock的低级功能。执行不旋转。*/
 UNIV_INLINE
 ibool
 rw_lock_s_lock_low(
@@ -157,6 +161,8 @@ rw_lock_s_lock_low(
 Low-level function which locks an rw-lock in s-mode when we know that it
 is possible and none else is currently accessing the rw-lock structure.
 Then we can do the locking without reserving the mutex. */
+/*当我们知道有可能并且没有其他人正在访问rw-lock结构时，在s模式下锁定rw-lock的低级功能。
+然后我们可以在不保留互斥量的情况下进行锁定。*/
 UNIV_INLINE
 void
 rw_lock_s_lock_direct(
@@ -183,6 +189,8 @@ rw_lock_s_lock_direct(
 Low-level function which locks an rw-lock in x-mode when we know that it
 is not locked and none else is currently accessing the rw-lock structure.
 Then we can do the locking without reserving the mutex. */
+/*当我们知道rw-lock没有被锁定并且没有其他人正在访问rw-lock结构时，在x模式下锁定rw-lock的低级函数。
+然后我们可以在不保留互斥量的情况下进行锁定。*/
 UNIV_INLINE
 void
 rw_lock_x_lock_direct(
@@ -214,6 +222,8 @@ rw-lock in shared mode for the current thread. If the rw-lock is locked
 in exclusive mode, or there is an exclusive lock request waiting, the
 function spins a preset time (controlled by SYNC_SPIN_ROUNDS), waiting for
 the lock, before suspending the thread. */
+/*注意!使用相应的宏，而不是直接这个函数!在共享模式下为当前线程锁定rw-Lock。
+如果rw-lock被锁定在排他模式，或者有一个排他的锁请求正在等待，函数旋转一个预设的时间(由SYNC_SPIN_ROUNDS控制)，等待锁，然后挂起线程。*/
 UNIV_INLINE
 void
 rw_lock_s_lock_func(
@@ -234,7 +244,10 @@ rw_lock_s_lock_func(
 	safe recursive s-locking, we should keep in a list the thread ids of
 	the threads which have s-locked a latch. This would use some CPU
 	time. */
-	
+	/*注意:我们不知道线程的线程id s-locked门闩,和s-lockers将只有在等待独占锁请求已经完成,
+	如果这个线程已经拥有一个s锁,它最终可能会与另一个线程死锁请求一个独占锁。
+	因此，我们将禁止锁存器的递归s锁:下面的断言将警告程序员可能出现tjis类型的死锁。
+	如果我们想实现安全的递归s锁，我们应该在一个列表中保存具有s锁锁的线程的线程id。这将使用一些CPU时间。*/
 	ut_ad(!rw_lock_own(lock, RW_LOCK_SHARED)); /* see NOTE above */
 
 	mutex_enter(rw_lock_get_mutex(lock));
@@ -257,6 +270,7 @@ rw_lock_s_lock_func(
 NOTE! Use the corresponding macro, not directly this function! Lock an
 rw-lock in shared mode for the current thread if the lock can be acquired
 immediately. */
+/*注意!使用相应的宏，而不是直接这个函数!如果可以立即获得锁，则以共享模式为当前线程锁定rw-lock。*/
 UNIV_INLINE
 ibool
 rw_lock_s_lock_func_nowait(
@@ -294,6 +308,7 @@ rw_lock_s_lock_func_nowait(
 NOTE! Use the corresponding macro, not directly this function! Lock an
 rw-lock in exclusive mode for the current thread if the lock can be
 obtained immediately. */
+/*注意!使用相应的宏，而不是直接这个函数!如果可以立即获得锁，则以排他模式锁定当前线程的rw-lock。*/
 UNIV_INLINE
 ibool
 rw_lock_x_lock_func_nowait(
@@ -337,6 +352,7 @@ rw_lock_x_lock_func_nowait(
 
 /**********************************************************************
 Releases a shared mode lock. */
+/*释放共享模式锁。*/
 UNIV_INLINE
 void
 rw_lock_s_unlock_func(
@@ -388,6 +404,7 @@ rw_lock_s_unlock_func(
 /**********************************************************************
 Releases a shared mode lock when we know there are no waiters and none
 else will access the lock during the time this function is executed. */
+/*当我们知道没有等待者且在此函数执行期间没有其他人访问该锁时，释放共享模式锁。*/
 UNIV_INLINE
 void
 rw_lock_s_unlock_direct(
@@ -413,6 +430,7 @@ rw_lock_s_unlock_direct(
 
 /**********************************************************************
 Releases an exclusive mode lock. */
+/*释放独占模式锁。*/
 UNIV_INLINE
 void
 rw_lock_x_unlock_func(
@@ -467,6 +485,7 @@ rw_lock_x_unlock_func(
 /**********************************************************************
 Releases an exclusive mode lock when we know there are no waiters, and
 none else will access the lock durint the time this function is executed. */
+/*当我们知道没有等待者，并且在此函数执行期间没有其他人访问该锁时，释放排他模式锁。*/
 UNIV_INLINE
 void
 rw_lock_x_unlock_direct(
