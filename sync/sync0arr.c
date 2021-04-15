@@ -758,6 +758,7 @@ sync_array_detect_deadlock(
 
 /**********************************************************************
 Determines if we can wake up the thread waiting for a sempahore. */
+/*确定是否可以唤醒等待信号量的线程。*/
 static
 ibool
 sync_arr_cell_can_wake_up(
@@ -836,7 +837,8 @@ Looks for the cells in the wait array which refer to the wait object
 specified, and sets their corresponding events to the signaled state. In this
 way releases the threads waiting for the object to contend for the object.
 It is possible that no such cell is found, in which case does nothing. */
-
+/*在等待数组中查找引用指定的等待对象的单元格，并将它们对应的事件设置为有信号的状态。
+通过这种方式释放等待对象竞争对象的线程。有可能没有找到这样的单元，在这种情况下，什么也不能做。*/
 void
 sync_array_signal_object(
 /*=====================*/
@@ -877,7 +879,7 @@ sync_array_signal_object(
 If the wakeup algorithm does not work perfectly at semaphore relases,
 this function will do the waking (see the comment in mutex_exit). This
 function should be called about every 1 second in the server. */
-
+/*如果唤醒算法在释放信号量时不能完美地工作，这个函数将执行唤醒(参见mutex_exit中的注释)。这个函数应该在服务器上每1秒调用一次。*/
 void
 sync_arr_wake_threads_if_sema_free(void)
 /*====================================*/
@@ -914,7 +916,7 @@ sync_arr_wake_threads_if_sema_free(void)
 
 /**************************************************************************
 Prints warnings of long semaphore waits to stderr. Currently > 120 sec. */
-
+/*向标准错误输出长信号量等待的警告。目前> 120秒。*/
 void
 sync_array_print_long_waits(void)
 /*=============================*/
@@ -968,6 +970,7 @@ sync_array_print_long_waits(void)
 
 /**************************************************************************
 Prints info of the wait array. */
+/*打印等待数组的信息。*/
 static
 void
 sync_array_output_info(
@@ -999,7 +1002,7 @@ sync_array_output_info(
 
 /**************************************************************************
 Prints info of the wait array. */
-
+/*打印等待数组的信息。*/
 void
 sync_array_print_info(
 /*==================*/
