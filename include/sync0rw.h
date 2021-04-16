@@ -441,7 +441,7 @@ struct rw_lock_struct {
 				mode), RW_LOCK_WAIT_EX if a writer is
 				queueing for the lock, and
 				RW_LOCK_NOT_LOCKED, otherwise. */ /*如果有一个写入者拥有这个锁(排他模式下)，这个字段被设置为RW_LOCK_EX，
-				如果一个写入者正在排队等待这个锁，则设置为RW_LOCK_NOT_LOCKED，否则设置为RW_LOCK_NOT_LOCKED。*/
+				如果一个写入者正在排队等待这个锁，则设置为RW_LOCK_WAIT_EX，否则设置为RW_LOCK_NOT_LOCKED。*/
 	os_thread_id_t	writer_thread;
 				/* Thread id of a possible writer thread */ /*线程可能写入线程的id*/
 	ulint	writer_count;	/* Number of times the same thread has
