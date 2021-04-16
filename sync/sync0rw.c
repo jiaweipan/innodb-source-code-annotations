@@ -577,7 +577,7 @@ rw_lock_debug_mutex_exit(void)
 
 /**********************************************************************
 Inserts the debug information for an rw-lock. */
-
+/*为rw-lock插入调试信息。*/
 void
 rw_lock_add_debug_info(
 /*===================*/
@@ -613,7 +613,7 @@ rw_lock_add_debug_info(
 
 /**********************************************************************
 Removes a debug information struct for an rw-lock. */
-
+/*移除rw-lock的调试信息结构。*/
 void
 rw_lock_remove_debug_info(
 /*======================*/
@@ -656,7 +656,7 @@ rw_lock_remove_debug_info(
 
 /**********************************************************************
 Sets the rw-lock latching level field. */
-
+/*设置rw-lock锁定级别字段。*/
 void
 rw_lock_set_level(
 /*==============*/
@@ -669,7 +669,7 @@ rw_lock_set_level(
 /**********************************************************************
 Checks if the thread has locked the rw-lock in the specified mode, with
 the pass value == 0. */
-
+/*检查线程是否在指定的模式下锁定了rw-lock, pass值== 0。*/
 ibool
 rw_lock_own(
 /*========*/
@@ -710,7 +710,7 @@ rw_lock_own(
 
 /**********************************************************************
 Checks if somebody has locked the rw-lock in the specified mode. */
-
+/*检查是否有人在指定模式下锁定了rw-lock。*/
 ibool
 rw_lock_is_locked(
 /*==============*/
@@ -745,7 +745,7 @@ rw_lock_is_locked(
 
 /*******************************************************************
 Prints debug info of currently locked rw-locks. */
-
+/*打印当前锁定的rw-locks的调试信息。*/
 void
 rw_lock_list_print_info(void)
 /*=========================*/
@@ -800,7 +800,7 @@ rw_lock_list_print_info(void)
 
 /*******************************************************************
 Prints debug info of an rw-lock. */
-
+/*打印rw-lock的调试信息。*/
 void
 rw_lock_print(
 /*==========*/
@@ -838,7 +838,7 @@ rw_lock_print(
 
 /*************************************************************************
 Prints info of a debug struct. */
-
+/*打印调试结构体的信息。*/
 void
 rw_lock_debug_print(
 /*================*/
@@ -868,7 +868,7 @@ rw_lock_debug_print(
 /*******************************************************************
 Returns the number of currently locked rw-locks. Works only in the debug
 version. */
-
+/*返回当前锁定的rw-locks的数量。仅在调试版本中有效。*/
 ulint
 rw_lock_n_locked(void)
 /*==================*/
