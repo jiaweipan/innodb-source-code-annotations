@@ -24,45 +24,50 @@ Created 12/9/1995 Heikki Tuuri
 #include "trx0sys.h"
 #include "trx0trx.h"
 
-/* Global log system variable */
+/* Global log system variable *//*全局日志系统变量*/
 log_t*	log_sys	= NULL;
 
 ibool	log_do_write = TRUE;
 ibool	log_debug_writes = FALSE;
 
 /* Pointer to this variable is used as the i/o-message when we do i/o to an
-archive */
+archive */ /*当我们对存档文件进行i/o操作时，指向这个变量的指针被用作i/o消息*/
 byte	log_archive_io;
 
 /* A margin for free space in the log buffer before a log entry is catenated */
+/* 在连接日志条目之前，日志缓冲区中可用空间的空白*/
 #define LOG_BUF_WRITE_MARGIN 	(4 * OS_FILE_LOG_BLOCK_SIZE)
 
 /* Margins for free space in the log buffer after a log entry is catenated */
+/*日志条目被连接后，日志缓冲区中空闲空间的空白*/
 #define LOG_BUF_FLUSH_RATIO	2
 #define LOG_BUF_FLUSH_MARGIN	(LOG_BUF_WRITE_MARGIN + 4 * UNIV_PAGE_SIZE)
 
 /* Margin for the free space in the smallest log group, before a new query
 step which modifies the database, is started */
-
+/*启动修改数据库的新查询步骤之前，最小日志组中可用空间的空白*/
 #define LOG_CHECKPOINT_FREE_PER_THREAD	(4 * UNIV_PAGE_SIZE)
 #define LOG_CHECKPOINT_EXTRA_FREE	(8 * UNIV_PAGE_SIZE)
 
 /* This parameter controls asynchronous making of a new checkpoint; the value
 should be bigger than LOG_POOL_PREFLUSH_RATIO_SYNC */
-
+/*该参数控制新检查点的异步生成;该值应该大于LOG_POOL_PREFLUSH_RATIO_SYNC*/
 #define LOG_POOL_CHECKPOINT_RATIO_ASYNC	32
 
 /* This parameter controls synchronous preflushing of modified buffer pages */
+/* 此参数控制对已修改缓冲区页的同步预刷新 */
 #define LOG_POOL_PREFLUSH_RATIO_SYNC	16
 
 /* The same ratio for asynchronous preflushing; this value should be less than
-the previous */
+the previous *//*相同的比例用于异步预刷新;这个值应该小于之前的值*/
 #define LOG_POOL_PREFLUSH_RATIO_ASYNC	8
 
 /* Extra margin, in addition to one log file, used in archiving */
+/* 除日志文件外的额外空白，用于归档*/
 #define LOG_ARCHIVE_EXTRA_MARGIN	(4 * UNIV_PAGE_SIZE)
 
 /* This parameter controls asynchronous writing to the archive */
+/* 该参数控制对存档的异步写入*/
 #define LOG_ARCHIVE_RATIO_ASYNC		16
 
 /* Codes used in unlocking flush latches */
@@ -74,14 +79,14 @@ the previous */
 #define	LOG_ARCHIVE_WRITE	2
 
 /**********************************************************
-Completes a checkpoint write i/o to a log file. */
+Completes a checkpoint write i/o to a log file. */ /*完成对日志文件的检查点写i/o。*/
 static
 void
 log_io_complete_checkpoint(
 /*=======================*/
 	log_group_t*	group);	/* in: log group */
 /**********************************************************
-Completes an archiving i/o. */
+Completes an archiving i/o. */ /*完成一个归档i/o。*/
 static
 void
 log_io_complete_archive(void);
@@ -89,7 +94,7 @@ log_io_complete_archive(void);
 /********************************************************************
 Tries to establish a big enough margin of free space in the log groups, such
 that a new log entry can be catenated without an immediate need for a
-archiving. */
+archiving. *//*尝试在日志组中建立足够大的空闲空间，以便可以连接新的日志条目，而不需要立即进行归档。*/
 static
 void
 log_archive_margin(void);
@@ -98,7 +103,7 @@ log_archive_margin(void);
 
 /********************************************************************
 Returns the oldest modified block lsn in the pool, or log_sys->lsn if none
-exists. */
+exists. *//*返回池中最旧的修改过的块lsn，如果不存在则返回log_sys->lsn。*/
 static
 dulint
 log_buf_pool_get_oldest_modification(void)
@@ -121,7 +126,7 @@ log_buf_pool_get_oldest_modification(void)
 /****************************************************************
 Opens the log for log_write_low. The log must be closed with log_close and
 released with log_release. */
-
+/*打开log_write_low的日志。日志必须用log_close关闭，用log_release释放。*/
 dulint
 log_reserve_and_open(
 /*=================*/
@@ -138,7 +143,7 @@ loop:
 	
 	/* Calculate an upper limit for the space the string may take in the
 	log buffer */
-
+    /*计算字符串在日志缓冲区中可能占用的空间的上限*/
 	len_upper_limit = LOG_BUF_WRITE_MARGIN + (5 * len) / 4;
 
 	if (log->buf_free + len_upper_limit > log->buf_size) {
@@ -146,7 +151,7 @@ loop:
 		mutex_exit(&(log->mutex));
 
 		/* Not enough free space, do a syncronous flush of the log
-		buffer */
+		buffer */ /*如果没有足够的空闲空间，请同步刷新日志缓冲区*/
 		log_flush_up_to(ut_dulint_max, LOG_WAIT_ALL_GROUPS);
 
 		count++;
@@ -165,7 +170,7 @@ loop:
 	
 			/* Not enough free archived space in log groups: do a
 			synchronous archive write batch: */
-	
+	        /*日志组中没有足够的空闲归档空间:执行同步归档写批处理:*/
 			mutex_exit(&(log->mutex));
 	
 			ut_ad(len_upper_limit <= log->max_archived_lsn_age);
@@ -190,7 +195,7 @@ loop:
 /****************************************************************
 Writes to the log the string given. It is assumed that the caller holds the
 log mutex. */
-
+/*将给定的字符串写入日志。假定调用者持有日志互斥锁。*/
 void
 log_write_low(
 /*==========*/
@@ -205,13 +210,13 @@ log_write_low(
 	ut_ad(mutex_own(&(log->mutex)));
 part_loop:
 	/* Calculate a part length */
-
+	/* 计算数据部分长度*/
 	data_len = (log->buf_free % OS_FILE_LOG_BLOCK_SIZE) + str_len;
 
 	if (data_len <= OS_FILE_LOG_BLOCK_SIZE - LOG_BLOCK_TRL_SIZE) {
 
 	    	/* The string fits within the current log block */
-	    
+	        /*该字符串适合于当前日志块*/
 	    	len = str_len;
 	} else {
 		data_len = OS_FILE_LOG_BLOCK_SIZE - LOG_BLOCK_TRL_SIZE;
@@ -256,7 +261,7 @@ part_loop:
 
 /****************************************************************
 Closes the log. */
-
+/*关闭日志。*/
 dulint
 log_close(void)
 /*===========*/
@@ -280,7 +285,8 @@ log_close(void)
 		/* We initialized a new log block which was not written
 		full by the current mtr: the next mtr log record group
 		will start within this block at the offset data_len */
-
+		/*我们初始化了一个没有被当前mtr写满的新日志块:
+		下一个mtr日志记录组将从偏移量data_len处的这个块中开始*/
 		log_block_set_first_rec_group(log_block,
 			 		log_block_get_data_len(log_block));
 	}
@@ -318,6 +324,7 @@ function_exit:
 /**********************************************************
 Pads the current log block full with dummy log records. Used in producing
 consistent archived log files. */
+/*用虚拟日志记录填充当前日志块。用于生成一致的归档日志文件。*/
 static
 void
 log_pad_current_log_block(void)
@@ -329,6 +336,7 @@ log_pad_current_log_block(void)
 	dulint	lsn;
 	
 	/* We retrieve lsn only because otherwise gcc crashed on HP-UX */
+	/* 我们检索lsn只是因为gcc在HP-UX上崩溃了*/
 	lsn = log_reserve_and_open(OS_FILE_LOG_BLOCK_SIZE);
 
 	pad_length = OS_FILE_LOG_BLOCK_SIZE
@@ -351,7 +359,7 @@ log_pad_current_log_block(void)
 /**********************************************************
 Calculates the data capacity of a log group, when the log file headers are not
 included. */
-
+/*计算不包含日志文件头的日志组的数据容量。*/
 ulint
 log_group_get_capacity(
 /*===================*/
@@ -366,6 +374,7 @@ log_group_get_capacity(
 /**********************************************************
 Calculates the offset within a log group, when the log file headers are not
 included. */
+/*当不包括日志文件头时，计算日志组中的偏移量。*/
 UNIV_INLINE
 ulint
 log_group_calc_size_offset(
@@ -382,6 +391,7 @@ log_group_calc_size_offset(
 /**********************************************************
 Calculates the offset within a log group, when the log file headers are
 included. */
+/*当包含日志文件头时，计算日志组内的偏移量。*/
 UNIV_INLINE
 ulint
 log_group_calc_real_offset(
@@ -398,6 +408,7 @@ log_group_calc_real_offset(
 
 /**********************************************************
 Calculates the offset of an lsn within a log group. */
+/*计算lsn在日志组内的偏移量。*/
 static
 ulint
 log_group_calc_lsn_offset(
@@ -440,7 +451,7 @@ log_group_calc_lsn_offset(
 Sets the field values in group to correspond to a given lsn. For this function
 to work, the values must already be correctly initialized to correspond to
 some lsn, for instance, a checkpoint lsn. */
-
+/*将group中的字段值设置为对应于给定的lsn。要使该函数工作，这些值必须已经正确初始化，以对应于某些lsn，例如，检查点lsn。*/
 void
 log_group_set_fields(
 /*=================*/
@@ -455,6 +466,7 @@ log_group_set_fields(
 /*********************************************************************
 Calculates the recommended highest values for lsn - last_checkpoint_lsn,
 lsn - buf_get_oldest_modification(), and lsn - max_archive_lsn_age. */
+/*计算lsn - last_checkpoint_lsn、lsn - buf_get_oldest_modification()和lsn - max_archive_lsn_age的推荐最大值。*/
 static
 ibool
 log_calc_max_ages(void)
@@ -507,7 +519,8 @@ log_calc_max_ages(void)
 	smallest log group that it can accommodate the log entries produced
 	by single query steps: running out of free log space is a serious
 	system error which requires rebooting the database. */
-	
+	/*对于每个操作系统线程，我们必须在最小的日志组中预留足够的空闲空间，
+	以容纳单个查询步骤产生的日志条目:空闲日志空间耗尽是一个严重的系统错误，需要重新启动数据库。*/
 	free = LOG_CHECKPOINT_FREE_PER_THREAD * n_threads
 						+ LOG_CHECKPOINT_EXTRA_FREE;
 	if (free >= smallest_capacity / 2) {
@@ -547,7 +560,7 @@ failure:
 
 /**********************************************************
 Initializes the log. */
-
+/*初始化重做日志*/
 void
 log_init(void)
 /*==========*/
@@ -563,7 +576,7 @@ log_init(void)
 
 	/* Start the lsn from one log block from zero: this way every
 	log record has a start lsn != zero, a fact which we will use */
-	
+	/*从一个日志块开始，从0开始lsn:这样，每条日志记录都有一个起始lsn != 0，我们将使用这个事实*/
 	log_sys->lsn = LOG_START_LSN;
 
 	ut_a(LOG_BUFFER_SIZE >= 16 * OS_FILE_LOG_BLOCK_SIZE);
@@ -665,7 +678,7 @@ log_init(void)
 
 /**********************************************************************
 Inits a log group to the log system. */
-
+/*向日志系统初始化日志组。*/
 void
 log_group_init(
 /*===========*/
@@ -724,6 +737,7 @@ log_group_init(
 	
 /**********************************************************************
 Does the unlockings needed in flush i/o completion. */
+/*完成flush i/o所需的解锁。*/
 UNIV_INLINE
 void
 log_flush_do_unlocks(
@@ -743,6 +757,10 @@ log_flush_do_unlocks(
 		Thus, the changes in the state of these events are performed
 	atomically in conjunction with the changes in the state of
 	log_sys->n_pending_writes etc. */ 
+	/*注意，在设置事件时，我们必须拥有日志互斥锁:这是因为事务将等待这些事件被设置，
+	而在那一刻，它们所等待的日志刷新一定已经结束。如果这里没有保留日志互斥锁，
+	调用这个函数的i/o线程可能会被抢占一段时间，当它恢复执行时，可能是启动了一个新的刷新，
+	而这个函数将错误地发出新刷新已经完成的信号。因此，这些事件状态的更改与log_sys->n_pending_writes等状态的更改一起以原子方式执行。*/
 
 	if (code & LOG_UNLOCK_NONE_FLUSHED_LOCK) {
 		os_event_set(log_sys->one_flushed_event);
@@ -756,6 +774,7 @@ log_flush_do_unlocks(
 /**********************************************************************
 Checks if a flush is completed for a log group and does the completion
 routine if yes. */
+/*检查日志组的刷新是否完成，如果完成，则执行完成例程。*/
 UNIV_INLINE
 ulint
 log_group_check_flush_completion(
@@ -787,6 +806,7 @@ log_group_check_flush_completion(
 
 /**********************************************************
 Checks if a flush is completed and does the completion routine if yes. */
+/*检查刷新是否完成，如果完成则执行完成例程。*/
 static
 ulint
 log_sys_check_flush_completion(void)
@@ -806,7 +826,7 @@ log_sys_check_flush_completion(void)
 		if (log_sys->flush_end_offset > log_sys->max_buf_free / 2) {
 			/* Move the log buffer content to the start of the
 			buffer */
-
+			/*将日志缓冲区的内容移动到缓冲区的开头*/
 			move_start = ut_calc_align_down(
 						log_sys->flush_end_offset,
 						OS_FILE_LOG_BLOCK_SIZE);
@@ -828,7 +848,7 @@ log_sys_check_flush_completion(void)
 
 /**********************************************************
 Completes an i/o to a log file. */
-
+/*完成对日志文件的一次i/o操作。*/
 void
 log_io_complete(
 /*============*/
@@ -883,6 +903,7 @@ log_io_complete(
 
 /**********************************************************
 Writes a log file header to a log file space. */
+/*将日志文件头写入日志文件空间。*/
 static
 void
 log_group_file_header_flush(
@@ -890,7 +911,7 @@ log_group_file_header_flush(
 	ulint		type,		/* in: LOG_FLUSH or LOG_RECOVER */
 	log_group_t*	group,		/* in: log group */
 	ulint		nth_file,	/* in: header to the nth file in the
-					log file space */
+					log file space */ /*日志文件空间中的第n个文件*/
 	dulint		start_lsn)	/* in: log file data starts at this
 					lsn */
 {
@@ -940,7 +961,7 @@ log_group_file_header_flush(
 
 /**********************************************************
 Writes a buffer to a log file group. */
-
+/*向日志文件组写入缓冲区。*/
 void
 log_group_write_buf(
 /*================*/
@@ -955,7 +976,7 @@ log_group_write_buf(
 	ulint		new_data_offset)/* in: start offset of new data in
 					buf: this parameter is used to decide
 					if we have to write a new log file
-					header */
+					header *//*buf中新数据的起始偏移量:这个参数用于决定我们是否必须写入一个新的日志文件头*/
 {
 	ulint	write_len;
 	ibool	sync;
@@ -989,7 +1010,7 @@ loop:
 	if ((next_offset % group->file_size == LOG_FILE_HDR_SIZE)
 	   						&& write_header) {
 		/* We start to write a new log file instance in the group */
-
+        /* 我们开始在组中写入一个新的日志文件实例*/
 		log_group_file_header_flush(type, group,
 				next_offset / group->file_size, start_lsn);
 	}
@@ -1036,7 +1057,8 @@ This function is called, e.g., when a transaction wants to commit. It checks
 that the log has been flushed to disk up to the last log entry written by the
 transaction. If there is a flush running, it waits and checks if the flush
 flushed enough. If not, starts a new flush. */
-
+/*这个函数被调用，例如，当一个事务想要提交时。它检查日志是否已刷新到磁盘，直到事务写入的最后一个日志条目。
+如果有一个刷新正在运行，它将等待并检查刷新是否足够。如果没有，开始新的flush。*/
 void
 log_flush_up_to(
 /*============*/
@@ -1055,7 +1077,7 @@ log_flush_up_to(
 	if (recv_no_ibuf_operations) {
 		/* Recovery is running and no operations on the log files are
 		allowed yet (the variable name .._no_ibuf_.. is misleading) */
-
+		/*恢复正在运行，不允许对日志文件进行任何操作(变量名.._no_ibuf_..是误导)*/
 		return;
 	}
 
@@ -1086,7 +1108,7 @@ loop:
 		if (ut_dulint_cmp(log_sys->flush_lsn, lsn) >= 0) {
 			/* The flush will flush enough: wait for it to
 			complete  */
-
+			/*冲水将足够冲水:等待它完成*/
 			goto do_waits;
 		}
 		
@@ -1094,7 +1116,7 @@ loop:
 
 		/* Wait for the flush to complete and try to start a new
 		flush */
-
+        /*等待刷新完成并尝试开始新的刷新*/
 		os_event_wait(log_sys->no_flush_event);
 
 		goto loop;
@@ -1138,7 +1160,7 @@ loop:
 	/* Copy the last, incompletely written, log block a log block length
 	up, so that when the flush operation writes from the log buffer, the
 	segment to write will not be changed by writers to the log */
-	
+	/*将最后一个未写完的日志块的长度向上复制，这样当刷新操作从日志缓冲区写入时，写入者不会更改要写的段到日志*/
 	ut_memcpy(log_sys->buf + area_end,
 			log_sys->buf + area_end - OS_FILE_LOG_BLOCK_SIZE,
 			OS_FILE_LOG_BLOCK_SIZE);
@@ -1176,6 +1198,7 @@ do_waits:
 /********************************************************************
 Tries to establish a big enough margin of free space in the log buffer, such
 that a new log entry can be catenated without an immediate need for a flush. */
+/*尝试在日志缓冲区中建立足够大的空闲空间，以便可以连接新的日志条目，而不需要立即刷新。*/
 static
 void
 log_flush_margin(void)
@@ -1190,7 +1213,7 @@ log_flush_margin(void)
 		
 		if (log->n_pending_writes > 0) {
 			/* A flush is running: hope that it will provide enough
-			free space */
+			free space */ /*正在刷新:希望它能提供足够的空闲空间*/
 		} else {
 			do_flush = TRUE;
 		}
@@ -1207,7 +1230,7 @@ log_flush_margin(void)
 Advances the smallest lsn for which there are unflushed dirty blocks in the
 buffer pool. NOTE: this function may only be called if the calling thread owns
 no synchronization objects! */
-
+/*推进缓冲池中有未刷新脏块的最小lsn。注意:这个函数只能在调用线程没有同步对象的情况下调用!*/
 ibool
 log_preflush_pool_modified_pages(
 /*=============================*/
@@ -1230,7 +1253,9 @@ log_preflush_pool_modified_pages(
 		not know how up-to-date the disk version of the database is,
 		and we could not make a new checkpoint on the basis of the
 		info on the buffer pool only. */
-	
+	    /*如果正在运行恢复，我们必须首先将所有日志记录应用到它们各自的文件页面，以获得这些页面正确的修改lsn值:
+		否则,可能存在磁盘上的页面,还没有恢复到当前的lsn,甚至在调用这个函数,我们无法知道最新的磁盘版本的数据库,
+		我们不能新建一个检查点的信息的基础上缓冲池。*/
 		recv_apply_hashed_log_recs(TRUE);
 	}
 
@@ -2136,7 +2161,7 @@ log_io_complete_archive(void)
 
 /************************************************************************
 Starts an archiving operation. */
-
+/*启动存档操作。*/
 ibool
 log_archive_do(
 /*===========*/
