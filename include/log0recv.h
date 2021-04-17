@@ -5,7 +5,7 @@ Recovery
 
 Created 9/20/1997 Heikki Tuuri
 *******************************************************/
-
+/*恢复*/
 #ifndef log0recv_h
 #define log0recv_h
 

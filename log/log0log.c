@@ -5,7 +5,7 @@ Database log
 
 Created 12/9/1995 Heikki Tuuri
 *******************************************************/
-
+/*数据库重做日志*/
 #include "log0log.h"
 
 #ifdef UNIV_NONINL

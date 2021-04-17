@@ -5,7 +5,7 @@ Recovery
 
 Created 9/20/1997 Heikki Tuuri
 *******************************************************/
-
+/*重做日志恢复*/
 #include "log0recv.h"
 
 #ifdef UNIV_NONINL

@@ -5,7 +5,7 @@ Database log
 
 Created 12/9/1995 Heikki Tuuri
 *******************************************************/
-
+/*数据库重做日志*/
 #include "os0file.h"
 #include "mach0data.h"
 #include "mtr0mtr.h"
@@ -13,7 +13,7 @@ Created 12/9/1995 Heikki Tuuri
 /**********************************************************
 Checks by parsing that the catenated log segment for a single mtr is
 consistent. */
-
+/*通过解析单个mtr的连接日志段是否一致来检查。*/
 ibool
 log_check_log_recs(
 /*===============*/
@@ -23,7 +23,7 @@ log_check_log_recs(
 	dulint	buf_start_lsn);	/* in: buffer start lsn */
 
 /****************************************************************
-Gets a log block flush bit. */
+Gets a log block flush bit. */ /*获取日志块刷新位。*/
 UNIV_INLINE
 ibool
 log_block_get_flush_bit(
@@ -42,7 +42,7 @@ log_block_get_flush_bit(
 }
 
 /****************************************************************
-Sets the log block flush bit. */
+Sets the log block flush bit. */ /*设置日志块刷新位。*/
 UNIV_INLINE
 void
 log_block_set_flush_bit(
@@ -64,7 +64,7 @@ log_block_set_flush_bit(
 }	
 
 /****************************************************************
-Gets a log block number stored in the header. */
+Gets a log block number stored in the header. */ /*取存储在报头中的日志块号。*/
 UNIV_INLINE
 ulint
 log_block_get_hdr_no(
@@ -79,7 +79,7 @@ log_block_get_hdr_no(
 
 /****************************************************************
 Sets the log block number stored in the header; NOTE that this must be set
-before the flush bit! */
+before the flush bit! */ /*设置存储在报头中的日志块号;注意，这必须在刷新位之前设置!*/
 UNIV_INLINE
 void
 log_block_set_hdr_no(
@@ -95,7 +95,7 @@ log_block_set_hdr_no(
 }
 
 /****************************************************************
-Gets a log block data length. */
+Gets a log block data length. */ /*获取日志块数据长度。*/
 UNIV_INLINE
 ulint
 log_block_get_data_len(
@@ -108,7 +108,7 @@ log_block_get_data_len(
 }
 
 /****************************************************************
-Sets the log block data length. */
+Sets the log block data length. */ /*设置日志块数据长度。*/
 UNIV_INLINE
 void
 log_block_set_data_len(
@@ -120,7 +120,7 @@ log_block_set_data_len(
 }
 
 /****************************************************************
-Gets a log block first mtr log record group offset. */
+Gets a log block first mtr log record group offset. */ /*获取日志块第一个mtr日志记录组偏移量。*/
 UNIV_INLINE
 ulint
 log_block_get_first_rec_group(
@@ -133,7 +133,7 @@ log_block_get_first_rec_group(
 }
 
 /****************************************************************
-Sets the log block first mtr log record group offset. */
+Sets the log block first mtr log record group offset. */ /*设置日志块第一个mtr日志记录组偏移量。*/
 UNIV_INLINE
 void
 log_block_set_first_rec_group(
@@ -145,7 +145,7 @@ log_block_set_first_rec_group(
 }
 
 /****************************************************************
-Gets a log block checkpoint number field (4 lowest bytes). */
+Gets a log block checkpoint number field (4 lowest bytes). */ /*获取日志块检查点编号字段(最低4个字节)。*/
 UNIV_INLINE
 ulint
 log_block_get_checkpoint_no(
@@ -157,7 +157,7 @@ log_block_get_checkpoint_no(
 }
 
 /****************************************************************
-Sets a log block checkpoint number field (4 lowest bytes). */
+Sets a log block checkpoint number field (4 lowest bytes). */ /*设置日志块检查点编号字段(最低4个字节)。*/
 UNIV_INLINE
 void
 log_block_set_checkpoint_no(
@@ -170,7 +170,7 @@ log_block_set_checkpoint_no(
 }
 
 /****************************************************************
-Gets a log block number stored in the trailer. */
+Gets a log block number stored in the trailer. */ /*获取存储在trailer中的日志块号。*/
 UNIV_INLINE
 ulint
 log_block_get_trl_no(
@@ -184,7 +184,7 @@ log_block_get_trl_no(
 }
 
 /****************************************************************
-Sets the log block number stored in the trailer. */
+Sets the log block number stored in the trailer. */ /* /*设置存储在trailer中的日志块号。*/
 UNIV_INLINE
 void
 log_block_set_trl_no(
@@ -197,7 +197,7 @@ log_block_set_trl_no(
 }
 
 /****************************************************************
-Converts a lsn to a log block number. */
+Converts a lsn to a log block number. */ /*将lsn转换为日志块号。*/
 UNIV_INLINE
 ulint
 log_block_convert_lsn_to_no(
@@ -217,7 +217,7 @@ log_block_convert_lsn_to_no(
 }
 
 /****************************************************************
-Initializes a log block in the log buffer. */
+Initializes a log block in the log buffer. */ /*初始化日志缓冲区中的日志块。*/
 UNIV_INLINE
 void
 log_block_init(
@@ -240,7 +240,7 @@ log_block_init(
 	
 /****************************************************************
 Writes to the log the string given. The log must be released with
-log_release. */
+log_release. */ /*将给定的字符串写入日志。日志必须通过log_release释放。*/
 UNIV_INLINE
 dulint
 log_reserve_and_write_fast(
@@ -302,7 +302,7 @@ log_reserve_and_write_fast(
 }
 
 /***************************************************************************
-Releases the log mutex. */
+Releases the log mutex. */  /*释放日志互斥锁。*/
 UNIV_INLINE
 void
 log_release(void)
@@ -312,7 +312,7 @@ log_release(void)
 }
 
 /****************************************************************
-Gets the current lsn. */
+Gets the current lsn. */ /*获取当前lsn。*/
 UNIV_INLINE
 dulint
 log_get_lsn(void)
@@ -335,6 +335,9 @@ Checks if there is need for a log buffer flush or a new checkpoint, and does
 this if yes. Any database operation should call this when it has modified
 more than about 4 pages. NOTE that this function may only be called when the
 OS thread owns no synchronization objects except the dictionary mutex. */
+/*检查是否需要刷新日志缓冲区或新的检查点，如果需要，则执行此操作。
+任何数据库操作在修改超过4个页面时都应该调用这个函数。
+注意，只有当操作系统线程除了字典互斥锁之外没有其他同步对象时，才可以调用这个函数。*/
 UNIV_INLINE
 void
 log_free_check(void)
@@ -349,7 +352,7 @@ log_free_check(void)
 }
 
 /****************************************************************************
-Gets the online backup lsn. */
+Gets the online backup lsn. */ /*获取在线备份的lsn。*/
 UNIV_INLINE
 dulint
 log_get_online_backup_lsn_low(void)
@@ -364,7 +367,7 @@ log_get_online_backup_lsn_low(void)
 }
 
 /****************************************************************************
-Gets the online backup state. */
+Gets the online backup state. */ /*获取在线备份状态。*/
 UNIV_INLINE
 ibool
 log_get_online_backup_state_low(void)
