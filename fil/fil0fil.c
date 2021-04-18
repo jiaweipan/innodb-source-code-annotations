@@ -409,7 +409,7 @@ fil_node_free(
 /********************************************************************
 Drops files from the start of a file space, so that its size is cut by
 the amount given. */
-
+/*从文件空间的开始删除文件，使其大小按照给定的数量减少。*/
 void
 fil_space_truncate_start(
 /*=====================*/

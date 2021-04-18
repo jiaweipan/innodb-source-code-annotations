@@ -965,7 +965,7 @@ recv_read_in_area(
 /***********************************************************************
 Empties the hash table of stored log records, applying them to appropriate
 pages. */
-
+/*清空存储的日志记录的散列表，将它们应用到适当的页面。*/
 void
 recv_apply_hashed_log_recs(
 /*=======================*/
@@ -977,7 +977,9 @@ recv_apply_hashed_log_recs(
 				alternative means that no new log records
 				can be generated during the application;
 				the caller must in this case own the log
-				mutex */
+				mutex */ /*如果为TRUE，也允许在应用程序中进行ibuf操作;如果为FALSE，则不允许进行ibuf操作，
+				并且在应用程序之后，所有文件页都被刷新到磁盘，并在缓冲池中作废:
+				这种替代方法意味着在应用程序期间不可能生成新的日志记录;在这种情况下，调用者必须拥有日志互斥锁*/
 {
 	recv_addr_t* recv_addr;
 	page_t*	page;
@@ -1737,7 +1739,7 @@ recv_sys_justify_left_parsing_buf(void)
 /***********************************************************
 Scans log from a buffer and stores new log data to the parsing buffer. Parses
 and hashes the log records if new data found. */
-
+/*从缓冲区扫描日志，并将新的日志数据存储到解析缓冲区。如果发现新数据，则解析并散列日志记录。*/
 ibool
 recv_scan_log_recs(
 /*===============*/

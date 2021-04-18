@@ -1274,7 +1274,7 @@ log_preflush_pool_modified_pages(
 }
 
 /**********************************************************
-Completes a checkpoint. */
+Completes a checkpoint. */ /*完成一个检查点。*/
 static
 void
 log_complete_checkpoint(void)
@@ -1292,7 +1292,7 @@ log_complete_checkpoint(void)
 }
 
 /**********************************************************
-Completes an asynchronous checkpoint info write i/o to a log file. */
+Completes an asynchronous checkpoint info write i/o to a log file. */ /*完成异步检查点信息写i/o到日志文件。*/
 static
 void
 log_io_complete_checkpoint(
@@ -1318,6 +1318,7 @@ log_io_complete_checkpoint(
 
 /***********************************************************************
 Writes info to a checkpoint about a log group. */
+/*将信息写入关于日志组的检查点。*/
 static
 void
 log_checkpoint_set_nth_group_info(
@@ -1337,7 +1338,7 @@ log_checkpoint_set_nth_group_info(
 
 /***********************************************************************
 Gets info from a checkpoint about a log group. */
-
+/*从检查点获取关于日志组的信息。*/
 void
 log_checkpoint_get_nth_group_info(
 /*==============================*/
@@ -1356,6 +1357,7 @@ log_checkpoint_get_nth_group_info(
 
 /**********************************************************
 Writes the checkpoint info to a log group header. */
+/*将检查点信息写入日志组标头。*/
 static
 void
 log_group_checkpoint(
@@ -1420,7 +1422,7 @@ log_group_checkpoint(
 	mach_write_to_4(buf + LOG_CHECKPOINT_CHECKSUM_2, fold);
 
 	/* We alternate the physical place of the checkpoint info in the first
-	log file */
+	log file */ /*我们在第一个日志文件中替换检查点信息的物理位置*/
 	
 	if (ut_dulint_get_low(log_sys->next_checkpoint_no) % 2 == 0) {
 		write_offset = LOG_CHECKPOINT_1;
@@ -1442,6 +1444,7 @@ log_group_checkpoint(
 		/* We send as the last parameter the group machine address
 		added with 1, as we want to distinguish between a normal log
 		file write and a checkpoint field write */
+		/*我们将用1添加的组机器地址作为最后一个参数发送，因为我们想要区分普通的日志文件写入和检查点字段写入*/
 		
 		fil_io(OS_FILE_WRITE | OS_FILE_LOG, FALSE, group->space_id,
 				write_offset / UNIV_PAGE_SIZE,
@@ -1455,7 +1458,7 @@ log_group_checkpoint(
 
 /**********************************************************
 Reads a checkpoint info from a log group header to log_sys->checkpoint_buf. */
-
+/*从日志组头中读取检查点信息到log_sys->checkpoint_buf。*/
 void
 log_group_read_checkpoint_info(
 /*===========================*/
@@ -1473,7 +1476,7 @@ log_group_read_checkpoint_info(
 
 /**********************************************************
 Writes checkpoint info to groups. */
-
+/*向组写入检查点信息。*/
 void
 log_groups_write_checkpoint_info(void)
 /*==================================*/
@@ -1496,7 +1499,8 @@ Makes a checkpoint. Note that this function does not flush dirty
 blocks from the buffer pool: it only checks what is lsn of the oldest
 modification in the pool, and writes information about the lsn in
 log files. Use log_make_checkpoint_at to flush also the pool. */
-
+/*制作一个检查点。注意，该函数不会清除缓冲池中的脏块:它只检查缓冲池中最旧修改的lsn，并将有关lsn的信息写入日志文件。
+也可以使用log_make_checkpoint_at来刷新池。*/
 ibool
 log_checkpoint(
 /*===========*/
@@ -1510,6 +1514,8 @@ log_checkpoint(
 				physical write is done; by setting this
 				parameter TRUE, a physical write will always be
 				made to log files */
+				/*该函数通常检查新检查点的lsn是否大于前一个检查点:如果不是，
+				则不进行物理写;通过将此参数设置为TRUE，将始终对日志文件进行物理写操作*/
 {
 	dulint	oldest_lsn;
 
@@ -1534,7 +1540,8 @@ log_checkpoint(
 	lsn. If there are dirty buffers in the buffer pool, then our
 	write-ahead-logging algorithm ensures that the log has been flushed
 	up to oldest_lsn. */
-
+	/*因为log还包含头部和虚拟日志记录，如果缓冲池不包含脏缓冲区，oldest_lsn将从前面的函数中获取log_sys->lsn的值，
+	我们必须确保日志被刷新到该lsn。如果缓冲池中有脏缓冲区，那么我们的write- advance -logging算法将确保日志已经刷新到oldest_lsn。*/
 	log_flush_up_to(oldest_lsn, LOG_WAIT_ALL_GROUPS);
 
 	mutex_enter(&(log_sys->mutex));
@@ -1587,7 +1594,7 @@ log_checkpoint(
 
 /********************************************************************
 Makes a checkpoint at a given lsn or later. */
-
+/*在给定的lsn或稍后时间建立检查点。*/
 void
 log_make_checkpoint_at(
 /*===================*/
@@ -1623,6 +1630,8 @@ Tries to establish a big enough margin of free space in the log groups, such
 that a new log entry can be catenated without an immediate need for a
 checkpoint. NOTE: this function may only be called if the calling thread
 owns no synchronization objects! */
+/*尝试在日志组中建立足够大的空闲空间，以便可以在不立即需要检查点的情况下连接新的日志条目。
+注意:这个函数只能在调用线程没有同步对象的情况下调用!*/
 static
 void
 log_checkpoint_margin(void)
@@ -1660,7 +1669,7 @@ loop:
 	if (age > log->max_modified_age_sync) {
 
 		/* A flush is urgent: we have to do a synchronous preflush */
-
+		/* 刷新是紧急的:我们必须做一个同步的预刷新*/
 		sync = TRUE;
 	
 		advance = 2 * (age - log->max_modified_age_sync);
@@ -1672,6 +1681,7 @@ loop:
 	} else if (age > log->max_modified_age_async) {
 
 		/* A flush is not urgent: we do an asynchronous preflush */
+		/* flush不是紧急的:我们执行异步的预flush*/
 		advance = age - log->max_modified_age_async;
 
 		new_oldest = ut_dulint_add(oldest_lsn, advance);
@@ -1683,14 +1693,14 @@ loop:
 
 	if (checkpoint_age > log->max_checkpoint_age) {
 		/* A checkpoint is urgent: we do it synchronously */
-	
+	    /* 检查点是紧急的:我们同步进行*/
 		checkpoint_sync = TRUE;
 
 		do_checkpoint = TRUE;
 
 	} else if (checkpoint_age > log->max_checkpoint_age_async) {
 		/* A checkpoint is not urgent: do it asynchronously */
-
+        /* 检查点不是紧急的:异步执行*/
 		do_checkpoint = TRUE;
 
 		log->check_flush_or_checkpoint = FALSE;
@@ -1708,7 +1718,9 @@ loop:
 		thread doing a flush at the same time. If sync was FALSE,
 		the flush was not urgent, and we let this thread proceed.
 		Otherwise, we let it start from the beginning again. */
-
+		/*如果刷新成功，这个线程已经完成了它的部分，可以继续执行。
+		如果没有成功，则同时有另一个线程进行刷新。如果sync为FALSE，
+		则刷新不是紧急的，我们让这个线程继续执行。否则，我们就从头再来。*/
 		if (sync && !success) {
 			mutex_enter(&(log->mutex));
 
@@ -1731,7 +1743,7 @@ loop:
 
 /**********************************************************
 Reads a specified log segment to a buffer. */
-
+/*将指定的日志段读入缓冲区。*/
 void
 log_group_read_log_seg(
 /*===================*/
@@ -1786,7 +1798,7 @@ loop:
 
 /**********************************************************
 Generates an archived log file name. */
-
+/*生成归档日志文件名。*/
 void
 log_archived_file_name_gen(
 /*=======================*/
@@ -1801,6 +1813,7 @@ log_archived_file_name_gen(
 
 /**********************************************************
 Writes a log file header to a log file space. */
+/*将日志文件头写入日志文件空间。*/
 static
 void
 log_group_archive_file_header_write(
@@ -1840,6 +1853,7 @@ log_group_archive_file_header_write(
 
 /**********************************************************
 Writes a log file header to a completed archived log file. */
+/*将日志文件头写入已完成的归档日志文件。*/
 static
 void
 log_group_archive_completed_header_write(
@@ -1873,7 +1887,7 @@ log_group_archive_completed_header_write(
 }
 
 /**********************************************************
-Does the archive writes for a single log group. */
+Does the archive writes for a single log group. */ /*执行单个日志组的归档写入操作。*/
 static
 void
 log_group_archive(
@@ -1953,7 +1967,7 @@ loop:
 		fil_release_right_to_open();
 	
 		/* Add the archive file as a node to the space */
-		
+		/* 将归档文件作为节点添加到空间中*/
 		fil_node_create(name, group->file_size / UNIV_PAGE_SIZE,
 						group->archive_space_id);
 
@@ -2011,7 +2025,7 @@ loop:
 
 /*********************************************************
 (Writes to the archive of each log group.) Currently, only the first
-group is archived. */
+group is archived. */ /*(写入到每个日志组的存档。)目前，只有第一组存档。*/
 static
 void
 log_archive_groups(void)
@@ -2029,6 +2043,7 @@ log_archive_groups(void)
 /*********************************************************
 Completes the archiving write phase for (each log group), currently,
 the first log group. */
+/*完成(每个日志组)的归档写入阶段，目前是第一个日志组。*/
 static
 void
 log_archive_write_complete_groups(void)
@@ -2051,7 +2066,7 @@ log_archive_write_complete_groups(void)
 
 	/* Truncate from the archive file space all but the last
 	file, or if it has been written full, all files */
-
+    /*从归档文件空间中截断除最后一个文件以外的所有文件，或者如果最后一个文件已写满，则截断所有文件*/
 	n_files = (UNIV_PAGE_SIZE
 			    * fil_space_get_size(group->archive_space_id))
 			    				/ group->file_size;
@@ -2072,6 +2087,7 @@ log_archive_write_complete_groups(void)
 	}
 
 	/* Calculate the archive file space start lsn */
+	/* 计算归档文件空间的起始lsn*/
 	start_lsn = ut_dulint_subtract(log_sys->next_archived_lsn,
 				end_offset - LOG_FILE_HDR_SIZE
 				+ trunc_files
@@ -2085,7 +2101,8 @@ log_archive_write_complete_groups(void)
 
 		/* Write a notice to the headers of archived log
 		files that the file write has been completed */
-
+        /*向归档日志文件的头写入通知，说明文件写入已完成
+		*/
 		log_group_archive_completed_header_write(group, i, end_lsn);
 	}
 		
@@ -2098,7 +2115,7 @@ log_archive_write_complete_groups(void)
 }
 
 /**********************************************************
-Completes an archiving i/o. */
+Completes an archiving i/o. */ /*完成一个归档i/o。*/
 static
 void
 log_archive_check_completion_low(void)
@@ -2114,7 +2131,7 @@ log_archive_check_completion_low(void)
 		}
 
 	    	/* Archive buffer has now been read in: start archive writes */
-
+			/* 归档缓冲区现在已经被读取:开始归档写入*/
 		log_sys->archiving_phase = LOG_ARCHIVE_WRITE;
 
 		log_archive_groups();
@@ -2132,7 +2149,7 @@ log_archive_check_completion_low(void)
 }
 
 /**********************************************************
-Completes an archiving i/o. */
+Completes an archiving i/o. */  /*完成一个归档i/o。*/
 static
 void
 log_io_complete_archive(void)
@@ -2284,7 +2301,7 @@ loop:
 
 /********************************************************************
 Writes the log contents to the archive at least up to the lsn when this
-function was called. */
+function was called. *//*调用此函数时，将日志内容至少写到lsn。*/
 static
 void
 log_archive_all(void)
@@ -2326,6 +2343,7 @@ log_archive_all(void)
 /*********************************************************
 Closes the possible open archive log file (for each group) the first group,
 and if it was open, increments the group file count by 2, if desired. */
+/*关闭第一个组可能打开的归档日志文件(针对每个组)，如果它是打开的，将组文件计数增加2(如果需要的话)。*/
 static
 void
 log_archive_close_groups(
@@ -2348,7 +2366,7 @@ log_archive_close_groups(
 			    
 		/* Write a notice to the headers of archived log
 		files that the file write has been completed */
-
+		/*向归档日志文件的头写入通知，说明文件写入已完成*/
 		log_group_archive_completed_header_write(group,
 						0, log_sys->archived_lsn);
 
@@ -2373,7 +2391,8 @@ called, and stops the archiving. When archiving is started again, the archived
 log file numbers start from 2 higher, so that the archiving will
 not write again to the archived log files which exist when this function
 returns. */
-
+/*当调用此函数时，将日志内容写入归档到lsn，并停止归档。
+当再次开始归档时，归档的日志文件号从更高的2开始，这样当这个函数返回时归档的日志文件不会再次写入*/
 ulint
 log_archive_stop(void)
 /*==================*/
@@ -2404,7 +2423,7 @@ log_archive_stop(void)
 	mutex_exit(&(log_sys->mutex));
 
 	/* Wait for a possible archiving operation to end */
-	
+	/* 等待可能的存档操作结束*/
 	rw_lock_s_lock(&(log_sys->archive_lock));
 	rw_lock_s_unlock(&(log_sys->archive_lock));
 
@@ -2412,14 +2431,14 @@ log_archive_stop(void)
 
 	/* Close all archived log files, incrementing the file count by 2,
 	if appropriate */
-
+	/* 关闭所有存档的日志文件，如果合适的话，将文件计数增加2*/
 	log_archive_close_groups(TRUE);
 	
 	mutex_exit(&(log_sys->mutex));
 
 	/* Make a checkpoint, so that if recovery is needed, the file numbers
 	of new archived log files will start from the right value */
-
+	/* 创建一个检查点，以便在需要恢复时，新归档日志文件的文件号将从正确的值开始*/
 	success = FALSE;
 	
 	while (!success) {
@@ -2437,7 +2456,7 @@ log_archive_stop(void)
 
 /********************************************************************
 Starts again archiving which has been stopped. */
-
+/*重新开始已经停止的存档。*/
 ulint
 log_archive_start(void)
 /*===================*/
@@ -2463,7 +2482,7 @@ log_archive_start(void)
 
 /********************************************************************
 Stop archiving the log so that a gap may occur in the archived log files. */
-
+/*停止对日志的归档，归档的日志文件可能会出现间隙。*/
 ulint
 log_archive_noarchivelog(void)
 /*==========================*/
@@ -2495,7 +2514,7 @@ loop:
 
 /********************************************************************
 Start archiving the log so that a gap may occur in the archived log files. */
-
+/*开始归档日志，以便归档的日志文件中可能出现间隙。*/
 ulint
 log_archive_archivelog(void)
 /*========================*/
@@ -2523,6 +2542,7 @@ log_archive_archivelog(void)
 Tries to establish a big enough margin of free space in the log groups, such
 that a new log entry can be catenated without an immediate need for
 archiving. */
+/*尝试在日志组中建立足够大的空闲空间，以便可以连接新的日志条目，而不需要立即归档。*/
 static
 void
 log_archive_margin(void)
@@ -2578,7 +2598,8 @@ Checks that there is enough free space in the log to start a new query step.
 Flushes the log buffer or makes a new checkpoint if necessary. NOTE: this
 function may only be called if the calling thread owns no synchronization
 objects! */
-
+/*检查日志中是否有足够的空闲空间来启动一个新的查询步骤。如有必要，刷新日志缓冲区或创建新的检查点。
+注意:这个函数只能在调用线程没有同步对象的情况下调用!*/
 void
 log_check_margins(void)
 /*===================*/
@@ -2604,7 +2625,7 @@ loop:
 
 /**********************************************************
 Switches the database to the online backup state. */
-
+/*将数据库切换到联机备份状态。*/
 ulint
 log_switch_backup_state_on(void)
 /*============================*/
@@ -2638,7 +2659,7 @@ log_switch_backup_state_on(void)
 
 /**********************************************************
 Switches the online backup state off. */
-
+/*关闭在线备份状态。*/
 ulint
 log_switch_backup_state_off(void)
 /*=============================*/
@@ -2667,7 +2688,8 @@ Makes a checkpoint at the latest lsn and writes it to first page of each
 data file in the database, so that we know that the file spaces contain
 all modifications up to that lsn. This can only be called at database
 shutdown. This function also writes all log in log files to the log archive. */
-
+/*在最新的lsn上创建一个检查点，并将其写入数据库中每个数据文件的第一页，这样我们就知道文件空间包含该lsn之前的所有修改。
+这只能在数据库关闭时调用。此函数还将日志文件中的所有日志写入日志归档。*/
 void
 logs_empty_and_mark_files_at_shutdown(void)
 /*=======================================*/
@@ -2680,7 +2702,7 @@ logs_empty_and_mark_files_at_shutdown(void)
 
 	/* Wait until the master thread and all other operations are idle: our
 	algorithm only works if the server is idle at shutdown */
-
+	/*等待，直到主线程和所有其他操作空闲:我们的算法只有在服务器在关闭时空闲时才能工作*/
 	srv_shutdown_state = SRV_SHUTDOWN_CLEANUP;
 loop:
 	os_thread_sleep(100000);
@@ -2758,7 +2780,7 @@ loop:
 	/* The following fil_write_... will pass the buffer pool: therefore
 	it is essential that the buffer pool has been completely flushed
 	to disk! */
-
+	/*以下fil_write_……将传递缓冲池:因此缓冲池必须完全刷新到磁盘!*/
 	if (!buf_all_freed()) {
 
 		goto loop;
@@ -2770,7 +2792,7 @@ loop:
 	}
 
 	/* We now suspend also the InnoDB error monitor thread */
-	
+	/*现在我们还挂起了InnoDB错误监视线程*/
 	srv_shutdown_state = SRV_SHUTDOWN_LAST_PHASE;
 
 	if (srv_error_monitor_active) {
@@ -2789,7 +2811,7 @@ loop:
 /**********************************************************
 Checks by parsing that the catenated log segment for a single mtr is
 consistent. */
-
+/*过解析单个mtr的连接日志段是否一致来检查。*/
 ibool
 log_check_log_recs(
 /*===============*/
@@ -2836,7 +2858,7 @@ log_check_log_recs(
 
 /**********************************************************
 Prints info of the log. */
-
+/*打印日志信息。*/
 void
 log_print(void)
 /*===========*/
