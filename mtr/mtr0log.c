@@ -76,7 +76,7 @@ mlog_write_initial_log_record(
 
 /************************************************************
 Parses an initial log record written by mlog_write_initial_log_record. */
-
+/*解析mlog_write_initial_log_record写入的初始日志记录。*/
 byte*
 mlog_parse_initial_log_record(
 /*==========================*/

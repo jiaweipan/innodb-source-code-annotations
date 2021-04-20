@@ -1129,6 +1129,7 @@ loop:
 /***********************************************************************
 In the debug version, updates the replica of a file page, based on a log
 record. */
+/*在调试版本中，根据日志记录更新文件页面的副本。*/
 static
 void
 recv_update_replicate(
@@ -1156,20 +1157,20 @@ recv_update_replicate(
 	ut_a(ptr == end_ptr);
 
 	/* Notify the buffer manager that the page has been updated */
-
+    /* 通知缓冲区管理器页面已被更新*/
 	buf_flush_recv_note_modification(buf_block_align(replica),
 					log_sys->old_lsn, log_sys->old_lsn);
 
 	/* Make sure that committing mtr does not call log routines, as
 	we currently own the log mutex */
-	
+	/*确保提交mtr不会调用日志例程，因为我们目前拥有日志互斥锁*/
 	mtr.modifications = FALSE;
 
 	mtr_commit(&mtr);
 }
 
 /***********************************************************************
-Checks that two strings are identical. */
+Checks that two strings are identical. */ /*检查两个字符串是否相同。*/
 static
 void
 recv_check_identical(
@@ -1196,7 +1197,7 @@ recv_check_identical(
 			
 /***********************************************************************
 In the debug version, checks that the replica of a file page is identical
-to the original page. */
+to the original page. *//*在调试版本中，检查文件页的副本是否与原始页相同。*/
 static
 void
 recv_compare_replicate(
@@ -1233,7 +1234,7 @@ recv_compare_replicate(
 
 /***********************************************************************
 Checks that a replica of a space is identical to the original space. */
-
+/*检查空间的副本是否与原始空间完全相同。*/
 void
 recv_compare_spaces(
 /*================*/
@@ -1301,7 +1302,8 @@ Checks that a replica of a space is identical to the original space. Disables
 ibuf operations and flushes and invalidates the buffer pool pages after the
 test. This function can be used to check the recovery before dict or trx
 systems are initialized. */
-
+/*检查空间的副本是否与原始空间完全相同。在测试后禁用ibuf操作并刷新缓冲池页并使之失效。
+此函数可用于在dict或trx系统初始化之前检查恢复情况。*/
 void
 recv_compare_spaces_low(
 /*====================*/
@@ -1320,6 +1322,7 @@ recv_compare_spaces_low(
 
 /***********************************************************************
 Tries to parse a single log record and returns its length. */
+/*尝试解析单个日志记录并返回其长度。*/
 static
 ulint
 recv_parse_log_rec(
@@ -1365,7 +1368,9 @@ recv_parse_log_rec(
 	TODO: (1) add similar warnings in the case there is an incompletely
 	written log record which does not extend to the boundary of a
 	512-byte block. (2) Add a checksum to a log block. */
-
+     /*如果操作系统将完整的512字节块写入日志，那么在recovery中将不会得到下面的警告。
+	 警告意味着标题和尾部在512字节的块中显示正常，但中间出现了问题。
+	 TODO:(1)如果有不完整的日志记录没有扩展到512字节块的边界，则添加类似的警告。(2)在日志块中添加校验和。*/
 	if (!new_ptr) {
 	        return(0);
 	}
@@ -1398,6 +1403,7 @@ recv_parse_log_rec(
 
 /***********************************************************
 Calculates the new value for lsn when more data is added to the log. */
+/*当日志中增加更多数据时，计算lsn的新值。*/
 static
 dulint
 recv_calc_lsn_on_data_add(
@@ -1424,7 +1430,7 @@ recv_calc_lsn_on_data_add(
 /***********************************************************
 Checks that the parser recognizes incomplete initial segments of a log
 record as incomplete. */
-
+/*检查解析器是否将日志记录的不完整初始段识别为不完整。*/
 void
 recv_check_incomplete_log_recs(
 /*===========================*/
@@ -1447,13 +1453,13 @@ recv_check_incomplete_log_recs(
 Parses log records from a buffer and stores them to a hash table to wait
 merging to file pages. If the hash table becomes too full, applies it
 automatically to file pages. */
-
+/*从缓冲区解析日志记录，并将它们存储到哈希表中，以等待合并到文件页。如果哈希表已满，则自动将其应用于文件页。*/
 void
 recv_parse_log_recs(
 /*================*/
 	ibool	store_to_hash)	/* in: TRUE if the records should be stored
 				to the hash table; this is set to FALSE if just
-				debug checking is needed */
+				debug checking is needed */ /*如果记录存储在哈希表中，则为TRUE;如果只需要调试检查，则将此设置为FALSE*/
 {
 	byte*	ptr;
 	byte*	end_ptr;
@@ -1484,7 +1490,7 @@ loop:
 
 	if (single_rec || *ptr == MLOG_DUMMY_RECORD) {
 		/* The mtr only modified a single page */
-
+        /* mtr只修改了一个页面*/
 		old_lsn = recv_sys->recovered_lsn;
 
 		len = recv_parse_log_rec(ptr, end_ptr, &type, &space,
@@ -1501,7 +1507,7 @@ loop:
 			/* The log record filled a log block, and we require
 			that also the next log block should have been scanned
 			in */
-
+            /*日志记录填充了一个日志块，我们也要求下一个日志块已经被扫描进去*/
 			return;
 		}
 		
@@ -1525,6 +1531,7 @@ loop:
 			/* In debug checking, update a replicate page
 			according to the log record, and check that it
 			becomes identical with the original page */
+			/*在调试检查中，根据日志记录更新复制页，并检查它与原页完全相同*/
 #ifdef UNIV_LOG_DEBUG
 			recv_check_incomplete_log_recs(ptr, len);
 #endif	
@@ -1535,7 +1542,7 @@ loop:
 	} else {
 		/* Check that all the records associated with the single mtr
 		are included within the buffer */
-
+       /*检查与单个mtr相关联的所有记录是否包括在缓冲区中*/
 		total_len = 0;
 		n_recs = 0;
 		
@@ -1584,7 +1591,7 @@ loop:
 			/* The log record filled a log block, and we require
 			that also the next log block should have been scanned
 			in */
-
+            /*日志记录填充了一个日志块，我们也要求下一个日志块已经被扫描进去*/
 			return;
 		}
 
@@ -1596,7 +1603,7 @@ loop:
 
 			/* Hash table of log records will grow too big:
 			empty it */
-					
+			/*日志记录的哈希表将变得太大:清空它*/		
 			recv_apply_hashed_log_recs(FALSE);
 		}
 
@@ -1607,7 +1614,7 @@ loop:
 					< buf_pool_get_curr_size());
 
 		/* Add all the records to the hash table */
-
+        /*将所有记录添加到散列表中*/
 		ptr = recv_sys->buf + recv_sys->recovered_offset;
 
 		for (;;) {
@@ -1660,6 +1667,7 @@ loop:
 /***********************************************************
 Adds data from a new log block to the parsing buffer of recv_sys if
 recv_sys->parse_start_lsn is non-zero. */
+/*如果recv_sys->parse_start_lsn不为零，则从新的日志块添加数据到recv_sys的解析缓冲区。*/
 static
 ibool
 recv_sys_add_to_parsing_buf(
@@ -1735,7 +1743,8 @@ recv_sys_add_to_parsing_buf(
 }
 
 /***********************************************************
-Moves the parsing buffer data left to the buffer start. */
+Moves the parsing buffer data left to the buffer start. */ 
+/*将解析缓冲区数据向左移动到缓冲区开始处。*/
 static
 void
 recv_sys_justify_left_parsing_buf(void)
@@ -1766,7 +1775,7 @@ recv_scan_log_recs(
 	ulint	len,		/* in: buffer length */
 	dulint	start_lsn,	/* in: buffer start lsn */
 	dulint*	contiguous_lsn,	/* in/out: it is known that all log groups
-				contain contiguous log data up to this lsn */
+				contain contiguous log data up to this lsn */ /*已知所有日志组都包含到该lsn为止的连续日志数据*/
 	dulint*	group_scanned_lsn)/* out: scanning succeeded up to this lsn */
 {
 	byte*	log_block;
@@ -1809,7 +1818,9 @@ recv_scan_log_recs(
 			can have been flushed to any of the groups. Therefore,
 			we know that log data is contiguous up to scanned_lsn
 			in all non-corrupt log groups. */
-
+            /*此块是日志刷新操作的开始:我们知道，在此块可以刷新到任何组之前，
+			所有日志组的上一个刷新操作必须已经完成。因此，我们知道在所有未损坏的日志组中，
+			直到scanned_lsn的日志数据都是连续的。*/
 			if (ut_dulint_cmp(scanned_lsn, *contiguous_lsn) > 0) {
 				*contiguous_lsn = scanned_lsn;
 			}
@@ -1829,7 +1840,7 @@ recv_scan_log_recs(
 
 			/* Garbage from a log buffer flush which was made
 			before the most recent database recovery */
-
+            /*在最近一次数据库恢复之前进行的日志缓冲区刷新中的垃圾*/
 			finished = TRUE;
 #ifdef UNIV_LOG_DEBUG
 			/* This is not really an error, but currently
@@ -1845,7 +1856,7 @@ recv_scan_log_recs(
 
 			/* We found a point from which to start the parsing
 			of log records */
-
+			/*我们找到了一个开始解析日志记录的点*/
 			recv_sys->parse_start_lsn =
 				ut_dulint_add(scanned_lsn,
 				   log_block_get_first_rec_group(log_block));
@@ -1859,7 +1870,7 @@ recv_scan_log_recs(
 
 			/* We were able to find more log data: add it to the
 			parsing buffer if parse_start_lsn is already non-zero */
-
+            /* 我们能够找到更多的日志数据:如果parse_start_lsn已经是非零，则将其添加到解析缓冲区*/
 			more_data = recv_sys_add_to_parsing_buf(log_block,
 								scanned_lsn);
 			recv_sys->scanned_lsn = scanned_lsn;
@@ -1910,6 +1921,7 @@ recv_scan_log_recs(
 /***********************************************************
 Scans log from a buffer and stores new log data to the parsing buffer. Parses
 and hashes the log records if new data found. */
+/*从缓冲区扫描日志，并将新的日志数据存储到解析缓冲区。如果发现新数据，则解析并散列日志记录。*/
 static
 void
 recv_group_scan_log_recs(
@@ -1954,7 +1966,8 @@ Recovers from a checkpoint. When this function returns, the database is able
 to start processing of new user transactions, but the function
 recv_recovery_from_checkpoint_finish should be called later to complete
 the recovery and free the resources used in it. */
-
+/*从检查点恢复。当这个函数返回时，数据库能够开始处理新的用户事务，
+但是稍后应该调用recv_recovery_from_checkpoint_finish函数来完成恢复并释放其中使用的资源。*/
 ulint
 recv_recovery_from_checkpoint_start(
 /*================================*/
@@ -2005,7 +2018,7 @@ recv_recovery_from_checkpoint_start(
 	mutex_enter(&(log_sys->mutex));
 
 	/* Look for the latest checkpoint from any of the log groups */
-	
+	/* 从任何日志组查找最新的检查点*/
 	err = recv_find_max_checkpoint(&max_cp_group, &max_cp_field);
 
 	if (err != DB_SUCCESS) {
@@ -2037,7 +2050,7 @@ recv_recovery_from_checkpoint_start(
 		/* Start reading the log groups from the checkpoint lsn up. The
 		variable contiguous_lsn contains an lsn up to which the log is
 		known to be contiguously written to all log groups. */
-
+        /*从检查点lsn开始读取日志组。变量continuous_lsn包含一个lsn，已知在该lsn之前，日志被连续写入所有日志组。*/
 		recv_sys->parse_start_lsn = checkpoint_lsn;
 		recv_sys->scanned_lsn = checkpoint_lsn;
 		recv_sys->scanned_checkpoint_no = 0;
@@ -2046,7 +2059,7 @@ recv_recovery_from_checkpoint_start(
 		/* NOTE: we always do recovery at startup, but only if
 		there is something wrong we will print a message to the
 		user about recovery: */
-		
+		/*注意:我们总是在启动时进行恢复，但只有当有错误时，我们将打印消息给用户关于恢复:*/
 		if (ut_dulint_cmp(checkpoint_lsn, max_flushed_lsn) != 0
 	    	   || ut_dulint_cmp(checkpoint_lsn, min_flushed_lsn) != 0) {
 
@@ -2070,7 +2083,7 @@ recv_recovery_from_checkpoint_start(
 	if (type == LOG_ARCHIVE) {
  		/* Try to recover the remaining part from logs: first from
 		the logs of the archived group */
-
+        /*尝试从日志中恢复其余部分:首先从归档组的日志中恢复*/
 		group = recv_sys->archive_group;
 		capacity = log_group_get_capacity(group);
 
@@ -2096,7 +2109,7 @@ recv_recovery_from_checkpoint_start(
 			/* The group did not contain enough log: an archived
 			log file was missing or invalid, or the log group
 			was corrupt */
-
+        /*组中没有包含足够的日志:归档的日志文件丢失或无效，或者日志组损坏*/
 			return(DB_ERROR);
 		}
 
@@ -2152,7 +2165,7 @@ recv_recovery_from_checkpoint_start(
 	
 	/* Synchronize the uncorrupted log groups to the most up-to-date log
 	group; we also copy checkpoint info to groups */
-
+    /*将未损坏的日志组同步到最新的日志组;我们也复制检查点信息到组*/
 	log_sys->next_checkpoint_lsn = checkpoint_lsn;
 	log_sys->next_checkpoint_no = ut_dulint_add(checkpoint_no, 1);
 
@@ -2192,13 +2205,13 @@ recv_recovery_from_checkpoint_start(
 	/* The database is now ready to start almost normal processing of user
 	transactions: transaction rollbacks and the application of the log
 	records in the hash table can be run in background. */
-
+    /*现在，数据库已经准备好开始几乎正常的用户事务处理:事务回滚和哈希表中日志记录的应用程序可以在后台运行。*/
 	return(DB_SUCCESS);
 }
 
 /************************************************************
 Completes recovery from a checkpoint. */
-
+/*从检查点完成恢复。*/
 void
 recv_recovery_from_checkpoint_finish(void)
 /*======================================*/
@@ -2235,7 +2248,7 @@ recv_recovery_from_checkpoint_finish(void)
 
 /**********************************************************
 Resets the logs. The contents of log files will be lost! */
-
+/*重置日志。日志文件的内容将丢失!*/
 void
 recv_reset_logs(
 /*============*/
@@ -2297,6 +2310,7 @@ recv_reset_logs(
 
 /**********************************************************
 Reads from the archive of a log group and performs recovery. */
+/*从日志组的归档文件中读取数据并执行恢复。*/
 static
 ibool
 log_group_recover_from_archive_file(
@@ -2480,7 +2494,7 @@ ask_again:
 
 /************************************************************
 Recovers from archived log files, and also from log files, if they exist. */
-
+/*从归档日志文件中恢复，如果日志文件存在，也可以从日志文件中恢复。*/
 ulint
 recv_recovery_from_archive_start(
 /*=============================*/
@@ -2596,7 +2610,7 @@ recv_recovery_from_archive_start(
 
 /************************************************************
 Completes recovery from archive. */
-
+/*完成归档恢复。*/
 void
 recv_recovery_from_archive_finish(void)
 /*===================================*/

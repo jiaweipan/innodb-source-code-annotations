@@ -15,7 +15,7 @@ Created 11/28/1995 Heikki Tuuri
 
 /*************************************************************
 Reads a ulint in a compressed form if the log record fully contains it. */
-
+/*如果日志记录中包含完整的ulint，则以压缩形式读取它。*/
 byte*
 mach_parse_compressed(
 /*==================*/
