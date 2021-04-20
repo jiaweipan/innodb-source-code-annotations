@@ -34,17 +34,19 @@ Created 9/20/1997 Heikki Tuuri
 #include "fil0fil.h"
 
 /* Size of block reads when the log groups are scanned forward to do a
-roll-forward */
+roll-forward */ /*向前扫描日志组以进行前滚时读取的块大小*/
 #define RECV_SCAN_SIZE		(4 * UNIV_PAGE_SIZE)
 
-/* Size of the parsing buffer */
+/* Size of the parsing buffer */ /*解析缓冲区的大小*/
 #define RECV_PARSING_BUF_SIZE	LOG_BUFFER_SIZE
 
 /* Log records are stored in the hash table in chunks at most of this size;
 this must be less than UNIV_PAGE_SIZE as it is stored in the buffer pool */
+/*在哈希表中，日志记录以这种大小的块存储;这个值必须小于UNIV_PAGE_SIZE，因为它存储在缓冲池中*/
 #define RECV_DATA_BLOCK_SIZE	(MEM_MAX_ALLOC_IN_BUF - sizeof(recv_data_t))
 
 /* Read-ahead area in applying log records to file pages */
+/*将日志记录应用到文件页中的预读区*/
 #define RECV_READ_AHEAD_AREA	32
 
 recv_sys_t*	recv_sys = NULL;
@@ -59,19 +61,21 @@ the log record hash table becomes too full, and log records must be merged
 to file pages already before the recovery is finished: in this case no
 ibuf operations are allowed, as they could modify the pages read in the
 buffer pool before the pages have been recovered to the up-to-date state */
-
+/*如果如下所示为真，则缓冲池文件页在恢复后必须失效，并且不允许进行ibuf操作;
+变得如此如果日志记录哈希表变得太满,和日志记录之前,必须合并文件页面已经恢复完成:
+在这种情况下不允许ibuf操作,因为他们可以修改页面读前的缓冲池页面已经恢复到最新的状态*/
 /* Recovery is running and no operations on the log files are allowed
 yet: the variable name is misleading */
-
+/*恢复正在运行，不允许对日志文件进行任何操作:变量名误导*/
 ibool	recv_no_ibuf_operations = FALSE;
 
 /* the following counter is used to decide when to print info on
-log scan */
+log scan */ /*以下计数器用于决定何时在日志扫描上打印信息*/
 ulint	recv_scan_print_counter	= 0;
 
 /************************************************************
 Creates the recovery system. */
-
+/*创建恢复系统。*/
 void
 recv_sys_create(void)
 /*=================*/
@@ -92,7 +96,7 @@ recv_sys_create(void)
 
 /************************************************************
 Inits the recovery system for a recovery operation. */
-
+/*为恢复操作初始化恢复系统。*/
 void
 recv_sys_init(void)
 /*===============*/
@@ -124,7 +128,7 @@ recv_sys_init(void)
 }
 
 /************************************************************
-Empties the hash table when it has been fully processed. */
+Empties the hash table when it has been fully processed. */ /*当完全处理哈希表时，清空它。*/
 static
 void
 recv_sys_empty_hash(void)
@@ -141,7 +145,7 @@ recv_sys_empty_hash(void)
 
 /************************************************************
 Frees the recovery system. */
-
+/*释放恢复系统。*/
 void
 recv_sys_free(void)
 /*===============*/
@@ -161,15 +165,16 @@ recv_sys_free(void)
 
 /************************************************************
 Truncates possible corrupted or extra records from a log group. */
+/*从日志组中截断可能损坏的或额外的记录。*/
 static
 void
 recv_truncate_group(
 /*================*/
 	log_group_t*	group,		/* in: log group */
 	dulint		recovered_lsn,	/* in: recovery succeeded up to this
-					lsn */
+					lsn */ /*恢复成功到此lsn*/
 	dulint		limit_lsn,	/* in: this was the limit for
-					recovery */
+					recovery *//*这是恢复的极限*/
 	dulint		checkpoint_lsn,	/* in: recovery was started from this
 					checkpoint */
 	dulint		archived_lsn)	/* in: the log has been archived up to
@@ -199,16 +204,16 @@ recv_truncate_group(
 	if (ut_dulint_cmp(limit_lsn, ut_dulint_max) != 0) {
 		/* We do not know how far we should erase log records: erase
 		as much as possible */
-
+        /*我们不知道应该在多大程度上删除日志记录:尽可能多地删除*/
 		finish_lsn = finish_lsn1;
 	} else {
-		/* It is enough to erase the length of the log buffer */
+		/* It is enough to erase the length of the log buffer */ /*这足以清除日志缓冲区的长度*/
 		finish_lsn = ut_dulint_get_min(finish_lsn1, finish_lsn2);
 	}
 				
 	ut_a(RECV_SCAN_SIZE <= log_sys->buf_size);	
 
-	/* Write the log buffer full of zeros */
+	/* Write the log buffer full of zeros */ /*写满0的日志缓冲区*/
 	for (i = 0; i < RECV_SCAN_SIZE; i++) {
 
 		*(log_sys->buf + i) = '\0';
@@ -220,7 +225,7 @@ recv_truncate_group(
 	if (ut_dulint_cmp(start_lsn, recovered_lsn) != 0) {
 		/* Copy the last incomplete log block to the log buffer and
 		edit its data length: */
-
+		/*将最后一个不完整的日志块复制到日志缓冲区并编辑其数据长度：*/
 		ut_memcpy(log_sys->buf, recv_sys->last_block,
 						OS_FILE_LOG_BLOCK_SIZE);
 		log_block_set_data_len(log_sys->buf,
@@ -262,6 +267,7 @@ recv_truncate_group(
 /************************************************************
 Copies the log segment between group->recovered_lsn and recovered_lsn from the
 most up-to-date log group to group, so that it contains the latest log data. */
+/*将group->recovered_lsn和recovered_lsn之间的日志段从最新的日志组复制到最新的日志组，使其包含最新的日志数据。*/
 static
 void
 recv_copy_group(
@@ -315,7 +321,8 @@ Copies a log segment from the most up-to-date log group to the other log
 groups, so that they all contain the latest log data. Also writes the info
 about the latest checkpoint to the groups, and inits the fields in the group
 memory structs to up-to-date values. */
-
+/*将日志段从最新的日志组复制到其他日志组，以便它们都包含最新的日志数据。
+还将关于最新检查点的信息写入组，并将组内存结构中的字段初始化为最新的值。*/
 void
 recv_synchronize_groups(
 /*====================*/
@@ -355,7 +362,7 @@ recv_synchronize_groups(
 
 		/* Update the fields in the group struct to correspond to
 		recovered_lsn */
-
+		/*更新组结构中的字段，使其对应于recovered_lsn*/
 		log_group_set_fields(group, recovered_lsn);
 
 		group = UT_LIST_GET_NEXT(log_groups, group);
@@ -365,7 +372,8 @@ recv_synchronize_groups(
 	incremented checkpoint_no by one, and the info will not be written
 	over the max checkpoint info, thus making the preservation of max
 	checkpoint info on disk certain */
-
+	/*复制检查点信息到组;请记住，我们已经将checkpoint_no增加了1，
+	并且该信息不会被写入最大检查点信息，从而使磁盘上的最大检查点信息保存是确定的*/
 	log_groups_write_checkpoint_info();
 
 	mutex_exit(&(log_sys->mutex));
@@ -379,6 +387,7 @@ recv_synchronize_groups(
 
 /************************************************************
 Looks for the maximum consistent checkpoint from the log groups. */
+/*从日志组查找最大一致检查点。*/
 static
 ulint
 recv_find_max_checkpoint(
@@ -487,6 +496,7 @@ recv_find_max_checkpoint(
 /***********************************************************************
 Tries to parse a single log record body and also applies it to a page if
 specified. */
+/*尝试解析单个日志记录体，并将其应用于指定的页面。*/
 static
 byte*
 recv_parse_or_apply_log_rec_body(
@@ -506,7 +516,6 @@ recv_parse_or_apply_log_rec_body(
 
 	if (type <= MLOG_8BYTES) {
 		new_ptr = mlog_parse_nbytes(type, ptr, end_ptr, page);
-
 	} else if (type == MLOG_REC_INSERT) {
 		new_ptr = page_cur_parse_insert_rec(FALSE, ptr, end_ptr, page,
 									mtr);
@@ -585,6 +594,7 @@ recv_parse_or_apply_log_rec_body(
 /*************************************************************************
 Calculates the fold value of a page file address: used in inserting or
 searching for a log record in the hash table. */
+/*计算页文件地址的折叠值:用于在哈希表中插入或搜索日志记录。*/
 UNIV_INLINE
 ulint
 recv_fold(
@@ -599,6 +609,7 @@ recv_fold(
 /*************************************************************************
 Calculates the hash value of a page file address: used in inserting or
 searching for a log record in the hash table. */
+/*计算页文件地址的哈希值:用于在哈希表中插入或搜索日志记录。*/
 UNIV_INLINE
 ulint
 recv_hash(
@@ -612,6 +623,7 @@ recv_hash(
 
 /*************************************************************************
 Gets the hashed file address struct for a page. */
+/*获取页的散列文件地址结构。*/
 static
 recv_addr_t*
 recv_get_fil_addr_struct(
@@ -640,7 +652,7 @@ recv_get_fil_addr_struct(
 }
 
 /***********************************************************************
-Adds a new log record to the hash table of log records. */
+Adds a new log record to the hash table of log records. */ /*向日志记录的散列表中添加一条新的日志记录。*/
 static
 void
 recv_add_to_hash_table(
@@ -692,7 +704,7 @@ recv_add_to_hash_table(
 	/* Store the log record body in chunks of less than UNIV_PAGE_SIZE:
 	recv_sys->heap grows into the buffer pool, and bigger chunks could not
 	be allocated */
-	
+	/*将日志记录主体存储在小于UNIV_PAGE_SIZE: recv_sys->heap中，堆将增长到缓冲池中，并且不能分配更大的块*/
 	while (rec_end > body) {
 
 		len = rec_end - body;
@@ -716,7 +728,7 @@ recv_add_to_hash_table(
 }
 
 /*************************************************************************
-Copies the log record body from recv to buf. */
+Copies the log record body from recv to buf. */ /*将日志记录体从recv复制到buf。*/
 static
 void
 recv_data_copy_to_buf(
@@ -751,12 +763,13 @@ recv_data_copy_to_buf(
 Applies the hashed log records to the page, if the page lsn is less than the
 lsn of a log record. This can be called when a buffer page has just been
 read in, or also for a page already in the buffer pool. */
-
+/*如果页面lsn小于某条日志记录的lsn，则将散列日志记录应用到该页面。
+这可以在刚刚读入缓冲页时调用，也可以在缓冲池中已经读入的页调用。*/
 void
 recv_recover_page(
 /*==============*/
 	ibool	just_read_in,	/* in: TRUE if the i/o-handler calls this for
-				a freshly read page */
+				a freshly read page */ /*如果i/o-handler为新读取的页面调用这个函数，则为TRUE*/
 	page_t*	page,		/* in: buffer page */
 	ulint	space,		/* in: space id */
 	ulint	page_no)	/* in: page number */
@@ -777,8 +790,7 @@ recv_recover_page(
 
 	if (recv_sys->apply_log_recs == FALSE) {
 
-		/* Log records should not be applied now */
-	
+		/* Log records should not be applied now *//* 现在不应该应用日志记录*/
 		mutex_exit(&(recv_sys->mutex));
 
 		return;
@@ -805,8 +817,8 @@ recv_recover_page(
 		/* Move the ownership of the x-latch on the page to this OS
 		thread, so that we can acquire a second x-latch on it. This
 		is needed for the operations to the page to pass the debug
-		checks. */
-
+		checks. *//*将页面上x-latch的所有权移动到这个OS线程，这样我们就可以在它上面获得第二个x-latch。
+		这对于通过调试检查的页面操作是必需的。*/
 		rw_lock_x_lock_move_ownership(&(block->lock));
 	}
 
@@ -821,12 +833,12 @@ recv_recover_page(
 
 	buf_page_dbg_add_level(page, SYNC_NO_ORDER_CHECK);
 
-	/* Read the newest modification lsn from the page */
+	/* Read the newest modification lsn from the page */ /*从页面阅读最新的修改lsn*/
 	page_lsn = mach_read_from_8(page + FIL_PAGE_LSN);
 
 	/* It may be that the page has been modified in the buffer pool: read
 	the newest modification lsn there */
-		
+	/*可能是页面在缓冲池中被修改了:在那里读取最新的修改lsn*/	
 	page_newest_lsn = buf_frame_get_newest_modification(page);
 
 	if (!ut_dulint_is_zero(page_newest_lsn)) {
@@ -860,7 +872,9 @@ recv_recover_page(
 			type was MLOG_INIT_FILE_PAGE, and we replaced it
 			with MLOG_FULL_PAGE, thus to we have to apply
 			any record of type MLOG_FULL_PAGE */
-			
+			/*一个新文件的页面可能已投入使用,或有存储的全部内容页面:
+			在这种情况下它可能是原始的日志记录类型是MLOG_INIT_FILE_PAGE,
+			我们代之以MLOG_FULL_PAGE,因此我们必须应用MLOG_FULL_PAGE任何的记录类型*/
 			page_lsn = page_newest_lsn;
 
 			mach_write_to_8(page + UNIV_PAGE_SIZE
@@ -909,7 +923,7 @@ recv_recover_page(
 	
 	/* Make sure that committing mtr does not change the modification
 	lsn values of page */
-	
+	/*确保提交mtr不会更改页面的修改lsn值*/
 	mtr.modifications = FALSE;
 	
 	mtr_commit(&mtr);	
@@ -917,7 +931,7 @@ recv_recover_page(
 
 /***********************************************************************
 Reads in pages which have hashed log records, from an area around a given
-page number. */
+page number. *//*从给定页码周围的区域读取具有散列日志记录的页面。*/
 static
 ulint
 recv_read_in_area(
@@ -1082,8 +1096,7 @@ loop:
 
 	if (!allow_ibuf) {
 		/* Flush all the file pages to disk and invalidate them in
-		the buffer pool */
-
+		the buffer pool *//*将所有文件页刷新到磁盘，并使它们在缓冲池中失效*/
 		mutex_exit(&(recv_sys->mutex));
 		mutex_exit(&(log_sys->mutex));
 

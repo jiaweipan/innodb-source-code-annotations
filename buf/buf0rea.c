@@ -544,7 +544,7 @@ buf_read_ibuf_merge_pages(
 
 /************************************************************************
 Issues read requests for pages which recovery wants to read in. */
-
+/*对恢复要读取的页面发出读取请求。*/
 void
 buf_read_recv_pages(
 /*================*/

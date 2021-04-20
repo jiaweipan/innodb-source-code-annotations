@@ -193,6 +193,7 @@ buf_block_get_page_no(
 
 /***********************************************************************
 Gets the block to whose frame the pointer is pointing to. */
+/*获取指针所指向的帧所在的块。*/
 UNIV_INLINE
 buf_block_t*
 buf_block_align(

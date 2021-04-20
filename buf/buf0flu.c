@@ -63,7 +63,8 @@ buf_flush_insert_into_flush_list(
 Inserts a modified block into the flush list in the right sorted position.
 This function is used by recovery, because there the modifications do not
 necessarily come in the order of lsn's. */
-
+/*将修改后的块插入flush列表中的正确排序位置。此函数用于恢复，
+因为在恢复中修改的顺序不一定是lsn的顺序。*/
 void
 buf_flush_insert_sorted_into_flush_list(
 /*====================================*/

@@ -644,7 +644,7 @@ buf_page_peek_if_search_hashed(
 /************************************************************************
 Returns TRUE if the page can be found in the buffer pool hash table. NOTE
 that it is possible that the page is not yet read from disk, though. */
-
+/*如果可以在缓冲池哈希表中找到该页，则返回TRUE。注意，可能还没有从磁盘读取页面。*/
 ibool
 buf_page_peek(
 /*==========*/
@@ -1024,7 +1024,7 @@ buf_page_optimistic_get_func(
 /************************************************************************
 This is used to get access to a known database page, when no waiting can be
 done. */
-
+/*在无法等待的情况下，这用于访问已知的数据库页面。*/
 ibool
 buf_page_get_known_nowait(
 /*======================*/

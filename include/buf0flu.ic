@@ -63,6 +63,7 @@ buf_flush_note_modification(
 
 /************************************************************************
 This function should be called when recovery has modified a buffer page. */
+/*当恢复修改了缓冲页时，应该调用他的函数。*/
 UNIV_INLINE
 void
 buf_flush_recv_note_modification(
