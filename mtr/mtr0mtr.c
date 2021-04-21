@@ -5,7 +5,7 @@ Mini-transaction buffer
 
 Created 11/26/1995 Heikki Tuuri
 *******************************************************/
-
+/*Mini-transaction缓冲*/
 #include "mtr0mtr.h"
 
 #ifdef UNIV_NONINL
@@ -20,7 +20,7 @@ Created 11/26/1995 Heikki Tuuri
 /*******************************************************************
 Starts a mini-transaction and creates a mini-transaction handle 
 and buffer in the memory buffer given by the caller. */
-
+/*启动一个小事务，并在调用者给出的内存缓冲区中创建一个小事务句柄和缓冲区。*/
 mtr_t*
 mtr_start_noninline(
 /*================*/
@@ -33,6 +33,7 @@ mtr_start_noninline(
 
 /*********************************************************************
 Releases the item in the slot given. */
+/*释放给定插槽中的项目。*/
 UNIV_INLINE
 void
 mtr_memo_slot_release(
@@ -79,6 +80,9 @@ essential that the x-rw-lock on a modified buffer page is not released before
 buf_page_note_modification is called for that page! Otherwise, some thread
 might race to modify it, and the flush list sort order on lsn would be
 destroyed. */
+/*释放存储在mtr备忘录中的mlock和其他对象。他们被释放的顺序与他们被推到备忘录上的顺序相反。
+注意!在被修改的缓冲区页面调用buf_page_note_modification之前，不能释放x-rw-lock，这一点非常重要!
+否则，一些线程可能会争着修改它，从而破坏lsn上的刷新列表排序顺序。*/
 UNIV_INLINE
 void
 mtr_memo_pop_all(
@@ -108,6 +112,7 @@ mtr_memo_pop_all(
 /****************************************************************
 Writes to the log the contents of a full page. This is called when the
 database is in the online backup state. */
+/*将整个页面的内容写入日志。当数据库处于联机备份状态时，将调用此函数。*/
 static
 void
 mtr_log_write_full_page(
@@ -147,7 +152,7 @@ mtr_log_write_full_page(
 
 /****************************************************************
 Parses a log record which contains the full contents of a page. */
-
+/*解析包含页面全部内容的日志记录。*/
 byte*
 mtr_log_parse_full_page(
 /*====================*/
@@ -171,7 +176,7 @@ mtr_log_parse_full_page(
 /****************************************************************
 Writes to the database log the full contents of the pages that this mtr has
 modified. */
-
+/*将此mtr已修改的页面的全部内容写入数据库日志。*/
 void
 mtr_log_write_backup_full_pages(
 /*============================*/
@@ -218,6 +223,7 @@ mtr_log_write_backup_full_pages(
 
 /****************************************************************
 Checks if mtr is the first to modify any page after online_backup_lsn. */
+/*检查mtr是否是在online_backup_lsn之后第一个修改任何页面的。*/
 static
 ibool
 mtr_first_to_modify_page_after_backup(
@@ -225,7 +231,7 @@ mtr_first_to_modify_page_after_backup(
 				/* out: TRUE if first for a page */
 	mtr_t*	mtr,		/* in: mini-transaction */
 	ulint*	n_pages)	/* out: number of modified pages (all modified
-				pages, backup_lsn does not matter here) */
+				pages, backup_lsn does not matter here) */ /*修改的页面数量(所有修改的页面，backup_lsn在这里无关紧要)*/
 {
 	mtr_memo_slot_t* slot;
 	dyn_array_t*	memo;
@@ -279,6 +285,7 @@ mtr_first_to_modify_page_after_backup(
 	
 /****************************************************************
 Writes the contents of a mini-transaction log, if any, to the database log. */
+/*将小事务日志(如果有的话)的内容写入数据库日志。*/
 static
 void
 mtr_log_reserve_and_write(
@@ -316,7 +323,7 @@ mtr_log_reserve_and_write(
 
 	data_size = dyn_array_get_data_size(mlog);
 	
-	/* Open the database log for log_write_low */
+	/* Open the database log for log_write_low *//*打开log_write_low的数据库日志*/
 	mtr->start_lsn = log_reserve_and_open(data_size); 
 
 	if (mtr->log_mode == MTR_LOG_ALL) {
@@ -329,7 +336,8 @@ mtr_log_reserve_and_write(
 			to the log the full contents of all the pages if this
 			mtr is the first to modify any page in the buffer pool
 			after online_backup_lsn */
-
+            /*数据库处于联机备份状态:如果这个mtr是在online_backup_lsn之后第一个修改缓冲池中任何页面的，
+			则将所有页面的全部内容写入日志*/
 			log_close();
 			log_release();
 		
@@ -353,7 +361,7 @@ mtr_log_reserve_and_write(
 
 /*******************************************************************
 Commits a mini-transaction. */
-
+/*提交一个mini-transaction。*/
 void
 mtr_commit(
 /*=======*/
@@ -376,7 +384,9 @@ mtr_commit(
 	at the oldest modification of any page in the buffer pool. It is also
 	required when we insert modified buffer pages in to the flush list
 	which must be sorted on oldest_modification. */
-	
+	/*我们首先将修改信息更新到缓冲区页面，然后才释放日志互斥锁:这保证了当日志互斥锁空闲时，
+	所有缓冲区页面都包含其修改的最新信息。当我们查看缓冲池中任何页面最老的修改时，这一事实用于创建检查点。
+	当我们将经过修改的缓冲页插入flush列表时，也需要这样做，flush列表必须按照oldest_modify排序。*/
 	mtr_memo_pop_all(mtr);
 
 	if (mtr->modifications) {
@@ -394,7 +404,8 @@ mtr_commit(
 Releases the latches stored in an mtr memo down to a savepoint.
 NOTE! The mtr must not have made changes to buffer pages after the
 savepoint, as these can be handled only by mtr_commit. */
-
+/*释放锁存在地铁备忘录到一个保存点。
+注意!mtr必须没有在保存点之后对缓冲区页面进行更改，因为这些更改只能由mtr_commit处理。*/
 void
 mtr_rollback_to_savepoint(
 /*======================*/
@@ -426,7 +437,7 @@ mtr_rollback_to_savepoint(
 
 /*******************************************************
 Releases an object in the memo stack. */
-
+/*释放备忘录堆栈中的对象。*/
 void
 mtr_memo_release(
 /*=============*/
@@ -462,7 +473,7 @@ mtr_memo_release(
 
 /************************************************************
 Reads 1 - 4 bytes from a file page buffered in the buffer pool. */
-
+/*从缓冲池中缓冲的文件页读取1 - 4个字节。*/
 ulint
 mtr_read_ulint(
 /*===========*/
@@ -488,7 +499,7 @@ mtr_read_ulint(
 
 /************************************************************
 Reads 8 bytes from a file page buffered in the buffer pool. */
-
+/*从缓冲池中缓冲的文件页读取8个字节。*/
 dulint
 mtr_read_dulint(
 /*===========*/

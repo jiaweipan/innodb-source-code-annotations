@@ -585,6 +585,7 @@ buf_page_get_release_on_io(
 /************************************************************************
 Decrements the bufferfix count of a buffer control block and releases
 a latch, if specified. */
+/*减少缓冲区控制块的bufferfix计数并释放锁存器(如果指定的话)。*/
 UNIV_INLINE
 void
 buf_page_release(

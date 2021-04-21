@@ -108,6 +108,7 @@ flag value must give the length also! */
 /*******************************************************************
 Starts a mini-transaction and creates a mini-transaction handle 
 and buffer in the memory buffer given by the caller. */
+/*启动一个小事务，并在调用者给出的内存缓冲区中创建一个小事务句柄和缓冲区。*/
 UNIV_INLINE
 mtr_t*
 mtr_start(
@@ -118,7 +119,7 @@ mtr_start(
 /*******************************************************************
 Starts a mini-transaction and creates a mini-transaction handle 
 and buffer in the memory buffer given by the caller. */
-
+/*启动一个小事务，并在调用者给出的内存缓冲区中创建一个小事务句柄和缓冲区。*/
 mtr_t*
 mtr_start_noninline(
 /*================*/
@@ -127,7 +128,7 @@ mtr_start_noninline(
 	mtr_t*	mtr);	/* in: memory buffer for the mtr buffer */
 /*******************************************************************
 Commits a mini-transaction. */
-
+/*提交一个mini-transaction。*/
 void
 mtr_commit(
 /*=======*/
@@ -136,7 +137,7 @@ mtr_commit(
 Writes to the database log the full contents of the pages that this mtr is
 the first to modify in the buffer pool. This function is called when the
 database is in the online backup state. */
-
+/*将此mtr在缓冲池中首先修改的页面的全部内容写入数据库日志。当数据库处于联机备份状态时，调用此函数。*/
 void
 mtr_log_write_backup_entries(
 /*=========================*/
@@ -144,6 +145,7 @@ mtr_log_write_backup_entries(
 	dulint	backup_lsn);	/* in: online backup lsn */
 /**************************************************************
 Sets and returns a savepoint in mtr. */
+/*设置并返回mtr中的保存点。*/
 UNIV_INLINE
 ulint
 mtr_set_savepoint(
@@ -154,7 +156,8 @@ mtr_set_savepoint(
 Releases the latches stored in an mtr memo down to a savepoint.
 NOTE! The mtr must not have made changes to buffer pages after the
 savepoint, as these can be handled only by mtr_commit. */
-
+/*释放锁存在mtr备忘录到一个保存点。注意!mtr必须没有在保存点之后对缓冲区页面进行更改，
+因为这些更改只能由mtr_commit处理。*/
 void
 mtr_rollback_to_savepoint(
 /*======================*/
@@ -163,6 +166,7 @@ mtr_rollback_to_savepoint(
 /**************************************************************
 Releases the (index tree) s-latch stored in an mtr memo after a
 savepoint. */
+/*在保存点之后释放存储在mtr备忘录中的(索引树)s锁存器。*/
 UNIV_INLINE
 void
 mtr_release_s_latch_at_savepoint(
@@ -172,6 +176,7 @@ mtr_release_s_latch_at_savepoint(
 	rw_lock_t* 	lock);		/* in: latch to release */
 /*******************************************************************
 Gets the logging mode of a mini-transaction. */
+/*获取小型事务的日志记录模式。*/
 UNIV_INLINE
 ulint
 mtr_get_log_mode(
@@ -180,6 +185,7 @@ mtr_get_log_mode(
 	mtr_t*	mtr);	/* in: mtr */
 /*******************************************************************
 Changes the logging mode of a mini-transaction. */
+/*更改小事务的日志记录模式。*/
 UNIV_INLINE
 ulint
 mtr_set_log_mode(
@@ -189,7 +195,7 @@ mtr_set_log_mode(
 	ulint	mode);	/* in: logging mode: MTR_LOG_NONE, ... */
 /************************************************************
 Reads 1 - 4 bytes from a file page buffered in the buffer pool. */
-
+/*从缓冲池中缓冲的文件页读取1 - 4个字节。*/
 ulint
 mtr_read_ulint(
 /*===========*/
@@ -199,7 +205,7 @@ mtr_read_ulint(
 	mtr_t*	mtr);	/* in: mini-transaction handle */
 /************************************************************
 Reads 8 bytes from a file page buffered in the buffer pool. */
-
+/*从缓冲池中缓冲的文件页读取8个字节。*/
 dulint
 mtr_read_dulint(
 /*===========*/
@@ -209,15 +215,18 @@ mtr_read_dulint(
 	mtr_t*	mtr);	/* in: mini-transaction handle */
 /*************************************************************************
 This macro locks an rw-lock in s-mode. */
+/*这个宏在s模式下锁定rw-lock。*/
 #define mtr_s_lock(B, MTR)	mtr_s_lock_func((B), IB__FILE__, __LINE__,\
 						(MTR))
 /*************************************************************************
 This macro locks an rw-lock in x-mode. */
+/*这个宏在x模式下锁定了rw-lock。*/
 #define mtr_x_lock(B, MTR)	mtr_x_lock_func((B), IB__FILE__, __LINE__,\
 						(MTR))
 /*************************************************************************
 NOTE! Use the macro above!
 Locks a lock in s-mode. */
+/*注意!使用上面的宏!锁定s模式下的锁。*/
 UNIV_INLINE
 void
 mtr_s_lock_func(
@@ -229,6 +238,7 @@ mtr_s_lock_func(
 /*************************************************************************
 NOTE! Use the macro above!
 Locks a lock in x-mode. */
+/*注意!使用上面的宏!在x模式下锁定一个锁。*/
 UNIV_INLINE
 void
 mtr_x_lock_func(
@@ -240,7 +250,7 @@ mtr_x_lock_func(
 
 /*******************************************************
 Releases an object in the memo stack. */
-
+/*释放备忘录堆栈中的对象。*/
 void
 mtr_memo_release(
 /*=============*/
@@ -249,7 +259,7 @@ mtr_memo_release(
 	ulint	type);	/* in: object type: MTR_MEMO_S_LOCK, ... */
 /****************************************************************
 Parses a log record which contains the full contents of a page. */
-
+/*解析包含页面全部内容的日志记录。*/
 byte*
 mtr_log_parse_full_page(
 /*====================*/
@@ -259,6 +269,7 @@ mtr_log_parse_full_page(
 	page_t*	page);	/* in: page or NULL */
 /**************************************************************
 Checks if memo contains the given item. */
+/*检查备忘录是否包含给定的项目。*/
 UNIV_INLINE
 ibool
 mtr_memo_contains(
@@ -269,7 +280,6 @@ mtr_memo_contains(
 	ulint	type);	/* in: type of object */
 /*************************************************************
 Prints info of an mtr handle. */
-
 void
 mtr_print(
 /*======*/
@@ -280,6 +290,7 @@ mtr_print(
 
 /*******************************************************************
 Returns the log object of a mini-transaction buffer. */
+/*返回小事务缓冲区的日志对象。*/
 UNIV_INLINE
 dyn_array_t*
 mtr_get_log(
@@ -288,6 +299,7 @@ mtr_get_log(
 	mtr_t*	mtr);	/* in: mini-transaction */
 /*******************************************************
 Pushes an object to an mtr memo stack. */
+/*将对象推入mtr备忘录堆栈。*/
 UNIV_INLINE
 void
 mtr_memo_push(
@@ -298,6 +310,7 @@ mtr_memo_push(
 
 
 /* Type definition of a mini-transaction memo stack slot. */
+/*小型交易备忘录堆栈槽的类型定义。*/
 typedef	struct mtr_memo_slot_struct	mtr_memo_slot_t;
 struct mtr_memo_slot_struct{
 	ulint	type;	/* type of the stored object (MTR_MEMO_S_LOCK, ...) */

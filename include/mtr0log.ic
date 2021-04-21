@@ -54,6 +54,7 @@ mlog_close(
 
 /************************************************************
 Catenates 1 - 4 bytes to the mtr log. The value is not compressed. */
+/*连接1 - 4字节到mtr日志。该值未压缩。*/
 UNIV_INLINE
 void
 mlog_catenate_ulint(
@@ -138,6 +139,7 @@ mlog_catenate_dulint_compressed(
 
 /************************************************************
 Writes the initial part of a log record. */
+/*写入日志记录的初始部分。*/
 UNIV_INLINE
 byte*
 mlog_write_initial_log_record_fast(

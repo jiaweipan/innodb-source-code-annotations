@@ -212,6 +212,9 @@ the byte. If the most significant bit is zero, it means 1-byte storage,
 else if the 2nd bit is 0, it means 2-byte storage, else if 3rd is 0,
 it means 3-byte storage, else if 4th is 0, it means 4-byte storage, 
 else the storage is 5-byte. */
+/*以压缩形式写入ulint，其中第一个字节编码存储的ulint的长度。
+我们看这个字节的最高有效位。如果最高位是0，就表示1字节存储，如果第二位是0，就表示2字节存储，
+如果第三位是0，就表示3字节存储，如果第4位是0，就表示4字节存储，否则存储为5字节。*/
 UNIV_INLINE
 ulint
 mach_write_compressed(
