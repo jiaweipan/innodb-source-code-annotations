@@ -5,7 +5,7 @@ Mini-transaction buffer
 
 Created 11/26/1995 Heikki Tuuri
 *******************************************************/
-
+/*Mini-transaction缓冲*/
 #ifndef mtr0mtr_h
 #define mtr0mtr_h
 
@@ -18,18 +18,19 @@ Created 11/26/1995 Heikki Tuuri
 #include "mtr0types.h"
 #include "page0types.h"
 
-/* Logging modes for a mini-transaction */
+/* Logging modes for a mini-transaction */ /*小型事务的日志模式*/
 #define MTR_LOG_ALL		21	/* default mode: log all operations
-					modifying disk-based data */
+					modifying disk-based data */ /*记录所有修改基于磁盘的数据的操作*/
 #define	MTR_LOG_NONE		22	/* log no operations */
 /*#define	MTR_LOG_SPACE	23 */	/* log only operations modifying
 					file space page allocation data
-					(operations in fsp0fsp.* ) */
+					(operations in fsp0fsp.* ) */ /*仅记录修改文件空间页面分配数据的操作(fsp0fsp. log)。*)*/
 #define	MTR_LOG_SHORT_INSERTS	24	/* inserts are logged in a shorter
-					form */
+					form */ /*插入以较短的形式记录*/
 					
 /* Types for the mlock objects to store in the mtr memo; NOTE that the
 first 3 values must be RW_S_LATCH, RW_X_LATCH, RW_NO_LATCH */
+/*要存储在mtr memo中的mlock对象的类型;请注意,前3个必须是RW_S_LATCH、RW_X_LATCH、RW_NO_LATCH*/
 #define	MTR_MEMO_PAGE_S_FIX	RW_S_LATCH
 #define	MTR_MEMO_PAGE_X_FIX	RW_X_LATCH
 #define	MTR_MEMO_BUF_FIX	RW_NO_LATCH
@@ -41,63 +42,68 @@ first 3 values must be RW_S_LATCH, RW_X_LATCH, RW_NO_LATCH */
 for the compiler to warn if val and type parameters are switched
 in a call to mlog_write_ulint. NOTE! For 1 - 8 bytes, the
 flag value must give the length also! */
+/*日志项类型:我们将它们设置为'byte'类型，以便编译器在调用mlog_write_ulint时，
+如果val和类型参数被切换，编译器会发出警告。注意!对于1 - 8字节，标志值也必须给出长度!*/
 #define	MLOG_SINGLE_REC_FLAG	128		/* if the mtr contains only
 						one log record for one page,
 						i.e., write_initial_log_record
 						has been called only once,
 						this flag is ORed to the type
 						of that first log record */
+/*如果mtr只包含一页日志记录，即write_initial_log_record只被调用一次，这个标志与第一个日志记录的类型有关*/
 #define	MLOG_1BYTE		((byte)1) 	/* one byte is written */
 #define	MLOG_2BYTES		((byte)2)	/* 2 bytes ... */
 #define	MLOG_4BYTES		((byte)4)	/* 4 bytes ... */
 #define	MLOG_8BYTES		((byte)8)	/* 8 bytes ... */
 #define	MLOG_REC_INSERT		((byte)9)	/* record insert */
 #define	MLOG_REC_CLUST_DELETE_MARK ((byte)10) 	/* mark clustered index record
-						deleted */
+						deleted */ /*标记聚集索引记录已删除*/
 #define	MLOG_REC_SEC_DELETE_MARK ((byte)11) 	/* mark secondary index record
-						deleted */
+						deleted */ /*标记二级索引记录删除*/
 #define MLOG_REC_UPDATE_IN_PLACE ((byte)13)	/* update of a record,
-						preserves record field sizes */
+						preserves record field sizes */ /*更新一个记录，保存记录字段的大小*/
 #define MLOG_REC_DELETE		((byte)14)	/* delete a record from a
-						page */
+						page */ /*从页面中删除一条记录*/
 #define	MLOG_LIST_END_DELETE 	((byte)15)	/* delete record list end on
-						index page */
+						index page */ /*删除记录列表结束在索引页*/
 #define	MLOG_LIST_START_DELETE 	((byte)16) 	/* delete record list start on
-						index page */
+						index page */ /*删除记录列表从索引页开始*/
 #define	MLOG_LIST_END_COPY_CREATED ((byte)17) 	/* copy record list end to a
-						new created index page */
-#define	MLOG_PAGE_REORGANIZE 	((byte)18)	/* reorganize an index page */
-#define MLOG_PAGE_CREATE 	((byte)19)	/* create an index page */
+						new created index page */ /*复制记录列表结束到新创建的索引页*/
+#define	MLOG_PAGE_REORGANIZE 	((byte)18)	/* reorganize an index page */ /*重新组织索引页*/
+#define MLOG_PAGE_CREATE 	((byte)19)	/* create an index page */ /*创建索引页*/
 #define	MLOG_UNDO_INSERT 	((byte)20)	/* insert entry in an undo
-						log */
-#define MLOG_UNDO_ERASE_END	((byte)21)	/* erase an undo log page end */
+						log */ /*在撤销日志中插入条目*/
+#define MLOG_UNDO_ERASE_END	((byte)21)	/* erase an undo log page end */ /*删除undo log页面结束*/
 #define	MLOG_UNDO_INIT 		((byte)22)	/* initialize a page in an
-						undo log */
+						undo log */ /*在撤消日志中初始化页面*/
 #define MLOG_UNDO_HDR_DISCARD	((byte)23)	/* discard an update undo log
-						header */
+						header */ /*丢弃update undo日志头*/
 #define	MLOG_UNDO_HDR_REUSE	((byte)24)	/* reuse an insert undo log
-						header */
-#define MLOG_UNDO_HDR_CREATE	((byte)25)	/* create an undo log header */
+						header */ /*重用插入撤销日志头*/
+#define MLOG_UNDO_HDR_CREATE	((byte)25)	/* create an undo log header */ /*创建undo日志头*/
 #define MLOG_REC_MIN_MARK	((byte)26)	/* mark an index record as the
-						predefined minimum record */
+						predefined minimum record */ /*将索引记录标记为预定义的最小记录*/
 #define MLOG_IBUF_BITMAP_INIT	((byte)27)	/* initialize an ibuf bitmap
-						page */
-#define	MLOG_FULL_PAGE		((byte)28)	/* full contents of a page */
+						page */ /*初始化ibuf位图页面*/
+#define	MLOG_FULL_PAGE		((byte)28)	/* full contents of a page */ /*页面的完整内容*/
 #define MLOG_INIT_FILE_PAGE	((byte)29)	/* this means that a file page
 						is taken into use and the prior
 						contents of the page should be
 						ignored: in recovery we must
 						not trust the lsn values stored
-						to the file page */
-#define MLOG_WRITE_STRING	((byte)30)	/* write a string to a page */
+						to the file page */ 
+						/*这意味着文件页将被使用，并且该页之前的内容应该被忽略:在恢复过程中，我们不能信任存储在文件页中的lsn值*/
+#define MLOG_WRITE_STRING	((byte)30)	/* write a string to a page */ /*将字符串写入页面*/
 #define	MLOG_MULTI_REC_END	((byte)31)	/* if a single mtr writes
 						log records for several pages,
 						this log record ends the
-						sequence of these records */
+						sequence of these records */ 
+						/*如果一个mtr写了几个页面的日志记录，那么这个日志记录将结束这些记录的顺序*/
 #define MLOG_DUMMY_RECORD	((byte)32)	/* dummy log record used to
-						pad a log block full */
+						pad a log block full */ /*虚拟日志记录用于填充日志块*/
 #define MLOG_BIGGEST_TYPE	((byte)32) 	/* biggest value (used in
-						asserts) */
+						asserts) */ /*最大值(在断言中使用)*/
 					
 /*******************************************************************
 Starts a mini-transaction and creates a mini-transaction handle 
