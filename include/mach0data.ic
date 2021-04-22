@@ -38,6 +38,7 @@ mach_read_from_1(
 /***********************************************************
 The following function is used to store data in two consecutive
 bytes. We store the most significant byte to the lowest address. */
+/*下面的函数用于以两个连续字节存储数据。我们将最高位字节存储到最低地址。*/
 UNIV_INLINE
 void 
 mach_write_to_2(

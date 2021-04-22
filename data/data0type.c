@@ -5,7 +5,7 @@ Data types
 
 Created 1/16/1996 Heikki Tuuri
 *******************************************************/
-
+/*数据类型*/
 #include "data0type.h"
 
 #ifdef UNIV_NONINL
@@ -17,7 +17,7 @@ dtype_t* 	dtype_binary 	= &dtype_binary_val;
 
 /*************************************************************************
 Validates a data type structure. */
-
+/*验证数据类型结构。*/
 ibool
 dtype_validate(
 /*===========*/

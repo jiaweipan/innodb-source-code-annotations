@@ -5,11 +5,11 @@ Data types
 
 Created 1/16/1996 Heikki Tuuri
 *******************************************************/
-
+/*数据类型*/
 #include "mach0data.h"
 
 /*************************************************************************
-Sets a data type structure. */
+Sets a data type structure. *//*设置数据类型结构。*/
 UNIV_INLINE
 void
 dtype_set(
@@ -32,7 +32,7 @@ dtype_set(
 }
 
 /*************************************************************************
-Copies a data type structure. */
+Copies a data type structure. *//*复制数据类型结构。*/
 UNIV_INLINE
 void
 dtype_copy(
@@ -46,7 +46,7 @@ dtype_copy(
 }
 
 /*************************************************************************
-Gets the SQL main data type. */
+Gets the SQL main data type. *//*获取SQL主数据类型。*/
 UNIV_INLINE
 ulint
 dtype_get_mtype(
@@ -59,7 +59,7 @@ dtype_get_mtype(
 }
 
 /*************************************************************************
-Gets the precise data type. */
+Gets the precise data type. */ /*获取精确的数据类型。*/
 UNIV_INLINE
 ulint
 dtype_get_prtype(
@@ -72,7 +72,7 @@ dtype_get_prtype(
 }
 
 /*************************************************************************
-Gets the type length. */
+Gets the type length. *//*获取类型长度。*/
 UNIV_INLINE
 ulint
 dtype_get_len(
@@ -85,7 +85,7 @@ dtype_get_len(
 }
 
 /*************************************************************************
-Gets the type precision. */
+Gets the type precision. */ /*获取类型精度。*/
 UNIV_INLINE
 ulint
 dtype_get_prec(
@@ -98,7 +98,7 @@ dtype_get_prec(
 }
 
 /*************************************************************************
-Gets the padding character code for the type. */
+Gets the padding character code for the type. *//*获取类型的填充字符代码。*/
 UNIV_INLINE
 ulint
 dtype_get_pad_char(
@@ -125,7 +125,7 @@ dtype_get_pad_char(
 
 /**************************************************************************
 Stores to a type the information which determines its alphabetical
-ordering. */
+ordering. */ /*将决定其字母顺序的信息存储到类型中。*/
 UNIV_INLINE
 void
 dtype_store_for_order_and_null_size(
@@ -144,7 +144,7 @@ dtype_store_for_order_and_null_size(
 
 /**************************************************************************
 Reads of a type the stored information which determines its alphabetical
-ordering. */
+ordering. */ /*读取一种类型的存储信息，该信息决定其字母顺序。*/
 UNIV_INLINE
 void
 dtype_read_for_order_and_null_size(
@@ -162,6 +162,7 @@ dtype_read_for_order_and_null_size(
 
 /***************************************************************************
 Returns the size of a fixed size data type, 0 if not a fixed size type. */
+/*返回固定大小数据类型的大小，如果不是固定大小类型则为0。*/
 UNIV_INLINE
 ulint
 dtype_get_fixed_size(
@@ -206,6 +207,7 @@ dtype_get_fixed_size(
 /***************************************************************************
 Returns a stored SQL NULL size for a type. For fixed length types it is
 the fixed length of the type, otherwise 0. */
+/*为类型返回存储的SQL NULL大小。对于固定长度类型，它是该类型的固定长度，否则为0。*/
 UNIV_INLINE
 ulint
 dtype_get_sql_null_size(
@@ -217,7 +219,7 @@ dtype_get_sql_null_size(
 }
 
 /***************************************************************************
-Returns TRUE if a type is of a fixed size. */
+Returns TRUE if a type is of a fixed size. */ /*如果类型的大小固定，则返回TRUE。*/
 UNIV_INLINE
 ibool
 dtype_is_fixed_size(

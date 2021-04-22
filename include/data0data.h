@@ -5,7 +5,7 @@ SQL data field and tuple
 
 Created 5/30/1994 Heikki Tuuri
 *************************************************************************/
-
+/*SQL数据字段和元组*/
 #ifndef data0data_h
 #define data0data_h
 
@@ -18,7 +18,7 @@ Created 5/30/1994 Heikki Tuuri
 
 typedef struct big_rec_struct		big_rec_t;
 
-/* Some non-inlined functions used in the MySQL interface: */
+/* Some non-inlined functions used in the MySQL interface: */ /*MySQL接口中使用的一些非内联函数:*/
 void 
 dfield_set_data_noninline(
 	dfield_t* 	field,	/* in: field */
@@ -39,7 +39,7 @@ dtuple_get_nth_field_noninline(
 	ulint		n);	/* in: index of field */
 
 /*************************************************************************
-Gets pointer to the type struct of SQL data field. */
+Gets pointer to the type struct of SQL data field. */ /*获取指向SQL数据字段的类型结构的指针。*/
 UNIV_INLINE
 dtype_t*
 dfield_get_type(
@@ -47,7 +47,7 @@ dfield_get_type(
 				/* out: pointer to the type struct */
 	dfield_t*	field);	/* in: SQL data field */
 /*************************************************************************
-Sets the type struct of SQL data field. */
+Sets the type struct of SQL data field. */ /*设置指向SQL数据字段的类型结构的指针。*/
 UNIV_INLINE
 void
 dfield_set_type(
@@ -55,7 +55,7 @@ dfield_set_type(
 	dfield_t*	field,	/* in: SQL data field */
 	dtype_t*	type);	/* in: pointer to data type struct */
 /*************************************************************************
-Gets pointer to the data in a field. */
+Gets pointer to the data in a field. */ /*获取指向字段中的数据的指针。*/
 UNIV_INLINE
 void* 
 dfield_get_data(
@@ -63,7 +63,7 @@ dfield_get_data(
 				/* out: pointer to data */
 	dfield_t* field);	/* in: field */
 /*************************************************************************
-Gets length of field data. */
+Gets length of field data. */  /*获取字段数据的长度。*/
 UNIV_INLINE
 ulint
 dfield_get_len(
@@ -72,7 +72,7 @@ dfield_get_len(
 				SQL null data */
 	dfield_t* field);	/* in: field */
 /*************************************************************************
-Sets length in a field. */
+Sets length in a field. */ /*设置字段的长度。*/
 UNIV_INLINE
 void 
 dfield_set_len(
@@ -80,7 +80,7 @@ dfield_set_len(
 	dfield_t* 	field,	/* in: field */
 	ulint		len);	/* in: length or UNIV_SQL_NULL */
 /*************************************************************************
-Sets pointer to the data and length in a field. */
+Sets pointer to the data and length in a field. */ /*设置指向字段中的数据和长度的指针。*/
 UNIV_INLINE
 void 
 dfield_set_data(
@@ -89,7 +89,7 @@ dfield_set_data(
 	void*		data,	/* in: data */
 	ulint		len);	/* in: length or UNIV_SQL_NULL */
 /**************************************************************************
-Writes an SQL null field full of zeros. */
+Writes an SQL null field full of zeros. */ /*写一个充满0的SQL空字段。*/
 UNIV_INLINE
 void
 data_write_sql_null(
@@ -97,7 +97,7 @@ data_write_sql_null(
 	byte*	data,	/* in: pointer to a buffer of size len */
 	ulint	len);	/* in: SQL null size in bytes */
 /*************************************************************************
-Copies the data and len fields. */
+Copies the data and len fields. */ /*复制数据和len字段。*/
 UNIV_INLINE
 void 
 dfield_copy_data(
@@ -105,7 +105,7 @@ dfield_copy_data(
 	dfield_t* 	field1,	/* in: field to copy to */
 	dfield_t*	field2);/* in: field to copy from */
 /*************************************************************************
-Copies a data field to another. */
+Copies a data field to another. */ /*将一个数据字段复制到另一个。*/
 UNIV_INLINE
 void
 dfield_copy(
@@ -113,7 +113,7 @@ dfield_copy(
 	dfield_t*	field1,	/* in: field to copy to */
 	dfield_t*	field2);/* in: field to copy from */
 /*************************************************************************
-Tests if data length and content is equal for two dfields. */
+Tests if data length and content is equal for two dfields. */ /*测试两个字段的数据长度和内容是否相等。*/
 UNIV_INLINE
 ibool
 dfield_datas_are_binary_equal(
@@ -122,7 +122,7 @@ dfield_datas_are_binary_equal(
 	dfield_t*	field1,	/* in: field */
 	dfield_t*	field2);/* in: field */
 /*************************************************************************
-Tests if dfield data length and content is equal to the given. */
+Tests if dfield data length and content is equal to the given. */ /*测试dfield数据长度和内容是否等于给定的。*/
 UNIV_INLINE
 ibool
 dfield_data_is_binary_equal(
@@ -132,7 +132,7 @@ dfield_data_is_binary_equal(
 	ulint		len,	/* in: data length or UNIV_SQL_NULL */
 	byte*		data);	/* in: data */
 /*************************************************************************
-Gets number of fields in a data tuple. */
+Gets number of fields in a data tuple. */ /*获取数据元组中的字段数。*/
 UNIV_INLINE
 ulint 
 dtuple_get_n_fields(
@@ -140,7 +140,7 @@ dtuple_get_n_fields(
 				/* out: number of fields */
 	dtuple_t* 	tuple);	/* in: tuple */
 /*************************************************************************
-Gets nth field of a tuple. */
+Gets nth field of a tuple. */ /*获取元组的第n个字段。*/
 UNIV_INLINE
 dfield_t* 
 dtuple_get_nth_field(
@@ -149,7 +149,7 @@ dtuple_get_nth_field(
 	dtuple_t* 	tuple,	/* in: tuple */
 	ulint		n);	/* in: index of field */
 /*************************************************************************
-Gets info bits in a data tuple. */
+Gets info bits in a data tuple. */ /*获取数据元组中的信息位。*/
 UNIV_INLINE
 ulint
 dtuple_get_info_bits(
@@ -157,7 +157,7 @@ dtuple_get_info_bits(
 				/* out: info bits */
 	dtuple_t* 	tuple);	/* in: tuple */
 /*************************************************************************
-Sets info bits in a data tuple. */
+Sets info bits in a data tuple. */ /*在数据元组中设置信息位。*/
 UNIV_INLINE
 void
 dtuple_set_info_bits(
@@ -165,7 +165,7 @@ dtuple_set_info_bits(
 	dtuple_t* 	tuple,		/* in: tuple */
 	ulint		info_bits);	/* in: info bits */
 /*************************************************************************
-Gets number of fields used in record comparisons. */
+Gets number of fields used in record comparisons. */ /*获取记录比较中使用的字段数。*/
 UNIV_INLINE
 ulint
 dtuple_get_n_fields_cmp(
@@ -481,7 +481,7 @@ struct big_rec_field_struct {
 
 /* Storage format for overflow data in a big record, that is, a record
 which needs external storage of data fields */
-
+/*大记录中溢出数据的存储格式，即需要外部存储数据字段的记录*/
 struct big_rec_struct {
 	mem_heap_t*	heap;		/* memory heap from which allocated */
 	ulint		n_fields;	/* number of stored fields */
