@@ -5,7 +5,7 @@ Mini-transaction log routines
 
 Created 12/7/1995 Heikki Tuuri
 *******************************************************/
-
+/*Mini-transaction日志记录程序*/
 #include "mtr0log.h"
 
 #ifdef UNIV_NONINL
@@ -17,7 +17,7 @@ Created 12/7/1995 Heikki Tuuri
 
 /************************************************************
 Catenates n bytes to the mtr log. */
-
+/*将n个字节连接到mtr日志。*/
 void
 mlog_catenate_string(
 /*=================*/
@@ -41,7 +41,8 @@ mlog_catenate_string(
 Writes the initial part of a log record consisting of one-byte item
 type and four-byte space and page numbers. Also pushes info
 to the mtr memo that a buffer page has been modified. */
-
+/*写入由单字节项类型、四字节空间和页码组成的日志记录的初始部分。
+还将信息推送到mtr备忘，说明缓冲区页面已被修改。*/
 void
 mlog_write_initial_log_record(
 /*==========================*/
@@ -116,7 +117,7 @@ mlog_parse_initial_log_record(
 
 /************************************************************
 Parses a log record written by mlog_write_ulint or mlog_write_dulint. */
-
+/*解析mlog_write_ulint或mlog_write_dulint写的日志记录。*/
 byte*
 mlog_parse_nbytes(
 /*==============*/
@@ -180,7 +181,7 @@ mlog_parse_nbytes(
 /************************************************************
 Writes 1 - 4 bytes to a file page buffered in the buffer pool.
 Writes the corresponding log record to the mini-transaction log. */
-
+/*向缓冲池中缓冲的文件页写入1-4个字节。将相应的日志记录写入小事务日志。*/
 void
 mlog_write_ulint(
 /*=============*/
@@ -228,7 +229,7 @@ mlog_write_ulint(
 /************************************************************
 Writes 8 bytes to a file page buffered in the buffer pool.
 Writes the corresponding log record to the mini-transaction log. */
-
+/*向缓冲池中缓冲的文件页写入8个字节。将相应的日志记录写入小事务日志。*/
 void
 mlog_write_dulint(
 /*==============*/
@@ -272,7 +273,7 @@ mlog_write_dulint(
 /************************************************************
 Writes a string to a file page buffered in the buffer pool. Writes the
 corresponding log record to the mini-transaction log. */
-
+/*将字符串写入缓冲池中缓冲的文件页。将相应的日志记录写入小事务日志。*/
 void
 mlog_write_string(
 /*==============*/
@@ -317,7 +318,7 @@ mlog_write_string(
 
 /************************************************************
 Parses a log record written by mlog_write_string. */
-
+/*解析mlog_write_string写入的日志记录。*/
 byte*
 mlog_parse_string(
 /*==============*/

@@ -12,6 +12,7 @@ Created 12/7/1995 Heikki Tuuri
 
 /************************************************************
 Opens a buffer to mlog. It must be closed with mlog_close. */
+/*打开一个缓冲区mlog。它必须用mlog_close关闭。*/
 UNIV_INLINE
 byte*
 mlog_open(
@@ -35,7 +36,7 @@ mlog_open(
 }
 
 /************************************************************
-Closes a buffer opened to mlog. */
+Closes a buffer opened to mlog. */ /*关闭对mlog打开的缓冲区。*/
 UNIV_INLINE
 void
 mlog_close(
@@ -90,7 +91,7 @@ mlog_catenate_ulint(
 }
 
 /************************************************************
-Catenates a compressed ulint to mlog. */
+Catenates a compressed ulint to mlog. *//*将一个压缩的ulint连接到mlog。*/
 UNIV_INLINE
 void
 mlog_catenate_ulint_compressed(
@@ -114,7 +115,7 @@ mlog_catenate_ulint_compressed(
 }
 
 /************************************************************
-Catenates a compressed dulint to mlog. */
+Catenates a compressed dulint to mlog. */  /*将一个压缩的dulint连接到mlog。*/
 UNIV_INLINE
 void
 mlog_catenate_dulint_compressed(
