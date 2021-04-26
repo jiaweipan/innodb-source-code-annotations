@@ -5,14 +5,14 @@ SQL data field and tuple
 
 Created 5/30/1994 Heikki Tuuri
 *************************************************************************/
-
+/*SQL数据字段和元组*/
 #include "mem0mem.h"
 #include "ut0rnd.h"
 
 extern byte data_error;
 
 /*************************************************************************
-Gets pointer to the type struct of SQL data field. */
+Gets pointer to the type struct of SQL data field. *//*获取指向SQL数据字段的类型结构的指针。*/
 UNIV_INLINE
 dtype_t*
 dfield_get_type(
@@ -26,7 +26,7 @@ dfield_get_type(
 }
 
 /*************************************************************************
-Sets the type struct of SQL data field. */
+Sets the type struct of SQL data field. */ /*设置SQL数据字段的类型结构。*/
 UNIV_INLINE
 void
 dfield_set_type(
@@ -40,7 +40,7 @@ dfield_set_type(
 }
 
 /*************************************************************************
-Gets pointer to the data in a field. */
+Gets pointer to the data in a field. */ /*获取指向字段中的数据的指针。*/
 UNIV_INLINE
 void* 
 dfield_get_data(
@@ -56,7 +56,7 @@ dfield_get_data(
 }
 
 /*************************************************************************
-Gets length of field data. */
+Gets length of field data. */ /*获取字段数据的长度。*/
 UNIV_INLINE
 ulint
 dfield_get_len(
@@ -73,7 +73,7 @@ dfield_get_len(
 }
 
 /*************************************************************************
-Sets length in a field. */
+Sets length in a field. */ /*设置字段的长度。*/
 UNIV_INLINE
 void 
 dfield_set_len(
@@ -87,7 +87,7 @@ dfield_set_len(
 }
 
 /*************************************************************************
-Sets pointer to the data and length in a field. */
+Sets pointer to the data and length in a field. */ /*设置指向字段中的数据和长度的指针。*/
 UNIV_INLINE
 void 
 dfield_set_data(
@@ -103,7 +103,7 @@ dfield_set_data(
 }
 
 /*************************************************************************
-Copies the data and len fields. */
+Copies the data and len fields. */ /*复制数据和len字段。*/
 UNIV_INLINE
 void 
 dfield_copy_data(
@@ -118,7 +118,7 @@ dfield_copy_data(
 }
 
 /*************************************************************************
-Copies a data field to another. */
+Copies a data field to another. */ /*将一个数据字段复制到另一个。*/
 UNIV_INLINE
 void
 dfield_copy(
@@ -130,7 +130,7 @@ dfield_copy(
 }
 
 /*************************************************************************
-Tests if data length and content is equal for two dfields. */
+Tests if data length and content is equal for two dfields. */ /*测试两个字段的数据长度和内容是否相等。*/
 UNIV_INLINE
 ibool
 dfield_datas_are_binary_equal(
@@ -154,7 +154,7 @@ dfield_datas_are_binary_equal(
 }
 
 /*************************************************************************
-Tests if dfield data length and content is equal to the given. */
+Tests if dfield data length and content is equal to the given. */ /*测试dfield数据长度和内容是否等于给定的。*/
 UNIV_INLINE
 ibool
 dfield_data_is_binary_equal(
@@ -178,7 +178,7 @@ dfield_data_is_binary_equal(
 }
 
 /*************************************************************************
-Gets info bits in a data tuple. */
+Gets info bits in a data tuple. */ /*获取数据元组中的信息位。*/
 UNIV_INLINE
 ulint
 dtuple_get_info_bits(
@@ -192,7 +192,7 @@ dtuple_get_info_bits(
 }
 
 /*************************************************************************
-Sets info bits in a data tuple. */
+Sets info bits in a data tuple. */ /*在数据元组中设置信息位。*/
 UNIV_INLINE
 void
 dtuple_set_info_bits(
@@ -206,7 +206,7 @@ dtuple_set_info_bits(
 }
 
 /*************************************************************************
-Gets number of fields used in record comparisons. */
+Gets number of fields used in record comparisons. */ /*获取记录比较中使用的字段数。*/
 UNIV_INLINE
 ulint
 dtuple_get_n_fields_cmp(
@@ -221,7 +221,7 @@ dtuple_get_n_fields_cmp(
 }
 
 /*************************************************************************
-Sets number of fields used in record comparisons. */
+Sets number of fields used in record comparisons. */ /*设置记录比较中使用的字段数。*/
 UNIV_INLINE
 void
 dtuple_set_n_fields_cmp(
@@ -237,7 +237,7 @@ dtuple_set_n_fields_cmp(
 }
 
 /*************************************************************************
-Gets number of fields in a data tuple. */
+Gets number of fields in a data tuple. */ /*获取数据元组中的字段数。*/
 UNIV_INLINE
 ulint
 dtuple_get_n_fields(
@@ -251,7 +251,7 @@ dtuple_get_n_fields(
 }
 
 /*************************************************************************
-Gets nth field of a tuple. */
+Gets nth field of a tuple. */ /*获取元组的第n个字段。*/
 UNIV_INLINE
 dfield_t* 
 dtuple_get_nth_field(
@@ -269,6 +269,7 @@ dtuple_get_nth_field(
 /**************************************************************
 Creates a data tuple to a memory heap. The default value for number
 of fields used in record comparisons for this tuple is n_fields. */
+/*在内存堆中创建一个数据元组。这个元组在记录比较中使用的字段数的默认值是n_fields。*/
 UNIV_INLINE
 dtuple_t*
 dtuple_create(
@@ -308,6 +309,7 @@ dtuple_create(
 The following function returns the sum of data lengths of a tuple. The space
 occupied by the field structs or the tuple struct is not counted. Neither
 is possible space in externally stored parts of the field. */
+/*下面的函数返回一个元组的数据长度之和。字段结构或元组结构所占用的空间不被计算。字段的外部存储部分也不可能有空间。*/
 UNIV_INLINE
 ulint
 dtuple_get_data_size(
@@ -342,7 +344,7 @@ dtuple_get_data_size(
 }
 
 /***********************************************************************
-Sets types of fields binary in a tuple. */
+Sets types of fields binary in a tuple. */ /*设置元组中二进制字段的类型。*/
 UNIV_INLINE
 void
 dtuple_set_types_binary(
@@ -360,7 +362,7 @@ dtuple_set_types_binary(
 }
 
 /****************************************************************
-Folds a prefix given as the number of fields of a tuple. */
+Folds a prefix given as the number of fields of a tuple. */ /*将指定为元组字段数的前缀折叠。*/
 UNIV_INLINE
 ulint
 dtuple_fold(
@@ -416,7 +418,7 @@ dtuple_fold(
 }
 
 /**************************************************************************
-Writes an SQL null field full of zeros. */
+Writes an SQL null field full of zeros. */ /*写一个充满0的SQL空字段。*/
 UNIV_INLINE
 void
 data_write_sql_null(

@@ -165,7 +165,7 @@ cmp_whole_field(
 	switch (data_type) {
 
     	case DATA_DECIMAL:
-		/* Remove preceding spaces */
+		/* Remove preceding spaces */ /*删除之前的空间*/
 		for (; a_length && *a == ' '; a++, a_length--);
 		for (; b_length && *b == ' '; b++, b_length--);
 
@@ -286,7 +286,7 @@ cmp_data_data_slow(
 		if (len1 == UNIV_SQL_NULL) {
 			/* We define the SQL null to be the smallest possible
 			value of a field in the alphabetical order */
-
+			/*我们将SQL null定义为一个字段按字母顺序的最小可能值*/
 			return(-1);
 		}
 

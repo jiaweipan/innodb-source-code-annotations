@@ -214,7 +214,7 @@ struct dict_index_struct{
 				representation we add more columns */
 	ulint		n_uniq;	/* number of fields from the beginning
 				which are enough to determine an index
-				entry uniquely */
+				entry uniquely *//*足够唯一地确定一个索引条目的初始字段数*/
 	ulint		n_def;	/* number of fields defined so far */
 	ulint		n_fields;/* number of fields in the index */
 	dict_field_t*	fields;	/* array of field descriptions */

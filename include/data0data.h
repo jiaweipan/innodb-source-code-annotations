@@ -174,7 +174,7 @@ dtuple_get_n_fields_cmp(
 				in rem0cmp.* */
 	dtuple_t*	tuple);	/* in: tuple */
 /*************************************************************************
-Gets number of fields used in record comparisons. */
+Gets number of fields used in record comparisons. */ /*获取记录比较中使用的字段数。*/
 UNIV_INLINE
 void
 dtuple_set_n_fields_cmp(
@@ -185,6 +185,7 @@ dtuple_set_n_fields_cmp(
 /**************************************************************
 Creates a data tuple to a memory heap. The default value for number
 of fields used in record comparisons for this tuple is n_fields. */
+/*在内存堆中创建一个数据元组。这个元组在记录比较中使用的字段数的默认值是n_fields。*/
 UNIV_INLINE
 dtuple_t*
 dtuple_create(
@@ -196,7 +197,7 @@ dtuple_create(
 
 /*************************************************************************
 Creates a dtuple for use in MySQL. */
-
+/*创建一个dtuple在MySQL中使用。*/
 dtuple_t*
 dtuple_create_for_mysql(
 /*====================*/
@@ -205,7 +206,7 @@ dtuple_create_for_mysql(
 	ulint n_fields); /* in: number of fields */
 /*************************************************************************
 Frees a dtuple used in MySQL. */
-
+/*释放MySQL中使用的dtuple。*/
 void
 dtuple_free_for_mysql(
 /*==================*/
@@ -213,7 +214,7 @@ dtuple_free_for_mysql(
 /*************************************************************************
 Sets number of fields used in a tuple. Normally this is set in
 dtuple_create, but if you want later to set it smaller, you can use this. */ 
-
+/*设置元组中使用的字段数。通常这是在dtuple_create中设置的，但是如果您想稍后将它设置得更小，可以使用它。*/
 void
 dtuple_set_n_fields(
 /*================*/
@@ -222,6 +223,7 @@ dtuple_set_n_fields(
 /**************************************************************
 The following function returns the sum of data lengths of a tuple. The space
 occupied by the field structs or the tuple struct is not counted. */
+/*下面的函数返回一个元组的数据长度之和。字段结构或元组结构所占用的空间不被计算。*/
 UNIV_INLINE
 ulint
 dtuple_get_data_size(
@@ -232,7 +234,7 @@ dtuple_get_data_size(
 Returns TRUE if lengths of two dtuples are equal and respective data fields
 in them are equal when compared with collation in char fields (not as binary
 strings). */
-
+/*如果两个dtuple的长度相等，并且它们各自的数据字段在与char字段(而不是二进制字符串)的排序时相等，则返回TRUE。*/
 ibool
 dtuple_datas_are_ordering_equal(
 /*============================*/
@@ -244,6 +246,7 @@ dtuple_datas_are_ordering_equal(
 	dtuple_t*	tuple2);/* in: tuple 2 */
 /****************************************************************
 Folds a prefix given as the number of fields of a tuple. */
+/*将指定为元组字段数的前缀折叠。*/
 UNIV_INLINE
 ulint
 dtuple_fold(
@@ -256,6 +259,7 @@ dtuple_fold(
 	dulint		tree_id);/* in: index tree id */
 /***********************************************************************
 Sets types of fields binary in a tuple. */
+/*设置元组中二进制字段的类型。*/
 UNIV_INLINE
 void
 dtuple_set_types_binary(
@@ -264,7 +268,7 @@ dtuple_set_types_binary(
 	ulint		n);	/* in: number of fields to set */
 /**************************************************************
 Checks that a data field is typed. Asserts an error if not. */
-
+/*检查数据字段是否已输入。如果不是，则断言错误。*/
 ibool
 dfield_check_typed(
 /*===============*/
@@ -272,7 +276,7 @@ dfield_check_typed(
 	dfield_t*	field);	/* in: data field */
 /**************************************************************
 Checks that a data tuple is typed. Asserts an error if not. */
-
+/*检查数据元组是否有类型。如果不是，则断言错误。*/
 ibool
 dtuple_check_typed(
 /*===============*/
@@ -281,7 +285,7 @@ dtuple_check_typed(
 /**************************************************************
 Validates the consistency of a tuple which must be complete, i.e,
 all fields must have been set. */
-
+/*验证元组的一致性，必须是完整的，即所有字段必须已设置。*/
 ibool
 dtuple_validate(
 /*============*/
@@ -289,7 +293,7 @@ dtuple_validate(
 	dtuple_t*	tuple);	/* in: tuple */
 /*****************************************************************
 Pretty prints a dfield value according to its data type. */
-
+/*Pretty根据数据类型打印一个dfield值。*/
 void
 dfield_print(
 /*=========*/
@@ -297,21 +301,21 @@ dfield_print(
 /*****************************************************************
 Pretty prints a dfield value according to its data type. Also the hex string
 is printed if a string contains non-printable characters. */ 
-
+/*Pretty根据数据类型打印dfield值。如果字符串包含不可打印的字符，也会打印十六进制字符串。*/
 void
 dfield_print_also_hex(
 /*==================*/
 	dfield_t*	dfield);	 /* in: dfield */
 /**************************************************************
 The following function prints the contents of a tuple. */
-
+/*下面的函数打印元组的内容。*/
 void
 dtuple_print(
 /*=========*/
 	dtuple_t*	tuple);	/* in: tuple */
 /**************************************************************
 The following function prints the contents of a tuple to a buffer. */
-
+/*下面的函数将元组的内容打印到缓冲区。*/
 ulint
 dtuple_sprintf(
 /*===========*/
@@ -324,7 +328,8 @@ Moves parts of long fields in entry to the big record vector so that
 the size of tuple drops below the maximum record size allowed in the
 database. Moves data only from those fields which are not necessary
 to determine uniquely the insertion place of the tuple in the index. */
-
+/*将条目中的部分长字段移动到大记录向量，以便元组的大小降到数据库中允许的最大记录大小以下。
+仅从那些不需要唯一地确定元组在索引中的插入位置的字段中移动数据。*/
 big_rec_t*
 dtuple_convert_big_rec(
 /*===================*/
@@ -343,7 +348,8 @@ dtuple_convert_big_rec(
 Puts back to entry the data stored in vector. Note that to ensure the
 fields in entry can accommodate the data, vector must have been created
 from entry with dtuple_convert_big_rec. */
-
+/*将存储在vector中的数据放回条目。请注意，为了确保entry中的字段可以容纳数据，
+必须使用dtuple_convert_big)rec从entry创建vector。*/
 void
 dtuple_convert_back_big_rec(
 /*========================*/
@@ -353,7 +359,7 @@ dtuple_convert_back_big_rec(
 				freed in this function */
 /******************************************************************
 Frees the memory in a big rec vector. */
-
+/*释放大rec向量中的内存。*/
 void
 dtuple_big_rec_free(
 /*================*/
@@ -361,7 +367,7 @@ dtuple_big_rec_free(
 				freed in this function */
 /***************************************************************
 Generates a random tuple. */
-
+/*生成一个随机元组。 */
 dtuple_t*
 dtuple_gen_rnd_tuple(
 /*=================*/
@@ -369,7 +375,7 @@ dtuple_gen_rnd_tuple(
 	mem_heap_t*	heap);	/* in: memory heap where generated */
 /*******************************************************************
 Generates a test tuple for sort and comparison tests. */
-
+/*为排序和比较测试生成测试元组。*/
 void
 dtuple_gen_test_tuple(
 /*==================*/
@@ -377,7 +383,7 @@ dtuple_gen_test_tuple(
 	ulint		i);	/* in: a number, 0 <= i < 512 */
 /*******************************************************************
 Generates a test tuple for B-tree speed tests. */
-
+/*为b树速度测试生成测试元组。*/
 void
 dtuple_gen_test_tuple3(
 /*===================*/
@@ -387,7 +393,7 @@ dtuple_gen_test_tuple3(
 	byte*		buf);	/* in: a buffer of size >= 8 bytes */
 /*******************************************************************
 Generates a test tuple for B-tree speed tests. */
-
+/*为b树速度测试生成测试元组。*/
 void
 dtuple_gen_search_tuple3(
 /*=====================*/
@@ -396,7 +402,7 @@ dtuple_gen_search_tuple3(
 	byte*		buf);	/* in: a buffer of size >= 8 bytes */
 /*******************************************************************
 Generates a test tuple for TPC-A speed test. */
-
+/*为TPC-A速度测试生成测试元组。*/
 void
 dtuple_gen_test_tuple_TPC_A(
 /*========================*/
@@ -405,7 +411,7 @@ dtuple_gen_test_tuple_TPC_A(
 	byte*		buf);	/* in: a buffer of size >= 16 bytes */
 /*******************************************************************
 Generates a test tuple for B-tree speed tests. */
-
+/*为b树速度测试生成测试元组。*/
 void
 dtuple_gen_search_tuple_TPC_A(
 /*==========================*/
@@ -414,7 +420,7 @@ dtuple_gen_search_tuple_TPC_A(
 	byte*		buf);	/* in: a buffer of size >= 16 bytes */
 /*******************************************************************
 Generates a test tuple for TPC-C speed test. */
-
+/*为TPC-C速度测试生成测试元组。*/
 void
 dtuple_gen_test_tuple_TPC_C(
 /*========================*/
@@ -423,7 +429,7 @@ dtuple_gen_test_tuple_TPC_C(
 	byte*		buf);	/* in: a buffer of size >= 16 bytes */
 /*******************************************************************
 Generates a test tuple for B-tree speed tests. */
-
+/*为b树速度测试生成测试元组。*/
 void
 dtuple_gen_search_tuple_TPC_C(
 /*==========================*/
@@ -431,7 +437,7 @@ dtuple_gen_search_tuple_TPC_C(
 	ulint		i,	/* in: a number < 100000 */
 	byte*		buf);	/* in: a buffer of size >= 16 bytes */
 
-/* Types of the third field in dtuple_gen_test_tuple3 */	
+/* Types of the third field in dtuple_gen_test_tuple3 */	/*dtuple_gen_test_tuple3中第三个字段的类型*/
 #define DTUPLE_TEST_FIXED30	1
 #define DTUPLE_TEST_RND30	2
 #define DTUPLE_TEST_RND3500	3
@@ -440,7 +446,7 @@ dtuple_gen_search_tuple_TPC_C(
 
 /*######################################################################*/
 
-/* Structure for an SQL data field */
+/* Structure for an SQL data field */ /*SQL数据字段的结构*/
 struct dfield_struct{
 	void*		data;	/* pointer to data */
 	ulint		len;	/* data length; UNIV_SQL_NULL if SQL null; */
@@ -461,17 +467,18 @@ struct dtuple_struct {
 					is performed by comparing only these
 					fields, others are ignored; the
 					default value in dtuple creation is
-					the same value as n_fields */
+					the same value as n_fields */ /*在rem0cmp.*的比较服务中应使用的字段数;
+					索引搜索仅通过比较这些字段来执行，其他字段被忽略;dtuple创建的默认值与n_fields相同*/
 	dfield_t*	fields;		/* fields */
 	UT_LIST_NODE_T(dtuple_t) tuple_list;
 					/* data tuples can be linked into a
-					list using this field */
+					list using this field */ /*可以使用此字段将数据元组链接到列表中*/
 	ulint		magic_n;	
 };
 #define	DATA_TUPLE_MAGIC_N	65478679
 
 /* A slot for a field in a big rec vector */
-
+/*在一个大的矩形矢量中，用于一个字段的槽*/ 
 typedef struct big_rec_field_struct 	big_rec_field_t;
 struct big_rec_field_struct {
 	ulint		field_no;	/* field number in record */

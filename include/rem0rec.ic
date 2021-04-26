@@ -905,7 +905,7 @@ rec_copy(
 
 /**************************************************************
 Returns the extra size of a physical record if we know its data size and
-the number of fields. */
+the number of fields. */ /*如果我们知道物理记录的数据大小和字段数，则返回该记录的额外大小。*/
 UNIV_INLINE
 ulint
 rec_get_converted_extra_size(
@@ -924,7 +924,7 @@ rec_get_converted_extra_size(
 
 /**************************************************************
 The following function returns the size of a data tuple when converted to
-a physical record. */
+a physical record. */ /*下面的函数返回转换为物理记录时数据元组的大小。*/
 UNIV_INLINE
 ulint
 rec_get_converted_size(

@@ -213,6 +213,8 @@ Gets the number of fields in the internal representation of an index
 that uniquely determine the position of an index entry in the index, if
 we do not take multiversioning into account: in the B-tree use the value
 returned by dict_index_get_n_unique_in_tree. */
+/*获取索引的内部表示形式中唯一确定索引项在索引中位置的字段数（如果不考虑多版本控制）：
+在B树中使用dict_index_get_n_unique_in_tree返回的值。*/
 UNIV_INLINE
 ulint
 dict_index_get_n_unique(
@@ -232,6 +234,7 @@ dict_index_get_n_unique(
 Gets the number of fields in the internal representation of an index
 which uniquely determine the position of an index entry in the index, if
 we also take multiversioning into account. */
+/*如果还考虑多版本控制，则获取索引的内部表示中唯一确定索引项在索引中的位置的字段数。*/
 UNIV_INLINE
 ulint
 dict_index_get_n_unique_in_tree(
