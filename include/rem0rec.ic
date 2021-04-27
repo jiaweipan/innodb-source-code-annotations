@@ -11,12 +11,13 @@ Created 5/30/1994 Heikki Tuuri
 
 /* Offsets of the bit-fields in the record. NOTE! In the table the most 
 significant bytes and bits are written below less significant.
-
-	(1) byte offset		(2) bit usage within byte
-	downward from
-	origin ->	1	8 bits pointer to next record
-			2	8 bits pointer to next record
-			3  	1 bit short flag
+记录中位字段的偏移量。注意！在表中，最高有效字节和位写在较低有效字节的下面
+	(1) byte offset 		(2) bit usage within byte
+	字节偏移量                   字节内的位用法 
+	downward from 从原点向下
+	origin ->	1	8 bits pointer to next record 指向下一条记录的8位指针
+			2	8 bits pointer to next record 指向下一条记录的8位指针
+			3  	1 bit short flag  1位短标志
 				7 bits number of fields
 			4	3 bits number of fields
 				5 bits heap number
@@ -27,12 +28,12 @@ significant bytes and bits are written below less significant.
 
 /* We list the byte offsets from the origin of the record, the mask,
 and the shift needed to obtain each bit-field of the record. */
-
+/*我们列出了从记录的原点开始的字节偏移量、掩码以及获取记录的每个位字段所需的移位量。*/
 #define REC_NEXT		2
 #define REC_NEXT_MASK		0xFFFF
 #define REC_NEXT_SHIFT		0
 
-#define REC_SHORT		3	/* This is single byte bit-field */
+#define REC_SHORT		3	/* This is single byte bit-field */ /*这是单字节位字段*/
 #define	REC_SHORT_MASK		0x1
 #define REC_SHORT_SHIFT		0
 
@@ -51,23 +52,23 @@ and the shift needed to obtain each bit-field of the record. */
 #define	REC_INFO_BITS_MASK	0xF0
 #define REC_INFO_BITS_SHIFT	0
 
-/* The deleted flag in info bits */
+/* The deleted flag in info bits */ /*信息位中的已删除标志*/
 #define REC_INFO_DELETED_FLAG 	0x20	/* when bit is set to 1, it means the
-					record has been delete marked */
+					record has been delete marked */ /*位设为1时，表示记录已被删除*/
 /* The following masks are used to filter the SQL null bit from
 one-byte and two-byte offsets */
-
+/*以下掩码用于从一个字节和两个字节的偏移量中过滤SQL空位*/
 #define REC_1BYTE_SQL_NULL_MASK	0x80
 #define REC_2BYTE_SQL_NULL_MASK	0x8000
 
 /* In a 2-byte offset the second most significant bit denotes
 a field stored to another page: */
-
+/*在2字节偏移量中，第二个最高有效位表示存储到另一页的字段：*/
 #define REC_2BYTE_EXTERN_MASK	0x4000
 
 /***************************************************************
 Sets the value of the ith field SQL null bit. */
-
+/*设置第i个字段SQL null位的值。*/
 void
 rec_set_nth_field_null_bit(
 /*=======================*/
@@ -77,7 +78,7 @@ rec_set_nth_field_null_bit(
 /*************************************************************** 
 Sets a record field to SQL null. The physical size of the field is not
 changed. */
-
+/*将记录字段设置为SQL null。字段的物理大小不变。*/
 void
 rec_set_nth_field_sql_null(
 /*=======================*/
@@ -85,15 +86,15 @@ rec_set_nth_field_sql_null(
 	ulint	n);	/* in: index of the field */
 
 /**********************************************************
-Gets a bit field from within 1 byte. */
+Gets a bit field from within 1 byte. */ /*从1字节内获取位字段。*/
 UNIV_INLINE
 ulint
 rec_get_bit_field_1(
 /*================*/
-	rec_t*	rec,	/* in: pointer to record origin */
-	ulint	offs,	/* in: offset from the origin down */
-	ulint	mask,	/* in: mask used to filter bits */
-	ulint	shift)	/* in: shift right applied after masking */
+	rec_t*	rec,	/* in: pointer to record origin */ /*指向记录原点的指针*/
+	ulint	offs,	/* in: offset from the origin down */ /*从原点向下偏移*/
+	ulint	mask,	/* in: mask used to filter bits */ /*用于过滤位的掩码*/
+	ulint	shift)	/* in: shift right applied after masking */ /*掩蔽后应用右移*/
 {
 	ut_ad(rec);
 
@@ -101,7 +102,7 @@ rec_get_bit_field_1(
 }
 
 /**********************************************************
-Sets a bit field within 1 byte. */
+Sets a bit field within 1 byte. */  /*设置1字节内的位字段。*/
 UNIV_INLINE
 void
 rec_set_bit_field_1(
@@ -126,6 +127,7 @@ rec_set_bit_field_1(
 
 /**********************************************************
 Gets a bit field from within 2 bytes. */
+/*从2字节内获取位字段。*/
 UNIV_INLINE
 ulint
 rec_get_bit_field_2(
@@ -141,7 +143,7 @@ rec_get_bit_field_2(
 }
 
 /**********************************************************
-Sets a bit field within 2 bytes. */
+Sets a bit field within 2 bytes. */ /*在2字节内设置位字段。*/
 UNIV_INLINE
 void
 rec_set_bit_field_2(
@@ -184,7 +186,8 @@ rec_set_bit_field_2(
 
 /**********************************************************
 The following function is used to get the offset of the next chained record
-on the same page. */
+on the same page. */ 
+/*下面的函数用于获取同一页上下一条链接记录的偏移量。*/
 UNIV_INLINE
 ulint 
 rec_get_next_offs(
@@ -205,7 +208,7 @@ rec_get_next_offs(
 
 /**********************************************************
 The following function is used to set the next record offset field of the
-record. */
+record. *//*下面的函数用于设置记录的下一个记录偏移字段。*/
 UNIV_INLINE
 void
 rec_set_next_offs(
@@ -222,6 +225,7 @@ rec_set_next_offs(
 
 /**********************************************************
 The following function is used to get the number of fields in the record. */
+/*下面的函数用于获取记录中的字段数。*/
 UNIV_INLINE
 ulint
 rec_get_n_fields(
@@ -243,7 +247,7 @@ rec_get_n_fields(
 
 /**********************************************************
 The following function is used to set the number of fields field in the
-record. */
+record. */  /*T 以下函数用于设置记录中的字段数。 */
 UNIV_INLINE
 void
 rec_set_n_fields(
@@ -261,7 +265,8 @@ rec_set_n_fields(
 
 /**********************************************************
 The following function is used to get the number of records owned by the
-previous directory record. */
+previous directory record. */ /*下面的函数用于获取以前的目录记录所拥有的记录数*/
+/**/
 UNIV_INLINE
 ulint
 rec_get_n_owned(
@@ -281,7 +286,7 @@ rec_get_n_owned(
 }	
 
 /**********************************************************
-The following function is used to set the number of owned records. */
+The following function is used to set the number of owned records. */ /*下面的函数用于设置拥有的记录数。*/
 UNIV_INLINE
 void
 rec_set_n_owned(
@@ -297,7 +302,7 @@ rec_set_n_owned(
 }
 
 /**********************************************************
-The following function is used to retrieve the info bits of a record. */
+The following function is used to retrieve the info bits of a record. */ /*以下函数用于检索记录的信息位。*/
 UNIV_INLINE
 ulint
 rec_get_info_bits(
@@ -317,7 +322,7 @@ rec_get_info_bits(
 }	
 
 /**********************************************************
-The following function is used to set the info bits of a record. */
+The following function is used to set the info bits of a record. */ /*以下函数用于设置记录的信息位。*/
 UNIV_INLINE
 void
 rec_set_info_bits(
@@ -333,7 +338,7 @@ rec_set_info_bits(
 }
 
 /**********************************************************
-Gets the value of the deleted flag in info bits. */
+Gets the value of the deleted flag in info bits. */ /*获取以信息位表示的已删除标志的值*/
 UNIV_INLINE
 ibool
 rec_info_bits_get_deleted_flag(
@@ -350,7 +355,7 @@ rec_info_bits_get_deleted_flag(
 }
 
 /**********************************************************
-The following function tells if record is delete marked. */
+The following function tells if record is delete marked. */ /*下面的函数说明记录是否被删除。 */
 UNIV_INLINE
 ibool
 rec_get_deleted_flag(
@@ -367,7 +372,7 @@ rec_get_deleted_flag(
 }
 
 /**********************************************************
-The following function is used to set the deleted bit. */
+The following function is used to set the deleted bit. */ /*以下函数用于设置删除的位。 */
 UNIV_INLINE
 void
 rec_set_deleted_flag(

@@ -24,6 +24,7 @@ mach_write_to_1(
 
 /************************************************************
 The following function is used to fetch data from one byte. */
+/*以下函数用于从一个字节获取数据。*/
 UNIV_INLINE
 ulint 
 mach_read_from_1(
