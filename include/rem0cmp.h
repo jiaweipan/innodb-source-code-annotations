@@ -5,7 +5,7 @@ Comparison services for records
 
 Created 7/1/1994 Heikki Tuuri
 ************************************************************************/
-
+/*纪录比对服务*/
 #ifndef rem0cmp_h
 #define rem0cmp_h
 
@@ -17,7 +17,7 @@ Created 7/1/1994 Heikki Tuuri
 
 /*****************************************************************
 Returns TRUE if two types are equal for comparison purposes. */
-
+/*为便于比较，如果两种类型相等，则返回TRUE。*/
 ibool
 cmp_types_are_equal(
 /*================*/
@@ -27,7 +27,7 @@ cmp_types_are_equal(
 	dtype_t*	type2);	/* in: type 2 */
 /*****************************************************************
 This function is used to compare two data fields for which we know the
-data type. */
+data type. */ /*此函数用于比较已知数据类型的两个数据字段。*/
 UNIV_INLINE
 int
 cmp_data_data(
@@ -44,6 +44,7 @@ cmp_data_data(
 /*****************************************************************
 This function is used to compare two dfields where at least the first
 has its data type field set. */
+/*此函数用于比较至少第一个字段具有数据类型字段集的两个字段。*/
 UNIV_INLINE
 int
 cmp_dfield_dfield(
@@ -60,7 +61,10 @@ have either m >= n fields, or it must differ from dtuple in some of
 the m fields rec has. If rec has an externally stored field we do not
 compare it but return with value 0 if such a comparison should be
 made. */
-
+/*这个函数用于比较数据元组和物理记录。只有dtuple->n_fields_cmp第一个字段被考虑为数据元组!如果我们用n = n_fields_cmp表示，
+那么rec必须有m个>= n个字段，或者它必须与rec的m个字段中的某些dtuple不同。
+如果rec有一个外部存储的字段，我们不会比较它，但如果需要进行比较，则返回值为0。*/
+UNIV_INLINE
 int
 cmp_dtuple_rec_with_match(
 /*======================*/	
@@ -83,7 +87,7 @@ cmp_dtuple_rec_with_match(
 				value for current comparison */
 /******************************************************************
 Compares a data tuple to a physical record. */
-
+/*将数据元组与物理记录进行比较。*/
 int
 cmp_dtuple_rec(
 /*===========*/
@@ -95,7 +99,7 @@ cmp_dtuple_rec(
 /******************************************************************
 Checks if a dtuple is a prefix of a record. The last field in dtuple
 is allowed to be a prefix of the corresponding field in the record. */
-
+/*检查一个dtuple是否是一个记录的前缀。dtuple中的最后一个字段可以作为记录中相应字段的前缀。*/
 ibool
 cmp_dtuple_is_prefix_of_rec(
 /*========================*/
@@ -107,7 +111,7 @@ Compares a prefix of a data tuple to a prefix of a physical record for
 equality. If there are less fields in rec than parameter n_fields, FALSE
 is returned. NOTE that n_fields_cmp of dtuple does not affect this
 comparison. */
-
+/*比较数据元组的前缀与物理记录的前缀是否相等。如果rec中的字段比参数n_fields少，则返回FALSE。注意dtuple的n_fields_cmp不影响这个比较。*/
 ibool
 cmp_dtuple_rec_prefix_equal(
 /*========================*/
@@ -121,7 +125,7 @@ cmp_dtuple_rec_prefix_equal(
 This function is used to compare two physical records. Only the common
 first fields are compared, and if an externally stored field is
 encountered, then 0 is returned. */
-
+/*比较两条物理记录。只比较常见的第一个字段，如果遇到外部存储的字段，则返回0。*/
 int
 cmp_rec_rec_with_match(
 /*===================*/	
@@ -142,6 +146,7 @@ cmp_rec_rec_with_match(
 /*****************************************************************
 This function is used to compare two physical records. Only the common
 first fields are compared. */
+/*比较两条物理记录。只比较常用的第一个字段。*/
 UNIV_INLINE
 int
 cmp_rec_rec(

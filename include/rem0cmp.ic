@@ -9,7 +9,7 @@ Created 7/1/1994 Heikki Tuuri
 /*****************************************************************
 This function is used to compare two data fields for which we know the
 data type. */
-
+/*此函数用于比较已知数据类型的两个数据字段。*/
 int
 cmp_data_data_slow(
 /*===============*/	
@@ -26,7 +26,7 @@ cmp_data_data_slow(
 
 /*****************************************************************
 This function is used to compare two data fields for which we know the
-data type. */
+data type. */ /*此函数用于比较已知数据类型的两个数据字段。*/
 UNIV_INLINE
 int
 cmp_data_data(
@@ -46,7 +46,7 @@ cmp_data_data(
 
 /*****************************************************************
 This function is used to compare two dfields where at least the first
-has its data type field set. */
+has its data type field set. */ /*此函数用于比较至少第一个字段具有数据类型字段集的两个字段。*/
 UNIV_INLINE
 int
 cmp_dfield_dfield(
@@ -66,6 +66,7 @@ cmp_dfield_dfield(
 /*****************************************************************
 This function is used to compare two physical records. Only the common
 first fields are compared. */
+/*比较两条物理记录。只比较常用的第一个字段。*/
 UNIV_INLINE
 int
 cmp_rec_rec(

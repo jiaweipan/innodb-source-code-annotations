@@ -5,7 +5,7 @@ Comparison services for records
 
 Created 7/1/1994 Heikki Tuuri
 ************************************************************************/
-
+/*纪录比对服务*/
 #include "rem0cmp.h"
 
 #ifdef UNIV_NONINL
@@ -14,7 +14,7 @@ Created 7/1/1994 Heikki Tuuri
 
 #include "srv0srv.h"
 
-/*		ALPHABETICAL ORDER
+/*		ALPHABETICAL ORDER  字母顺序排列
 		==================
 		
 The records are put into alphabetical order in the following
@@ -28,16 +28,22 @@ if the data type of the fields is paddable,
 shorter field is padded with a padding character. If the
 data type is not paddable, longer field is considered greater.
 Finally, the SQL null is bigger than any other value.
-
+记录按以下方式按字母顺序排列:设F为两个记录不一致的第一个字段。
+如果某个位置n的字符记录不一致，则顺序由位置n的字符比较决定，可能是经过整理转换后。
+如果没有这样的性格，但是相应的字段有不同的长度，如果字段的数据类型是可填充的，则较短的字段将使用填充字符填充。
+如果数据类型不是可填充的，则认为字段越长越大。最后，SQL空值比任何其他值都大。
 At the present, the comparison functions return 0 in the case,
 where two records disagree only in the way that one 
-has more fields than the other. */
+has more fields than the other.
+目前，比较函数在这种情况下返回0，其中两个记录不一致的原因只是一个比另一个有更多的字段。 */
 
 /*****************************************************************
 Used in debug checking of cmp_dtuple_... .
 This function is used to compare a data tuple to a physical record. If
 dtuple has n fields then rec must have either m >= n fields, or it must
 differ from dtuple in some of the m fields rec has. */
+/*用于cmp_dtuple_... .的调试检查。用于比较一个数据元组和一个物理记录。
+如果dtuple有n个字段，那么rec必须有m个>= n个字段，或者它必须不同于dtuple的m个字段。*/
 static
 int
 cmp_debug_dtuple_rec_with_match(
@@ -56,7 +62,7 @@ cmp_debug_dtuple_rec_with_match(
 /*****************************************************************
 This function is used to compare two data fields for which the data type
 is such that we must use MySQL code to compare them. */
-
+/*这个函数用于比较两个数据字段，我们必须使用MySQL代码来比较它们。*/
 int
 innobase_mysql_cmp(
 /*===============*/	
@@ -74,6 +80,7 @@ innobase_mysql_cmp(
 Transforms the character code so that it is ordered appropriately for the
 language. This is only used for the latin1 char set. MySQL does the
 comparisons for other char sets. */
+/*转换字符代码，使其按语言的适当顺序排列。这只用于拉丁字符集。MySQL对其他字符集进行比较。*/
 UNIV_INLINE
 ulint
 cmp_collate(
@@ -91,7 +98,7 @@ cmp_collate(
 					
 /*****************************************************************
 Returns TRUE if two types are equal for comparison purposes. */
-
+/*为便于比较，如果两种类型相等，则返回TRUE。*/
 ibool
 cmp_types_are_equal(
 /*================*/
@@ -119,7 +126,7 @@ cmp_types_are_equal(
 		/* The storage format of an unsigned integer is different
 		from a signed integer: in a signed integer we OR
 		0x8000... to the value of positive integers. */
-	
+	     /*无符号整数的存储格式与有符号整数不同:在有符号整数中，我们或0x8000…取正整数的值。*/
 		return(FALSE);
 	}
 
@@ -139,6 +146,7 @@ cmp_types_are_equal(
 /*****************************************************************
 Innobase uses this function is to compare two data fields for which the
 data type is such that we must compare whole fields. */
+/*Innobase使用这个函数是比较两个数据字段，因为数据类型是这样的，所以我们必须比较整个字段。*/
 static
 int
 cmp_whole_field(
@@ -256,7 +264,7 @@ cmp_whole_field(
 /*****************************************************************
 This function is used to compare two data fields for which we know the
 data type. */
-
+/*此函数用于比较已知数据类型的两个数据字段。*/
 int
 cmp_data_data_slow(
 /*===============*/	
@@ -332,7 +340,7 @@ cmp_data_data_slow(
 		if (data1_byte == data2_byte) {
 			/* If the bytes are equal, they will remain such even
 			after the collation transformation below */
-
+            /*如果两个字节相等，那么即使在下面的排序规则转换之后，它们也将保持相等*/
 			goto next_byte;
 		}
 
@@ -349,7 +357,7 @@ cmp_data_data_slow(
 				return(-1);
 		}
 	next_byte:
-		/* Next byte */
+		/* Next 2 */
 		cur_bytes++;
 		data1++;
 		data2++;
@@ -366,7 +374,9 @@ have either m >= n fields, or it must differ from dtuple in some of
 the m fields rec has. If rec has an externally stored field we do not
 compare it but return with value 0 if such a comparison should be
 made. */
-
+/*这个函数用于比较数据元组和物理记录。只有dtuple->n_fields_cmp第一个字段被考虑为数据元组!
+如果我们用n = n_fields_cmp表示，那么rec必须有m个>= n个字段，或者它必须与rec的m个字段中的某些dtuple不同。
+如果rec有一个外部存储的字段，我们不会比较它，但如果需要进行比较，则返回值为0。*/
 int
 cmp_dtuple_rec_with_match(
 /*======================*/	
@@ -432,7 +442,8 @@ cmp_dtuple_rec_with_match(
 		both the fields are SQL null, or the record or dtuple may be
 		the predefined minimum record, or the field is externally
 		stored */
-
+        /*如果还匹配了0个字节，可能是其中一个或两个字段都是SQL null，
+		或者记录或dtuple可能是预定义的最小记录，或者字段是外部存储的*/
 		if (cur_bytes == 0) {
 			if (cur_field == 0) {
 
@@ -594,7 +605,7 @@ order_resolved:
 
 /******************************************************************
 Compares a data tuple to a physical record. */
-
+/*将数据元组与物理记录进行比较。*/
 int
 cmp_dtuple_rec(
 /*===========*/
