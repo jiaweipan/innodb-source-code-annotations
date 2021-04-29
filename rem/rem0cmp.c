@@ -625,7 +625,7 @@ cmp_dtuple_rec(
 /******************************************************************
 Checks if a dtuple is a prefix of a record. The last field in dtuple
 is allowed to be a prefix of the corresponding field in the record. */
-
+/*检查一个dtuple是否是一个记录的前缀。dtuple中的最后一个字段可以作为记录中相应字段的前缀。*/
 ibool
 cmp_dtuple_is_prefix_of_rec(
 /*========================*/
@@ -665,7 +665,7 @@ Compares a prefix of a data tuple to a prefix of a physical record for
 equality. If there are less fields in rec than parameter n_fields, FALSE
 is returned. NOTE that n_fields_cmp of dtuple does not affect this
 comparison. */
-
+/*比较数据元组的前缀与物理记录的前缀是否相等。如果rec中的字段比参数n_fields少，则返回FALSE。注意dtuple的n_fields_cmp不影响这个比较。*/
 ibool
 cmp_dtuple_rec_prefix_equal(
 /*========================*/
@@ -700,7 +700,7 @@ cmp_dtuple_rec_prefix_equal(
 This function is used to compare two physical records. Only the common
 first fields are compared, and if an externally stored field is
 encountered, then 0 is returned. */
-
+/*比较两条物理记录。只比较常见的第一个字段，如果遇到外部存储的字段，则返回0。*/
 int
 cmp_rec_rec_with_match(
 /*===================*/	
@@ -745,7 +745,7 @@ cmp_rec_rec_with_match(
 	cur_bytes = *matched_bytes;
 
 	/* Match fields in a loop; stop if we run out of fields in either
-	record */
+	record */ /*在循环中匹配字段;如果两个记录中的字段都用完，就停止*/
 
 	while ((cur_field < rec1_n_fields) && (cur_field < rec2_n_fields)) {
 
@@ -902,7 +902,7 @@ cmp_rec_rec_with_match(
 	ut_ad(cur_bytes == 0);
 
 	ret = 0;	/* If we ran out of fields, rec1 was equal to rec2 up
-			to the common fields */
+			to the common fields */ /*如果我们用完了字段，rec1等于rec2，直到公共字段*/
 order_resolved:
 
 	ut_ad((ret >= - 1) && (ret <= 1));
@@ -919,6 +919,8 @@ This function is used to compare a data tuple to a physical record. If
 dtuple has n fields then rec must have either m >= n fields, or it must
 differ from dtuple in some of the m fields rec has. If encounters an
 externally stored field, returns 0. */
+/*用于cmp_dtuple_... .的调试检查。用于比较一个数据元组和一个物理记录。
+如果dtuple有n个字段，那么rec必须有m个>= n个字段，或者它必须不同于dtuple的m个字段。如果遇到外部存储的字段，则返回0。*/
 static
 int
 cmp_debug_dtuple_rec_with_match(
