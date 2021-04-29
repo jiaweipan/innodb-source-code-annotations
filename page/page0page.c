@@ -5,7 +5,7 @@ Index page routines
 
 Created 2/2/1994 Heikki Tuuri
 *******************************************************/
-
+/*索引页的例程*/
 #define THIS_MODULE
 #include "page0page.h"
 #ifdef UNIV_NONINL

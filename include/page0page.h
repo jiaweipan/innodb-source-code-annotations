@@ -5,7 +5,7 @@ Index page routines
 
 Created 2/2/1994 Heikki Tuuri
 *******************************************************/
-
+/*索引页的例程*/
 #ifndef page0page_h
 #define page0page_h
 
@@ -29,75 +29,78 @@ Created 2/2/1994 Heikki Tuuri
 			===========
 
 Index page header starts at the first offset left free by the FIL-module */
-
+/*索引页头从FIL-module留下的第一个空闲偏移量开始*/
 typedef	byte		page_header_t;
 
 #define	PAGE_HEADER	FSEG_PAGE_DATA	/* index page header starts at this
-				offset */
+				offset */ /*索引页头从这个偏移量开始*/
 /*-----------------------------*/
-#define PAGE_N_DIR_SLOTS 0	/* number of slots in page directory */
-#define	PAGE_HEAP_TOP	 2	/* pointer to record heap top */
-#define	PAGE_N_HEAP	 4	/* number of records in the heap */
-#define	PAGE_FREE	 6	/* pointer to start of page free record list */
-#define	PAGE_GARBAGE	 8	/* number of bytes in deleted records */
+#define PAGE_N_DIR_SLOTS 0	/* number of slots in page directory */ /*页目录中的槽数*/
+#define	PAGE_HEAP_TOP	 2	/* pointer to record heap top */ /*指向记录堆顶部的指针*/
+#define	PAGE_N_HEAP	 4	/* number of records in the heap */ /*堆中的记录数*/
+#define	PAGE_FREE	 6	/* pointer to start of page free record list */ /*指向空闲页记录列表的起始点*/
+#define	PAGE_GARBAGE	 8	/* number of bytes in deleted records */ /*删除记录的字节数*/
 #define	PAGE_LAST_INSERT 10	/* pointer to the last inserted record, or
 				NULL if this info has been reset by a delete,
-				for example */
-#define	PAGE_DIRECTION	 12	/* last insert direction: PAGE_LEFT, ... */
+				for example */ /*指针指向最后插入的记录，或者NULL，如果该信息被删除重置，例如*/
+#define	PAGE_DIRECTION	 12	/* last insert direction: PAGE_LEFT, ... */ /*最后插入方向:PAGE_LEFT，…*/
 #define	PAGE_N_DIRECTION 14	/* number of consecutive inserts to the same
-				direction */
-#define	PAGE_N_RECS	 16	/* number of user records on the page */
+				direction */ /*同一方向的连续插入数*/
+#define	PAGE_N_RECS	 16	/* number of user records on the page */ /*页面中用户记录个数*/
 #define PAGE_MAX_TRX_ID	 18	/* highest id of a trx which may have modified
 				a record on the page; a dulint; defined only
 				in secondary indexes; specifically, not in an
 				ibuf tree; NOTE: this may be modified only
 				when the thread has an x-latch to the page,
 				and ALSO an x-latch to btr_search_latch
-				if there is a hash index to the page! */
+				if there is a hash index to the page! */ /*可能修改了页面上记录的TRX的最高id;dulint;仅在二级索引中定义;
+				具体来说，不是在ibuf树中;注意:只有当线程对页面有一个x-闩锁时，才可以修改它，如果页面有一个哈希索引，
+				也可以对btr_search_latch有一个x-闩锁。*/
 #define PAGE_HEADER_PRIV_END 26	/* end of private data structure of the page
-				header which are set in a page create */
+				header which are set in a page create */ /*在页面创建中设置的页头的私有数据结构的结束*/
 /*----*/
 #define	PAGE_LEVEL	 26	/* level of the node in an index tree; the
-				leaf level is the level 0 */
-#define	PAGE_INDEX_ID	 28	/* index id where the page belongs */
+				leaf level is the level 0 */ /*索引树中节点的级别;叶级是级别0*/
+#define	PAGE_INDEX_ID	 28	/* index id where the page belongs */ /*页面所属的索引id*/
 #define PAGE_BTR_SEG_LEAF 36	/* file segment header for the leaf pages in
 				a B-tree: defined only on the root page of a
-				B-tree, but not in the root of an ibuf tree */
+				B-tree, but not in the root of an ibuf tree */ /*b -树中叶子页的文件段头:仅在b -树的根页面上定义，但不在ibuf树的根页面上定义*/
 #define PAGE_BTR_IBUF_FREE_LIST	PAGE_BTR_SEG_LEAF
 #define PAGE_BTR_IBUF_FREE_LIST_NODE PAGE_BTR_SEG_LEAF
 				/* in the place of PAGE_BTR_SEG_LEAF and _TOP
 				there is a free list base node if the page is
 				the root page of an ibuf tree, and at the same
 				place is the free list node if the page is in
-				a free list */
+				a free list */  /*如果页面是ibuf树的根页面，则在PAGE_BTR_SEG_LEAF和_TOP的位置上有一个空闲列表基节点，
+				如果页面在空闲列表中，则在相同的位置上有一个空闲列表节点*/
 #define PAGE_BTR_SEG_TOP (36 + FSEG_HEADER_SIZE)
 				/* file segment header for the non-leaf pages
 				in a B-tree: defined only on the root page of
 				a B-tree, but not in the root of an ibuf
-				tree */
+				tree */ /*b -树中非叶页的文件段头:仅在b -树的根页上定义，但不在ibuf树的根中定义*/
 /*----*/
 #define PAGE_DATA	(PAGE_HEADER + 36 + 2 * FSEG_HEADER_SIZE)
-				/* start of data on the page */
+				/* start of data on the page */ /*页上数据的开始*/
 
 #define PAGE_INFIMUM	(PAGE_DATA + 1 + REC_N_EXTRA_BYTES)
 				/* offset of the page infimum record on the
-				page */
+				page */ /*页下记录在页上的偏移量*/
 #define PAGE_SUPREMUM	(PAGE_DATA + 2 + 2 * REC_N_EXTRA_BYTES + 8)
 				/* offset of the page supremum record on the
-				page */
+				page */ /*页上的页上记录的偏移量*/
 #define PAGE_SUPREMUM_END (PAGE_SUPREMUM + 9)
 				/* offset of the page supremum record end on
-				the page */
+				the page */ /*页上记录结束的偏移量*/
 /*-----------------------------*/
 
-/* Directions of cursor movement */
+/* Directions of cursor movement */ /*光标移动方向*/
 #define	PAGE_LEFT		1
 #define	PAGE_RIGHT		2
 #define	PAGE_SAME_REC		3
 #define	PAGE_SAME_PAGE		4
 #define	PAGE_NO_DIRECTION	5
 
-/*			PAGE DIRECTORY
+/*			PAGE DIRECTORY 页目录
 			==============
 */
 
@@ -107,23 +110,25 @@ typedef page_dir_slot_t		page_dir_t;
 /* Offset of the directory start down from the page end. We call the
 slot with the highest file address directory start, as it points to 
 the first record in the list of records. */
+/*从页面结束开始的目录的偏移量。我们将具有最高文件地址目录的槽称为start，因为它指向记录列表中的第一个记录。*/
 #define	PAGE_DIR		FIL_PAGE_DATA_END
 
-/* We define a slot in the page directory as two bytes */
+/* We define a slot in the page directory as two bytes */ /*我们将页目录中的槽定义为两个字节*/
 #define	PAGE_DIR_SLOT_SIZE	2
 
 /* The offset of the physically lower end of the directory, counted from
-page end, when the page is empty */
+page en, dwhen the page is empty */ /*当页为空时，从页结束算起的目录物理下端的偏移量*/
 #define PAGE_EMPTY_DIR_START	(PAGE_DIR + 2 * PAGE_DIR_SLOT_SIZE)
 
 /* The maximum and minimum number of records owned by a directory slot. The
 number may drop below the minimum in the first and the last slot in the 
 directory. */
+/*目录槽位所拥有的最大和最小记录数。该数字可能下降到目录中第一个和最后一个插槽的最小值以下。*/
 #define PAGE_DIR_SLOT_MAX_N_OWNED	8
 #define	PAGE_DIR_SLOT_MIN_N_OWNED	4
 
 /*****************************************************************
-Returns the max trx id field value. */
+Returns the max trx id field value. */ /*返回最大trx id字段值。*/
 UNIV_INLINE
 dulint
 page_get_max_trx_id(
@@ -131,7 +136,7 @@ page_get_max_trx_id(
 	page_t*	page);	/* in: page */
 /*****************************************************************
 Sets the max trx id field value. */
-
+/*设置最大trx id字段值。*/
 void
 page_set_max_trx_id(
 /*================*/
@@ -139,7 +144,7 @@ page_set_max_trx_id(
 	dulint	trx_id);/* in: transaction id */
 /*****************************************************************
 Sets the max trx id field value if trx_id is bigger than the previous
-value. */
+value. */ /*当trx_id大于前一个值时，设置trx id字段的最大值。*/
 UNIV_INLINE
 void
 page_update_max_trx_id(
@@ -147,7 +152,7 @@ page_update_max_trx_id(
 	page_t*	page,	/* in: page */
 	dulint	trx_id);	/* in: transaction id */
 /*****************************************************************
-Reads the given header field. */
+Reads the given header field. */ /*读取给定的报头字段。*/
 UNIV_INLINE
 ulint
 page_header_get_field(
@@ -155,7 +160,7 @@ page_header_get_field(
 	page_t*	page,	/* in: page */
 	ulint	field);	/* in: PAGE_N_DIR_SLOTS, ... */
 /*****************************************************************
-Sets the given header field. */
+Sets the given header field. */ /*设置给定的报头字段。*/
 UNIV_INLINE
 void
 page_header_set_field(
@@ -164,7 +169,7 @@ page_header_set_field(
 	ulint	field,	/* in: PAGE_N_DIR_SLOTS, ... */
 	ulint	val);	/* in: value */
 /*****************************************************************
-Returns the pointer stored in the given header field. */
+Returns the pointer stored in the given header field. */ /*返回存储在给定报头字段中的指针。*/
 UNIV_INLINE
 byte*
 page_header_get_ptr(
@@ -173,7 +178,7 @@ page_header_get_ptr(
 	page_t*	page,	/* in: page */
 	ulint	field);	/* in: PAGE_FREE, ... */
 /*****************************************************************
-Sets the pointer stored in the given header field. */
+Sets the pointer stored in the given header field. */ /*设置存储在给定报头字段中的指针。*/
 UNIV_INLINE
 void
 page_header_set_ptr(
@@ -183,7 +188,7 @@ page_header_set_ptr(
 	byte*	ptr);	/* in: pointer or NULL*/
 /*****************************************************************
 Resets the last insert info field in the page header. Writes to mlog
-about this operation. */
+about this operation. */ /*重置页眉中的最后一个插入信息字段。将此操作写入mlog。*/
 UNIV_INLINE
 void
 page_header_reset_last_insert(
@@ -191,7 +196,7 @@ page_header_reset_last_insert(
 	page_t*	page,	/* in: page */
 	mtr_t*	mtr);	/* in: mtr */
 /****************************************************************
-Gets the first record on the page. */
+Gets the first record on the page. */ /*获取页上的第一个记录。*/
 UNIV_INLINE
 rec_t*
 page_get_infimum_rec(
@@ -199,7 +204,7 @@ page_get_infimum_rec(
 			/* out: the first record in record list */
 	page_t*	page);	/* in: page which must have record(s) */
 /****************************************************************
-Gets the last record on the page. */
+Gets the last record on the page. */ /*获取页面上的最后一条记录。*/
 UNIV_INLINE
 rec_t*
 page_get_supremum_rec(
@@ -209,7 +214,7 @@ page_get_supremum_rec(
 /****************************************************************
 Returns the middle record of record list. If there are an even number
 of records in the list, returns the first record of upper half-list. */
-
+/*返回记录列表的中间记录。如果列表中有偶数条记录，则返回上半个列表的第一个记录。*/
 rec_t*
 page_get_middle_rec(
 /*================*/
@@ -221,6 +226,9 @@ cmp_dtuple_rec_with_match in the way that the record must reside on an
 index page, and also page infimum and supremum records can be given in
 the parameter rec. These are considered as the negative infinity and
 the positive infinity in the alphabetical order. */
+/*将数据元组与物理记录进行比较。与cmp_dtuple_rec_with_match函数不同的是，
+该记录必须驻留在一个索引页上，而且页面下限值和上限值可以在参数rec中给出。
+它们被认为是按字母顺序的负无穷大和正无穷大。*/
 UNIV_INLINE
 int
 page_cmp_dtuple_rec_with_match(
@@ -242,7 +250,7 @@ page_cmp_dtuple_rec_with_match(
 				value for current comparison */
 /*****************************************************************
 Gets the number of user records on page (the infimum and supremum records
-are not user records). */
+are not user records). */ /*获取页面上用户记录的数量(下限值和上限值记录不是用户记录)。*/
 UNIV_INLINE
 ulint
 page_get_n_recs(
@@ -252,14 +260,14 @@ page_get_n_recs(
 /*******************************************************************
 Returns the number of records before the given record in chain.
 The number includes infimum and supremum records. */
-
+/*返回链中给定记录之前的记录数。该数字包括下限值和上限值记录。*/
 ulint
 page_rec_get_n_recs_before(
 /*=======================*/
 			/* out: number of records */
 	rec_t*	rec);	/* in: the physical record */
 /*****************************************************************
-Gets the number of dir slots in directory. */
+Gets the number of dir slots in directory. */ /*获取目录中dir插槽的数量。*/
 UNIV_INLINE
 ulint
 page_dir_get_n_slots(
@@ -267,7 +275,7 @@ page_dir_get_n_slots(
 			/* out: number of slots */
 	page_t*	page);	/* in: index page */
 /*****************************************************************
-Gets pointer to nth directory slot. */
+Gets pointer to nth directory slot. */ /*获取指向第n个目录槽的指针。*/
 UNIV_INLINE
 page_dir_slot_t*
 page_dir_get_nth_slot(
@@ -276,7 +284,7 @@ page_dir_get_nth_slot(
 	page_t*	page,	/* in: index page */
 	ulint	n);	/* in: position */
 /******************************************************************
-Used to check the consistency of a record on a page. */
+Used to check the consistency of a record on a page. */ /*用于检查某页上记录的一致性。*/
 UNIV_INLINE
 ibool
 page_rec_check(
@@ -284,7 +292,7 @@ page_rec_check(
 			/* out: TRUE if succeed */
 	rec_t*	rec);	/* in: record */
 /*******************************************************************
-Gets the record pointed to by a directory slot. */
+Gets the record pointed to by a directory slot. */ /*获取由目录槽指向的记录。*/
 UNIV_INLINE
 rec_t*
 page_dir_slot_get_rec(
@@ -292,7 +300,7 @@ page_dir_slot_get_rec(
 					/* out: pointer to record */
 	page_dir_slot_t*	slot);	/* in: directory slot */
 /*******************************************************************
-This is used to set the record offset in a directory slot. */
+This is used to set the record offset in a directory slot. */ /*这用于设置目录槽中的记录偏移量。*/
 UNIV_INLINE
 void
 page_dir_slot_set_rec(
@@ -300,7 +308,7 @@ page_dir_slot_set_rec(
 	page_dir_slot_t* slot,	/* in: directory slot */
 	rec_t*		 rec);	/* in: record on the page */
 /*******************************************************************
-Gets the number of records owned by a directory slot. */
+Gets the number of records owned by a directory slot. */ /*获取目录槽拥有的记录数。*/
 UNIV_INLINE
 ulint
 page_dir_slot_get_n_owned(
@@ -308,7 +316,7 @@ page_dir_slot_get_n_owned(
 					/* out: number of records */
 	page_dir_slot_t* 	slot);	/* in: page directory slot */
 /*******************************************************************
-This is used to set the owned records field of a directory slot. */
+This is used to set the owned records field of a directory slot. */ /*这用于设置目录槽的拥有记录字段。*/
 UNIV_INLINE
 void
 page_dir_slot_set_n_owned(
@@ -320,7 +328,8 @@ page_dir_slot_set_n_owned(
 Calculates the space reserved for directory slots of a given
 number of records. The exact value is a fraction number
 n * PAGE_DIR_SLOT_SIZE / PAGE_DIR_SLOT_MIN_N_OWNED, and it is
-rounded upwards to an integer. */
+rounded upwards to an integer. */ /*计算给定记录数量的目录槽保留的空间。
+确切的值是小数n * PAGE_DIR_SLOT_SIZE / PAGE_DIR_SLOT_MIN_N_OWNED，向上取整。*/
 UNIV_INLINE
 ulint
 page_dir_calc_reserved_space(
@@ -328,6 +337,7 @@ page_dir_calc_reserved_space(
 	ulint	n_recs);	/* in: number of records */
 /*******************************************************************
 Looks for the directory slot which owns the given record. */
+/*查找拥有给定记录的目录槽。*/
 UNIV_INLINE
 ulint
 page_dir_find_owner_slot(
@@ -336,6 +346,7 @@ page_dir_find_owner_slot(
 	rec_t*	rec);		/* in: the physical record */
 /****************************************************************
 Gets the pointer to the next record on the page. */
+/*获取指向页上下一个记录的指针。*/
 UNIV_INLINE
 rec_t*
 page_rec_get_next(
@@ -345,6 +356,7 @@ page_rec_get_next(
 			supremum */
 /****************************************************************
 Sets the pointer to the next record on the page. */ 
+/*设置指向该页上下一个记录的指针。*/
 UNIV_INLINE
 void
 page_rec_set_next(
@@ -354,7 +366,7 @@ page_rec_set_next(
 	rec_t*	next);	/* in: pointer to next record, must not
 			be page infimum */
 /****************************************************************
-Gets the pointer to the previous record. */
+Gets the pointer to the previous record. *//*获取指向前一条记录的指针。*/
 UNIV_INLINE
 rec_t*
 page_rec_get_prev(
@@ -363,7 +375,7 @@ page_rec_get_prev(
 	rec_t*	rec);	/* in: pointer to record, must not be page
 			infimum */
 /****************************************************************
-TRUE if the record is a user record on the page. */
+TRUE if the record is a user record on the page. */ /*如果该记录是页面上的用户记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_user_rec(
@@ -371,7 +383,7 @@ page_rec_is_user_rec(
 			/* out: TRUE if a user record */
 	rec_t*	rec);	/* in: record */
 /****************************************************************
-TRUE if the record is the supremum record on a page. */
+TRUE if the record is the supremum record on a page. */ /*如果该记录是页面上的最高记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_supremum(
