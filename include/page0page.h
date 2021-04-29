@@ -391,7 +391,7 @@ page_rec_is_supremum(
 			/* out: TRUE if the supremum record */
 	rec_t*	rec);	/* in: record */
 /****************************************************************
-TRUE if the record is the infimum record on a page. */
+TRUE if the record is the infimum record on a page. */ /*如果该记录是页上的下位记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_infimum(
@@ -399,7 +399,7 @@ page_rec_is_infimum(
 			/* out: TRUE if the infimum record */
 	rec_t*	rec);	/* in: record */
 /****************************************************************
-TRUE if the record is the first user record on the page. */
+TRUE if the record is the first user record on the page. */ /*如果该记录是页面上的第一个用户记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_first_user_rec(
@@ -407,7 +407,7 @@ page_rec_is_first_user_rec(
 			/* out: TRUE if first user record */
 	rec_t*	rec);	/* in: record */
 /****************************************************************
-TRUE if the record is the last user record on the page. */
+TRUE if the record is the last user record on the page. */ /*如果该记录是页面上的最后一条用户记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_last_user_rec(
@@ -415,7 +415,7 @@ page_rec_is_last_user_rec(
 			/* out: TRUE if last user record */
 	rec_t*	rec);	/* in: record */
 /*******************************************************************
-Looks for the record which owns the given record. */
+Looks for the record which owns the given record. */ /*查找拥有给定记录的记录。*/
 UNIV_INLINE
 rec_t*
 page_rec_find_owner_rec(
@@ -426,7 +426,7 @@ page_rec_find_owner_rec(
 This is a low-level operation which is used in a database index creation
 to update the page number of a created B-tree to a data dictionary
 record. */
-
+/*这是一种低级操作，用于创建数据库索引，将已创建的b -树的页码更新为数据字典记录。*/
 void
 page_rec_write_index_page_no(
 /*=========================*/
@@ -436,7 +436,7 @@ page_rec_write_index_page_no(
 	mtr_t*	mtr);	/* in: mtr */
 /****************************************************************
 Returns the maximum combined size of records which can be inserted on top
-of record heap. */
+of record heap. *//*返回可以插入到记录堆顶部的记录的最大组合大小。*/
 UNIV_INLINE
 ulint
 page_get_max_insert_size(
@@ -447,6 +447,7 @@ page_get_max_insert_size(
 /****************************************************************
 Returns the maximum combined size of records which can be inserted on top
 of record heap if page is first reorganized. */
+/*如果页面首先被重新组织，则返回可以插入到记录堆顶部的记录的最大组合大小。*/
 UNIV_INLINE
 ulint
 page_get_max_insert_size_after_reorganize(
@@ -455,7 +456,7 @@ page_get_max_insert_size_after_reorganize(
 	page_t*	page,	/* in: index page */
 	ulint	n_recs);/* in: number of records */
 /*****************************************************************
-Calculates free space if a page is emptied. */
+Calculates free space if a page is emptied. */ /*如果页面被清空，则计算可用空间。*/
 UNIV_INLINE
 ulint
 page_get_free_space_of_empty(void);
@@ -464,6 +465,7 @@ page_get_free_space_of_empty(void);
 /****************************************************************
 Returns the sum of the sizes of the records in the record list
 excluding the infimum and supremum records. */
+/*返回记录列表中除下限值和上限值记录外的所有记录的大小之和。*/
 UNIV_INLINE
 ulint
 page_get_data_size(
@@ -472,7 +474,7 @@ page_get_data_size(
 	page_t*	page);	/* in: index page */
 /****************************************************************
 Allocates a block of memory from an index page. */
-
+/*从索引页分配一块内存。*/
 byte*
 page_mem_alloc(
 /*===========*/
@@ -484,6 +486,7 @@ page_mem_alloc(
 			of the allocated record if allocation succeeds */
 /****************************************************************
 Puts a record to free list. */
+/*将一个记录放到空闲列表中。*/
 UNIV_INLINE
 void
 page_mem_free(
@@ -492,7 +495,7 @@ page_mem_free(
 	rec_t*	rec);	/* in: pointer to the (origin of) record */
 /**************************************************************
 The index page creation function. */
-
+/*索引页创建功能。*/
 page_t* 
 page_create(
 /*========*/
@@ -503,7 +506,7 @@ page_create(
 /*****************************************************************
 Differs from page_copy_rec_list_end, because this function does not
 touch the lock table and max trx id on page. */
-
+/*不同于page_copy_rec_list_end，因为这个函数不接触锁表和页上的最大trx id。*/
 void
 page_copy_rec_list_end_no_locks(
 /*============================*/
@@ -515,7 +518,7 @@ page_copy_rec_list_end_no_locks(
 Copies records from page to new_page, from the given record onward,
 including that record. Infimum and supremum records are not copied.
 The records are copied to the start of the record list on new_page. */
-
+/*从给定记录开始(包括该记录)，将记录从page复制到new_page。下位记录和上位记录不被复制。记录被复制到new_page上的记录列表的开头。*/
 void
 page_copy_rec_list_end(
 /*===================*/
@@ -527,7 +530,7 @@ page_copy_rec_list_end(
 Copies records from page to new_page, up to the given record, NOT
 including that record. Infimum and supremum records are not copied.
 The records are copied to the end of the record list on new_page. */
-
+/*将记录从page复制到new_page，直到给定的记录，不包括该记录。下位记录和上位记录不被复制。记录被复制到new_page上记录列*/
 void
 page_copy_rec_list_start(
 /*=====================*/
@@ -538,7 +541,7 @@ page_copy_rec_list_start(
 /*****************************************************************
 Deletes records from a page from a given record onward, including that record.
 The infimum and supremum records are not deleted. */
-
+/*从一个给定记录开始从一个页面删除记录，包括该记录。下限值和上限值不被删除。*/
 void
 page_delete_rec_list_end(
 /*=====================*/
@@ -553,7 +556,7 @@ page_delete_rec_list_end(
 /*****************************************************************
 Deletes records from page, up to the given record, NOT including
 that record. Infimum and supremum records are not deleted. */
-
+/*从页面删除记录，直到给定的记录，不包括该记录。下位记录和上位记录不会被删除。*/
 void
 page_delete_rec_list_start(
 /*=======================*/
@@ -563,7 +566,7 @@ page_delete_rec_list_start(
 /*****************************************************************
 Moves record list end to another page. Moved records include
 split_rec. */
-
+/*移动记录列表到另一个页面。移动的记录包括split_rec。*/
 void
 page_move_rec_list_end(
 /*===================*/
@@ -574,7 +577,7 @@ page_move_rec_list_end(
 /*****************************************************************
 Moves record list start to another page. Moved records do not include
 split_rec. */
-
+/*移动记录列表开始到另一个页面。移动的记录不包括split_rec。*/
 void
 page_move_rec_list_start(
 /*=====================*/
@@ -584,7 +587,7 @@ page_move_rec_list_start(
 	mtr_t*	mtr);		/* in: mtr */
 /********************************************************************
 Splits a directory slot which owns too many records. */
-
+/*分割拥有过多记录的目录槽。*/
 void
 page_dir_split_slot(
 /*================*/
@@ -595,7 +598,7 @@ Tries to balance the given directory slot with too few records
 with the upper neighbor, so that there are at least the minimum number 
 of records owned by the slot; this may result in the merging of 
 two slots. */
-
+/*尝试与上层邻居平衡记录过少的给定目录槽，以便至少有最小数量的记录属于该槽;这可能导致两个槽的合并。*/
 void
 page_dir_balance_slot(
 /*==================*/
@@ -603,7 +606,7 @@ page_dir_balance_slot(
 	ulint	slot_no); 	/* in: the directory slot */
 /**************************************************************
 Parses a log record of a record list end or start deletion. */
-
+/*解析记录列表结束或开始删除的日志记录。*/
 byte*
 page_parse_delete_rec_list(
 /*=======================*/
@@ -615,7 +618,7 @@ page_parse_delete_rec_list(
 	mtr_t*	mtr);	/* in: mtr or NULL */
 /***************************************************************
 Parses a redo log record of creating a page. */
-
+/*解析创建页面的重做日志记录。*/
 byte*
 page_parse_create(
 /*==============*/
@@ -627,7 +630,7 @@ page_parse_create(
 /****************************************************************
 Prints record contents including the data relevant only in
 the index page context. */
- 
+/*打印记录内容，包括仅在索引页上下文中相关的数据。*/
 void
 page_rec_print(
 /*===========*/
@@ -635,7 +638,7 @@ page_rec_print(
 /*******************************************************************
 This is used to print the contents of the directory for
 debugging purposes. */
-
+/*它用于打印目录的内容，以供调试之用。*/
 void
 page_dir_print(
 /*===========*/
@@ -644,7 +647,7 @@ page_dir_print(
 /*******************************************************************
 This is used to print the contents of the page record list for
 debugging purposes. */
-
+/*它用于打印页面记录列表的内容，以供调试之用。*/
 void
 page_print_list(
 /*============*/
@@ -652,7 +655,7 @@ page_print_list(
 	ulint	pr_n);	/* in: print n first and n last entries */
 /*******************************************************************
 Prints the info in a page header. */
-
+/*打印页眉中的信息。*/
 void
 page_header_print(
 /*==============*/
@@ -660,7 +663,7 @@ page_header_print(
 /*******************************************************************
 This is used to print the contents of the page for
 debugging purposes. */
-
+/*它用于打印页面的内容以供调试之用。*/
 void
 page_print(
 /*======*/
@@ -671,7 +674,7 @@ page_print(
 The following is used to validate a record on a page. This function
 differs from rec_validate as it can also check the n_owned field and
 the heap_no field. */
-
+/*下面的代码用于验证页面上的记录。这个函数与rec_validate不同，因为它也可以检查n_owned字段和heap_no字段。*/
 ibool
 page_rec_validate(
 /*==============*/
@@ -679,7 +682,7 @@ page_rec_validate(
 	rec_t* 	rec);	/* in: record on the page */
 /*******************************************************************
 This function checks the consistency of an index page. */
-
+/*这个函数检查索引页的一致性。*/
 ibool
 page_validate(
 /*==========*/
@@ -689,7 +692,7 @@ page_validate(
 				the page record type definition */
 /*******************************************************************
 Looks in the page record list for a record with the given heap number. */
-
+/*在页记录列表中查找具有给定堆号的记录。*/
 rec_t*
 page_find_rec_with_heap_no(
 /*=======================*/
