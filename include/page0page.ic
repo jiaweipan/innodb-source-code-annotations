@@ -16,7 +16,7 @@ Created 2/2/1994 Heikki Tuuri
 #endif
 
 /*****************************************************************
-Returns the max trx id field value. */
+Returns the max trx id field value. */ /*返回最大trx id字段值。*/
 UNIV_INLINE
 dulint
 page_get_max_trx_id(
@@ -30,7 +30,7 @@ page_get_max_trx_id(
 
 /*****************************************************************
 Sets the max trx id field value if trx_id is bigger than the previous
-value. */
+value. */  /*当trx_id大于前一个值时，设置trx id字段的最大值。*/
 UNIV_INLINE
 void
 page_update_max_trx_id(
@@ -47,7 +47,7 @@ page_update_max_trx_id(
 }
 
 /*****************************************************************
-Reads the given header field. */
+Reads the given header field. */  /*读取给定的报头字段。*/
 UNIV_INLINE
 ulint
 page_header_get_field(
@@ -62,7 +62,7 @@ page_header_get_field(
 }
 
 /*****************************************************************
-Sets the given header field. */
+Sets the given header field. */  /*设置给定的报头字段。*/
 UNIV_INLINE
 void
 page_header_set_field(
@@ -79,7 +79,7 @@ page_header_set_field(
 }
 
 /*****************************************************************
-Returns the pointer stored in the given header field. */
+Returns the pointer stored in the given header field. */ /*返回存储在给定报头字段中的指针。*/
 UNIV_INLINE
 byte*
 page_header_get_ptr(
@@ -108,7 +108,7 @@ page_header_get_ptr(
 }
 
 /*****************************************************************
-Sets the pointer stored in the given header field. */
+Sets the pointer stored in the given header field. */ /*设置存储在给定报头字段中的指针。*/
 UNIV_INLINE
 void
 page_header_set_ptr(
@@ -137,7 +137,7 @@ page_header_set_ptr(
 
 /*****************************************************************
 Resets the last insert info field in the page header. Writes to mlog
-about this operation. */
+about this operation. */ /*重置页眉中的最后一个插入信息字段。将此操作写入mlog。*/
 UNIV_INLINE
 void
 page_header_reset_last_insert(
@@ -152,7 +152,7 @@ page_header_reset_last_insert(
 }
 
 /****************************************************************
-Gets the first record on the page. */
+Gets the first record on the page. */ /*获取页上的第一个记录。*/
 UNIV_INLINE
 rec_t*
 page_get_infimum_rec(
@@ -166,7 +166,7 @@ page_get_infimum_rec(
 }
 
 /****************************************************************
-Gets the last record on the page. */
+Gets the last record on the page. */ /*获取页面上的最后一条记录。*/
 UNIV_INLINE
 rec_t*
 page_get_supremum_rec(
@@ -180,7 +180,7 @@ page_get_supremum_rec(
 }
 
 /****************************************************************
-TRUE if the record is a user record on the page. */
+TRUE if the record is a user record on the page. */ /*如果该记录是页面上的用户记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_user_rec(
@@ -204,7 +204,7 @@ page_rec_is_user_rec(
 }
 
 /****************************************************************
-TRUE if the record is the supremum record on a page. */
+TRUE if the record is the supremum record on a page. */ /*如果该记录是页面上的最高记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_supremum(
@@ -223,7 +223,7 @@ page_rec_is_supremum(
 }
 
 /****************************************************************
-TRUE if the record is the infimum record on a page. */
+TRUE if the record is the infimum record on a page. */ /*如果该记录是页上的下位记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_infimum(
@@ -242,7 +242,7 @@ page_rec_is_infimum(
 }
 
 /****************************************************************
-TRUE if the record is the first user record on the page. */
+TRUE if the record is the first user record on the page. */ /*如果该记录是页面上的第一个用户记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_first_user_rec(
@@ -267,7 +267,7 @@ page_rec_is_first_user_rec(
 }
 
 /****************************************************************
-TRUE if the record is the last user record on the page. */
+TRUE if the record is the last user record on the page. */ /*如果该记录是页面上的最后一条用户记录，则为TRUE。*/
 UNIV_INLINE
 ibool
 page_rec_is_last_user_rec(
@@ -297,6 +297,9 @@ cmp_dtuple_rec_with_match in the way that the record must reside on an
 index page, and also page infimum and supremum records can be given in
 the parameter rec. These are considered as the negative infinity and
 the positive infinity in the alphabetical order. */
+/*将数据元组与物理记录进行比较。与cmp_dtuple_rec_with_match函数不同的是，
+该记录必须驻留在一个索引页上，而且页面下限值和上限值可以在参数rec中给出。
+它们被认为是按字母顺序的负无穷大和正无穷大。*/
 UNIV_INLINE
 int
 page_cmp_dtuple_rec_with_match(
@@ -336,7 +339,7 @@ page_cmp_dtuple_rec_with_match(
 
 /*****************************************************************
 Gets the number of user records on page (infimum and supremum records
-are not user records). */
+are not user records). */  /*获取页面上用户记录的数量(下限值和上限值记录不是用户记录)。*/
 UNIV_INLINE
 ulint
 page_get_n_recs(
@@ -348,7 +351,7 @@ page_get_n_recs(
 }
 
 /*****************************************************************
-Gets the number of dir slots in directory. */
+Gets the number of dir slots in directory. */ /*获取目录中dir插槽的数量。*/
 UNIV_INLINE
 ulint
 page_dir_get_n_slots(
@@ -360,7 +363,7 @@ page_dir_get_n_slots(
 }
 
 /*****************************************************************
-Gets pointer to nth directory slot. */
+Gets pointer to nth directory slot. */ /*获取指向第n个目录槽的指针。*/
 UNIV_INLINE
 page_dir_slot_t*
 page_dir_get_nth_slot(
@@ -376,7 +379,7 @@ page_dir_get_nth_slot(
 }		
 
 /******************************************************************
-Used to check the consistency of a record on a page. */
+Used to check the consistency of a record on a page. */ /*用于检查某页上记录的一致性。*/
 UNIV_INLINE
 ibool
 page_rec_check(
@@ -397,7 +400,7 @@ page_rec_check(
 }
 
 /*******************************************************************
-Gets the record pointed to by a directory slot. */
+Gets the record pointed to by a directory slot. *//*获取由目录槽指向的记录。*/
 UNIV_INLINE
 rec_t*
 page_dir_slot_get_rec(
@@ -409,7 +412,7 @@ page_dir_slot_get_rec(
 }
 
 /*******************************************************************
-This is used to set the record offset in a directory slot. */
+This is used to set the record offset in a directory slot. */ /*这用于设置目录槽中的记录偏移量。*/
 UNIV_INLINE
 void
 page_dir_slot_set_rec(
@@ -423,7 +426,7 @@ page_dir_slot_set_rec(
 }
 
 /*******************************************************************
-Gets the number of records owned by a directory slot. */
+Gets the number of records owned by a directory slot. */ /*获取目录槽拥有的记录数。*/
 UNIV_INLINE
 ulint
 page_dir_slot_get_n_owned(
@@ -435,7 +438,7 @@ page_dir_slot_get_n_owned(
 }
 
 /*******************************************************************
-This is used to set the owned records field of a directory slot. */
+This is used to set the owned records field of a directory slot. */ /*这用于设置目录槽的拥有记录字段。*/
 UNIV_INLINE
 void
 page_dir_slot_set_n_owned(
@@ -451,6 +454,7 @@ page_dir_slot_set_n_owned(
 Calculates the space reserved for directory slots of a given number of
 records. The exact value is a fraction number n * PAGE_DIR_SLOT_SIZE /
 PAGE_DIR_SLOT_MIN_N_OWNED, and it is rounded upwards to an integer. */
+/*计算给定记录数量的目录槽保留的空间。确切的值是小数n * PAGE_DIR_SLOT_SIZE /PAGE_DIR_SLOT_MIN_N_OWNED，向上取整。*/
 UNIV_INLINE
 ulint
 page_dir_calc_reserved_space(
@@ -462,7 +466,7 @@ page_dir_calc_reserved_space(
 } 
 
 /****************************************************************
-Gets the pointer to the next record on the page. */
+Gets the pointer to the next record on the page. */ /*获取指向页上下一个记录的指针。*/
 UNIV_INLINE
 rec_t*
 page_rec_get_next(
@@ -488,7 +492,7 @@ page_rec_get_next(
 }
 
 /*******************************************************************
-Looks for the directory slot which owns the given record. */
+Looks for the directory slot which owns the given record. */ /*查找拥有给定记录的目录槽。*/
 UNIV_INLINE
 ulint
 page_dir_find_owner_slot(
@@ -522,7 +526,7 @@ page_dir_find_owner_slot(
 }
 
 /****************************************************************
-Sets the pointer to the next record on the page. */ 
+Sets the pointer to the next record on the page. */ /*设置指向该页上下一个记录的指针。*/
 UNIV_INLINE
 void
 page_rec_set_next(
@@ -550,7 +554,7 @@ page_rec_set_next(
 }
 
 /****************************************************************
-Gets the pointer to the previous record. */
+Gets the pointer to the previous record. */ /*获取指向前一条记录的指针。*/
 UNIV_INLINE
 rec_t*
 page_rec_get_prev(
@@ -590,7 +594,7 @@ page_rec_get_prev(
 }
 
 /*******************************************************************
-Looks for the record which owns the given record. */
+Looks for the record which owns the given record. */ /*查找拥有给定记录的记录。*/
 UNIV_INLINE
 rec_t*
 page_rec_find_owner_rec(
@@ -609,7 +613,7 @@ page_rec_find_owner_rec(
 
 /****************************************************************
 Returns the sum of the sizes of the records in the record list, excluding
-the infimum and supremum records. */
+the infimum and supremum records. */ /*返回记录列表中记录大小的总和，不包括下限值和上限值。*/
 UNIV_INLINE
 ulint
 page_get_data_size(
@@ -629,7 +633,7 @@ page_get_data_size(
 }
 
 /*****************************************************************
-Calculates free space if a page is emptied. */
+Calculates free space if a page is emptied. */ /*如果页面被清空，则计算可用空间。*/
 UNIV_INLINE
 ulint
 page_get_free_space_of_empty(void)
@@ -649,6 +653,9 @@ PAGE_DIR_SLOT_MIN_N_OWNED bytes for it. If the sum of these exceeds the
 value of page_get_free_space_of_empty, the insert is impossible, otherwise
 it is allowed. This function returns the maximum combined size of records
 which can be inserted on top of the record heap. */
+/*页面上的每个用户记录，以及堆中被删除的用户记录，都取其大小加上dir单元格大小/PAGE_DIR_SLOT_MIN_N_OWNED字节的比例。
+如果这些值的总和超过page_get_free_space_of_empty的值，则不允许插入，否则允许插入。
+这个函数返回可以插入到记录堆顶部的记录的最大组合大小。*/
 UNIV_INLINE
 ulint
 page_get_max_insert_size(
@@ -681,7 +688,7 @@ page_get_max_insert_size(
 
 /****************************************************************
 Returns the maximum combined size of records which can be inserted on top
-of the record heap if a page is first reorganized. */
+of the record heap if a page is first reorganized. */ /*如果页面首先被重新组织，则返回可插入到记录堆顶部的记录的最大组合大小。*/
 UNIV_INLINE
 ulint
 page_get_max_insert_size_after_reorganize(
@@ -707,7 +714,7 @@ page_get_max_insert_size_after_reorganize(
 }
 
 /****************************************************************
-Puts a record to free list. */
+Puts a record to free list. */ /*将一个记录放到空闲列表中。*/
 UNIV_INLINE
 void
 page_mem_free(
