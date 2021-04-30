@@ -18,7 +18,7 @@ Created 2/2/1994 Heikki Tuuri
 #include "fut0lst.h"
 #include "btr0sea.h"
 
-/* A cached template page used in page_create */
+/* A cached template page used in page_create */ /*page_create中使用的缓存模板页面*/
 page_t*	page_template	= NULL;
 
 /*			THE INDEX PAGE
@@ -27,7 +27,7 @@ page_t*	page_template	= NULL;
 The index page consists of a page header which contains the page's
 id and other information. On top of it are the the index records
 in a heap linked into a one way linear list according to alphabetic order.
-
+索引页由页头组成，页头包含页的id和其他信息。它的顶部是堆中的索引记录，按照字母顺序链接到单向线性列表。
 Just below page end is an array of pointers which we call page directory,
 to about every sixth record in the list. The pointers are placed in
 the directory in the alphabetical order of the records pointed to,
@@ -39,7 +39,11 @@ pointed to by pointer I and not including the record pointed to by I - 1.
 We say that the record pointed to by slot I, or that slot I, owns
 these records. The count is always kept in the range 4 to 8, with
 the exception that it is 1 for the first slot, and 1--8 for the second slot.  
-		
+就在page end下面是一个指针数组，我们称之为页目录，指向列表中大约每6条记录。
+指针按所指向记录的字母顺序放置在目录中，使我们能够使用数组进行二进制搜索。
+每个槽n:啊,我在目录指向一个记录,4比特字段包含一个计数的那些之间的线性表的记录指针和指针我- 1的目录,
+包括记录指针所指向我,不包括记录指出- 1。我们说槽I指向的记录，或者槽I，拥有这些记录。
+计数总是保持在4到8的范围内，除了第一个位置的计数为1，第二个位置的计数为1- 8。		
 An essentially binary search can be performed in the list of index
 records, like we could do if we had pointer to every record in the
 page directory. The data structure is, however, more efficient when
@@ -55,13 +59,20 @@ much loss of efficiency in inserts. Bigger page becomes actual
 when the disk transfer rate compared to seek and latency time rises.
 On the present system, the page size is set so that the page transfer
 time (3 ms) is 20 % of the disk random access time (15 ms).
-
+一个本质上的二分搜索可以在索引记录列表中执行，就像我们在页面目录中有指向每条记录的指针时所做的那样。
+然而，当我们执行插入时，数据结构更有效率，因为大多数插入只是压入堆。
+只有第8次插入才需要在目录指针表中移动块，这本身是非常小的。
+从页面中删除记录的方法是，将其从线性列表中删除，并更新拥有记录的记录字段的数量，如果需要，还可以更新页面目录。
+一个特殊情况是记录拥有自己。由于插入的开销非常小，我们还可以将页面大小从预计的默认的8 kB增加到64 kB，而不会在插入时损失太多效率。
+当磁盘传输速率与查找和延迟时间相比上升时，实际页面会变大。在当前系统中，页面大小被设置为页面传输时间(3 ms)是磁盘随机访问时间(15 ms)的20%。
 When the page is split, merged, or becomes full but contains deleted
 records, we have to reorganize the page.
-
+当页面被拆分、合并或变成完整但包含删除的记录时，我们必须重新组织页面。
 Assuming a page size of 8 kB, a typical index page of a secondary
 index contains 300 index entries, and the size of the page directory
-is 50 x 4 bytes = 200 bytes. */
+is 50 x 4 bytes = 200 bytes. 
+假设页面大小为8 kB，二级索引的典型索引页包含300个索引项，页面目录的大小为50 x 4字节= 200字节。
+*/
 
 /******************************************************************
 Used to check the consistency of a directory slot. */
