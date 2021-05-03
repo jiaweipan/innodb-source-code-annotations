@@ -5,7 +5,7 @@ The page cursor
 
 Created 10/4/1994 Heikki Tuuri
 *************************************************************************/
-
+/*页面的光标*/
 #include "page0cur.h"
 #ifdef UNIV_NONINL
 #include "page0cur.ic"
@@ -21,7 +21,7 @@ ulint	page_rnd	= 976722341;
 #ifdef PAGE_CUR_ADAPT
 
 /********************************************************************
-Tries a search shortcut based on the last insert. */
+Tries a search shortcut based on the last insert. */ /*尝试基于最后一次插入的搜索快捷方式。*/
 UNIV_INLINE
 ibool
 page_cur_try_search_shortcut(
@@ -30,16 +30,16 @@ page_cur_try_search_shortcut(
 	dtuple_t*	tuple,	/* in: data tuple */
 	ulint*		iup_matched_fields,
 				/* in/out: already matched fields in upper
-				limit record */
+				limit record */ /*在上限记录中已经匹配的字段*/
 	ulint*		iup_matched_bytes,
 				/* in/out: already matched bytes in a field
-				not yet completely matched */
+				not yet completely matched */ /*字段中尚未完全匹配的已匹配字节*/
 	ulint*		ilow_matched_fields,
 				/* in/out: already matched fields in lower
-				limit record */
+				limit record */ /*在下限记录中已经匹配的字段*/
 	ulint*		ilow_matched_bytes,
 				/* in/out: already matched bytes in a field
-				not yet completely matched */
+				not yet completely matched */ /*字段中尚未完全匹配的已匹配字节*/
 	page_cur_t*	cursor) /* out: page cursor */ 
 {
 	int	cmp;
@@ -121,7 +121,7 @@ page_cur_try_search_shortcut(
 
 /********************************************************************
 Searches the right position for a page cursor. */
-
+/*搜索页面光标的正确位置。*/
 void
 page_cur_search_with_match(
 /*=======================*/
@@ -197,7 +197,8 @@ page_cur_search_with_match(
 	the input parameter, and X denotes an arbitrary physical record on
 	the page. We want to position the cursor on the first X which
 	satisfies the condition. */
-
+    /*如果指定了PAGE_CUR_G模式，则试图定位游标以回答“tuple < X”形式的查询，其中tuple是输入参数，X表示页面上的任意物理记录。
+	我们想把光标放在满足条件的第一个X上。*/
 	up_matched_fields  = *iup_matched_fields;
 	up_matched_bytes   = *iup_matched_bytes;
 	low_matched_fields = *ilow_matched_fields;
@@ -206,13 +207,13 @@ page_cur_search_with_match(
 	/* Perform binary search. First the search is done through the page
 	directory, after that as a linear search in the list of records
 	owned by the upper limit directory slot. */
-
+    /*执行二进制搜索。首先通过页面目录进行搜索，然后在上限目录槽拥有的记录列表中进行线性搜索。*/
 	low = 0;
 	up = page_dir_get_n_slots(page) - 1;
 
 	/* Perform binary search until the lower and upper limit directory
 	slots come to the distance 1 of each other */
-
+    /*执行二分查找，直到下限值和上限值目录槽彼此的距离为1*/
    	while (up - low > 1) {
 		mid = (low + up) / 2;
 		slot = page_dir_get_nth_slot(page, mid);
@@ -253,7 +254,7 @@ page_cur_search_with_match(
 
 	/* Perform linear search until the upper and lower records
 	come to distance 1 of each other. */
-
+    /*线性搜索，直到上下记录的距离为1。*/
    	while (page_rec_get_next(low_rec) != up_rec) {
 
 		mid_rec = page_rec_get_next(low_rec);
@@ -349,7 +350,7 @@ page_cur_search_with_match(
 /***************************************************************
 Positions a page cursor on a randomly chosen user record on a page. If there
 are no user records, sets the cursor on the infimum record. */
-
+/*将页面光标定位在页面上随机选择的用户记录上。如果没有用户记录，将光标设置在下一条记录上。*/
 void
 page_cur_open_on_rnd_user_rec(
 /*==========================*/
@@ -383,7 +384,7 @@ page_cur_open_on_rnd_user_rec(
 }	
 	
 /***************************************************************
-Writes the log record of a record insert on a page. */
+Writes the log record of a record insert on a page. */ /*将插入的记录的日志记录写入页上。*/
 static
 void
 page_cur_insert_rec_write_log(
@@ -426,7 +427,7 @@ page_cur_insert_rec_write_log(
 
 		/* Find out the first byte in insert_rec which differs from
 		cursor_rec; skip the bytes in the record info */
-		
+		/*找出insert_rec中与cursor_rec不同的第一个字节;跳过记录信息中的字节*/
 		for (;;) {
 			if (i >= min_rec_size) {
 
@@ -450,7 +451,7 @@ page_cur_insert_rec_write_log(
 	
 		log_ptr = mlog_write_initial_log_record_fast(insert_rec,
 					MLOG_REC_INSERT, log_ptr, mtr);
-		/* Write the cursor rec offset as a 2-byte ulint */
+		/* Write the cursor rec offset as a 2-byte ulint *//*将光标的rec偏移量写入一个2字节的ulint*/
 		mach_write_to_2(log_ptr, cursor_rec
 					- buf_frame_align(cursor_rec));
 		log_ptr += 2;
@@ -466,24 +467,24 @@ page_cur_insert_rec_write_log(
 	}
 	
 	/* Write the record end segment length and the extra info storage
-	flag */
+	flag */ /*写入记录结束段长度和额外的信息存储标志*/
 	log_ptr += mach_write_compressed(log_ptr, 2 * (rec_size - i)
 							+ extra_info_yes);
 	if (extra_info_yes) {
-		/* Write the info bits */
+		/* Write the info bits */ /*写入信息位*/
 		mach_write_to_1(log_ptr, rec_get_info_bits(insert_rec));
 		log_ptr++;
 
-		/* Write the record origin offset */
+		/* Write the record origin offset */ /*写入记录的起始偏移量*/
 		log_ptr += mach_write_compressed(log_ptr, extra_size);
 
-		/* Write the mismatch index */
+		/* Write the mismatch index */ /*写入不匹配索引*/
 		log_ptr += mach_write_compressed(log_ptr, i);
 	}
 	
 	/* Write to the log the inserted index record end segment which
 	differs from the cursor record */
-
+    /*将插入的索引记录与游标记录不同的结束段写入日志*/
 	if (rec_size - i < MLOG_BUF_MARGIN) {
 		ut_memcpy(log_ptr, ins_ptr, rec_size - i);
 		log_ptr += rec_size - i;
@@ -498,7 +499,7 @@ page_cur_insert_rec_write_log(
 
 /***************************************************************
 Parses a log record of a record insert on a page. */
-
+/*解析页上插入的记录的日志记录。*/
 byte*
 page_cur_parse_insert_rec(
 /*======================*/
@@ -522,7 +523,7 @@ page_cur_parse_insert_rec(
 
 	if (!is_short) {
 		/* Read the cursor rec offset as a 2-byte ulint */
-
+        /* 读取光标的rec偏移量作为一个2字节的ulint*/
 		if (end_ptr < ptr + 2) {
 
 			return(NULL);
@@ -581,7 +582,7 @@ page_cur_parse_insert_rec(
 
 	/* Read from the log the inserted index record end segment which
 	differs from the cursor record */
-
+    /*从日志中读取插入的索引记录与游标记录不同的结束段*/
 	if (is_short) {
 		cursor_rec = page_rec_get_prev(page_get_supremum_rec(page));
 	} else {
@@ -601,7 +602,7 @@ page_cur_parse_insert_rec(
 	}
 
 	/* Build the inserted record to buf */
-	
+	/* 将插入的记录构建为buf*/
 	ut_memcpy(buf, rec_get_start(cursor_rec), mismatch_index);
 	ut_memcpy(buf + mismatch_index, ptr, end_seg_len);
 
@@ -624,7 +625,8 @@ Inserts a record next to page cursor. Returns pointer to inserted record if
 succeed, i.e., enough space available, NULL otherwise. The record to be
 inserted can be in a data tuple or as a physical record. The other parameter
 must then be NULL. The cursor stays at the same position. */
-
+/*在页面光标旁边插入一条记录。如果成功，返回指向插入记录的指针，即有足够的可用空间，否则为NULL。
+要插入的记录可以在一个数据元组中，也可以作为一个物理记录。另一个参数必须为NULL。光标保持在相同的位置。*/
 rec_t*
 page_cur_insert_rec_low(
 /*====================*/
@@ -638,15 +640,15 @@ page_cur_insert_rec_low(
 {
 	byte*	insert_buf	= NULL;
 	ulint	rec_size;
-	byte*	page;		/* the relevant page */
-	rec_t*	last_insert;	/* cursor position at previous insert */
+	byte*	page;		/* the relevant page */ /*相关的页面*/
+	rec_t*	last_insert;	/* cursor position at previous insert */ /*光标位于前一个插入位置*/
 	rec_t*	insert_rec;	/* inserted record */
 	ulint	heap_no;	/* heap number of the inserted record */
 	rec_t*	current_rec;	/* current record after which the
-				new record is inserted */
+				new record is inserted */ /*插入新记录之后的当前记录*/
 	rec_t*	next_rec;	/* next record after current before
-				the insertion */
-	ulint	owner_slot;	/* the slot which owns the inserted record */
+				the insertion */ /*插入前当前记录后的下一个记录*/
+	ulint	owner_slot;	/* the slot which owns the inserted record */  /*拥有插入的记录的槽*/
 	rec_t*	owner_rec;	
 	ulint	n_owned;
 	
@@ -660,7 +662,7 @@ page_cur_insert_rec_low(
 
 	ut_ad(cursor->rec != page_get_supremum_rec(page));	
 
-	/* 1. Get the size of the physical record in the page */
+	/* 1. Get the size of the physical record in the page */ /*1. 获取页中物理记录的大小*/
 	if (tuple != NULL) {
 		rec_size = data_size + rec_get_converted_extra_size(
 						data_size,
@@ -669,7 +671,7 @@ page_cur_insert_rec_low(
 		rec_size = rec_get_size(rec);
 	}
 
-	/* 2. Try to find suitable space from page memory management */
+	/* 2. Try to find suitable space from page memory management */ /*2. 尝试从页面内存管理中找到合适的空间*/
 	insert_buf = page_mem_alloc(page, rec_size, &heap_no);
 
 	if (insert_buf == NULL) {
@@ -677,7 +679,7 @@ page_cur_insert_rec_low(
 		return(NULL);
 	}
 
-	/* 3. Create the record */
+	/* 3. Create the record */ /*3.创建的记录*/
 	if (tuple != NULL) {
 		insert_rec = rec_convert_dtuple_to_rec_low(insert_buf, tuple,
 								data_size);
@@ -689,7 +691,7 @@ page_cur_insert_rec_low(
 	ut_ad(rec_size == rec_get_size(insert_rec));
 	
 	/* 4. Insert the record in the linked list of records */
-	
+	/*4. 将记录插入记录链表中*/
 	current_rec = cursor->rec;
 
 	next_rec = page_rec_get_next(current_rec);
@@ -700,12 +702,12 @@ page_cur_insert_rec_low(
 
 	/* 5. Set the n_owned field in the inserted record to zero,
 	and set the heap_no field */	
-	
+	/*5. 将插入记录中的n_owned字段设置为零，并设置heap_no字段*/
 	rec_set_n_owned(insert_rec, 0);
 	rec_set_heap_no(insert_rec, heap_no);
 
 	/* 6. Update the last insertion info in page header */	
-
+    /*6. 更新页眉中的最后一个插入信息*/
 	last_insert = page_header_get_ptr(page, PAGE_LAST_INSERT);
 
 	if (last_insert == NULL) {
@@ -733,7 +735,7 @@ page_cur_insert_rec_low(
 	page_header_set_ptr(page, PAGE_LAST_INSERT, insert_rec);
 
 	/* 7. It remains to update the owner record. */		
-	
+	/* 7. 它仍然需要更新所有者记录。*/
 	owner_rec = page_rec_find_owner_rec(insert_rec);
 	n_owned = rec_get_n_owned(owner_rec);
 	rec_set_n_owned(owner_rec, n_owned + 1);
@@ -741,13 +743,13 @@ page_cur_insert_rec_low(
 	/* 8. Now we have incremented the n_owned field of the owner
 	record. If the number exceeds PAGE_DIR_SLOT_MAX_N_OWNED,
 	we have to split the corresponding directory slot in two. */
-
+    /*8. 现在我们增加了所有者记录的n_owned字段。如果数量超过PAGE_DIR_SLOT_MAX_N_OWNED，我们必须将对应的目录槽位拆分为两个。*/
 	if (n_owned == PAGE_DIR_SLOT_MAX_N_OWNED) {
 		owner_slot = page_dir_find_owner_slot(owner_rec);
 		page_dir_split_slot(page, owner_slot);
 	}
 
-	/* 9. Write log record of the insert */
+	/* 9. Write log record of the insert */ /*9. 写入插入的日志记录*/
  	page_cur_insert_rec_write_log(insert_rec, rec_size, current_rec, mtr);
 	
 	return(insert_rec);
@@ -755,6 +757,7 @@ page_cur_insert_rec_low(
 
 /**************************************************************
 Writes a log record of copying a record list end to a new created page. */
+/*将复制记录列表结束的日志记录写入新创建的页。*/
 UNIV_INLINE
 byte*
 page_copy_rec_list_to_created_page_write_log(
@@ -777,7 +780,7 @@ page_copy_rec_list_to_created_page_write_log(
 
 /**************************************************************
 Parses a log record of copying a record list end to a new created page. */
-
+/*解析将记录列表复制到新创建页面的日志记录。*/
 byte*
 page_parse_copy_rec_list_to_created_page(
 /*=====================================*/
@@ -873,7 +876,7 @@ page_copy_rec_list_end_to_created_page(
 	log_data_len = dyn_array_get_data_size(&(mtr->log));
 
 	/* Individual inserts are logged in a shorter form */
-
+    /* 每个插入都以较短的形式记录下来*/
 	log_mode = mtr_set_log_mode(mtr, MTR_LOG_SHORT_INSERTS);
 	
 	prev_rec = page_get_infimum_rec(new_page);
@@ -927,7 +930,8 @@ page_copy_rec_list_end_to_created_page(
 		recovery to reproduce the task performed by this function.
 		To be able to check the correctness of recovery, it is good
 		that it imitates exactly. */
-
+        /*我们可以合并最后两个dir槽。这里的操作是让这个函数完全模仿使用page_cur_insert_rec完成的等价任务，
+		我们在数据库恢复中使用page_cur_insert_rec来重现这个函数执行的任务。为了能够检查恢复的正确性，最好是精确地模拟。*/
 		count += (PAGE_DIR_SLOT_MAX_N_OWNED + 1) / 2;
 		
 		page_dir_slot_set_n_owned(slot, 0);
@@ -956,12 +960,12 @@ page_copy_rec_list_end_to_created_page(
 	page_header_set_field(new_page, PAGE_N_DIRECTION, 0);
 
 	/* Restore the log mode */
-
+    /*恢复日志模式*/
 	mtr_set_log_mode(mtr, log_mode);
 }
 
 /***************************************************************
-Writes log record of a record delete on a page. */
+Writes log record of a record delete on a page. */ /*将已删除记录的日志记录写入页面。*/
 UNIV_INLINE
 void
 page_cur_delete_rec_write_log(
@@ -971,14 +975,14 @@ page_cur_delete_rec_write_log(
 {
 	mlog_write_initial_log_record(cursor_rec, MLOG_REC_DELETE, mtr);
 
-	/* Write the cursor rec offset as a 2-byte ulint */
+	/* Write the cursor rec offset as a 2-byte ulint *//*将已删除记录的日志记录写入页面。*/
 	mlog_catenate_ulint(mtr, cursor_rec - buf_frame_align(cursor_rec),
 								MLOG_2BYTES);
 }	
 
 /***************************************************************
 Parses log record of a record delete on a page. */
-
+/*在页面上解析删除记录的日志记录。*/
 byte*
 page_cur_parse_delete_rec(
 /*======================*/
@@ -1012,7 +1016,7 @@ page_cur_parse_delete_rec(
 /***************************************************************
 Deletes a record at the page cursor. The cursor is moved to the next
 record after the deleted one. */
-
+/*删除页光标处的记录。光标移动到删除记录后的下一条记录。*/
 void
 page_cur_delete_rec(
 /*================*/
