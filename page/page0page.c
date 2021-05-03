@@ -1304,7 +1304,7 @@ page_validate(
 	
 	/* The following buffer is used to check that the
 	records in the page record heap do not overlap */
-
+     /*下面的缓冲区用于检查页记录堆中的记录是否重叠*/
 	buf = mem_heap_alloc(heap, UNIV_PAGE_SIZE);
 	for (i = 0; i < UNIV_PAGE_SIZE; i++) {
 		buf[i] = 0;
@@ -1312,7 +1312,7 @@ page_validate(
 
 	/* Check first that the record heap and the directory do not
 	overlap. */
-
+    /*首先检查记录堆和目录是否重叠。*/
 	n_slots = page_dir_get_n_slots(page);
 
 	if (!(page_header_get_ptr(page, PAGE_HEAP_TOP) <=
@@ -1326,7 +1326,8 @@ page_validate(
        	}
 
 	/* Validate the record list in a loop checking also that
-	it is consistent with the directory. */
+	it is consistent with the directory. */ 
+	/*在循环中检查记录列表是否与目录一致。*/
 	count = 0;
 	data_size = 0;
 	own_count = 1;
