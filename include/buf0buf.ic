@@ -220,7 +220,7 @@ buf_block_align(
 
 /***********************************************************************
 Gets the block to whose frame the pointer is pointing to. Does not
-require a file page to be bufferfixed. */
+require a file page to be bufferfixed. */ /*获取指针所指向的框架的块。不需要对文件页进行缓冲修复。*/
 UNIV_INLINE
 buf_block_t*
 buf_block_align_low(
@@ -437,7 +437,7 @@ buf_frame_get_newest_modification(
 /************************************************************************
 Increments the modify clock of a frame by 1. The caller must (1) own the
 buf_pool mutex and block bufferfix count has to be zero, (2) or own an x-lock
-on the block. */
+on the block. */ /*增加帧的修改时钟1。调用者必须(1)拥有buf_pool的互斥量，并且块缓冲修复计数必须为零，(2)或者在块上拥有一个x-lock。*/
 UNIV_INLINE
 dulint
 buf_frame_modify_clock_inc(

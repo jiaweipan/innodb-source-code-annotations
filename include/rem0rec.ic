@@ -266,7 +266,6 @@ rec_set_n_fields(
 /**********************************************************
 The following function is used to get the number of records owned by the
 previous directory record. */ /*下面的函数用于获取以前的目录记录所拥有的记录数*/
-/**/
 UNIV_INLINE
 ulint
 rec_get_n_owned(

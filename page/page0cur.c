@@ -826,7 +826,7 @@ page_parse_copy_rec_list_to_created_page(
 /*****************************************************************
 Copies records from page to a newly created page, from a given record onward,
 including that record. Infimum and supremum records are not copied. */
-
+/*从一个给定记录(包括该记录)开始，将记录从一个页复制到一个新创建的页。下位记录和上位记录不被复制。*/
 void
 page_copy_rec_list_end_to_created_page(
 /*===================================*/

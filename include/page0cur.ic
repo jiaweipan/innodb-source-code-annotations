@@ -40,6 +40,7 @@ page_cur_get_rec(
 /*************************************************************
 Sets the cursor object to point before the first user record 
 on the page. */
+/*将光标对象指向页面上的第一个用户记录之前。*/
 UNIV_INLINE
 void
 page_cur_set_before_first(
@@ -206,6 +207,7 @@ page_cur_tuple_insert(
 Inserts a record next to page cursor. Returns pointer to inserted record if
 succeed, i.e., enough space available, NULL otherwise. The cursor stays at
 the same position. */
+/*在页面光标旁边插入一条记录。如果成功，返回指向插入记录的指针，即有足够的可用空间，否则为NULL。光标保持在相同的位置。*/
 UNIV_INLINE
 rec_t*
 page_cur_rec_insert(

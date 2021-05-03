@@ -711,7 +711,7 @@ struct buf_block_struct{
 					not guarantee that the index is
 					complete, though: there may have been
 					hash collisions, record deletions,
-					etc. */
+					etc. */ /*如果已在该页上建立哈希索引，则为TRUE;请注意，它不能保证索引是完整的，但是:可能存在散列冲突、记录删除等。*/
 	ulint		curr_n_fields;	/* prefix length for hash indexing:
 					number of full fields */
 	ulint		curr_n_bytes;	/* number of bytes in hash indexing */

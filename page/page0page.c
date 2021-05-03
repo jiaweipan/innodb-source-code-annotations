@@ -75,7 +75,7 @@ is 50 x 4 bytes = 200 bytes.
 */
 
 /******************************************************************
-Used to check the consistency of a directory slot. */
+Used to check the consistency of a directory slot. */ /*用于检查目录槽位的一致性。*/
 static
 ibool
 page_dir_slot_check(
@@ -115,7 +115,7 @@ page_dir_slot_check(
 
 /*****************************************************************
 Sets the max trx id field value. */
-
+/*设置最大trx id字段值。*/
 void
 page_set_max_trx_id(
 /*================*/
@@ -135,7 +135,8 @@ page_set_max_trx_id(
 	/* It is not necessary to write this change to the redo log, as
 	during a database recovery we assume that the max trx id of every
 	page is the maximum trx id assigned before the crash. */
-	
+	/*没有必要将此更改写入重做日志，因为在数据库恢复期间，
+	我们假设每个页面的最大trx id是崩溃前分配的最大trx id。*/
 	mach_write_to_8(page + PAGE_HEADER + PAGE_MAX_TRX_ID, trx_id);
 
 	if (block->is_hashed) {
@@ -145,7 +146,7 @@ page_set_max_trx_id(
 
 /****************************************************************
 Allocates a block of memory from an index page. */
-
+/*从索引页分配一块内存。*/
 byte*
 page_mem_alloc(
 /*===========*/
@@ -165,7 +166,7 @@ page_mem_alloc(
 
 	/* If there are records in the free list, look if the first is
 	big enough */
-
+    /* 如果空闲列表中有记录，请查看第一个记录是否足够大*/
 	rec = page_header_get_ptr(page, PAGE_FREE);
 
 	if (rec && (rec_get_size(rec) >= need)) {
@@ -183,7 +184,7 @@ page_mem_alloc(
 	}
 
 	/* Could not find space from the free list, try top of heap */
-	
+	/*无法从空闲列表中找到空间，试试堆的顶部*/
 	avl_space = page_get_max_insert_size(page, 1);
 	
 	if (avl_space >= need) {
@@ -201,13 +202,13 @@ page_mem_alloc(
 }
 
 /**************************************************************
-Writes a log record of page creation. */
+Writes a log record of page creation. */ /*写页面创建的日志记录。*/
 UNIV_INLINE
 void
 page_create_write_log(
 /*==================*/
 	buf_frame_t*	frame,	/* in: a buffer frame where the page is
-				created */
+				created */ /*创建页面的缓冲区帧*/
 	mtr_t*		mtr)	/* in: mini-transaction handle */
 {
 	mlog_write_initial_log_record(frame, MLOG_PAGE_CREATE, mtr);
@@ -215,7 +216,7 @@ page_create_write_log(
 
 /***************************************************************
 Parses a redo log record of creating a page. */
-
+/*解析创建页面的重做日志记录。*/
 byte*
 page_parse_create(
 /*==============*/
@@ -228,7 +229,7 @@ page_parse_create(
 	ut_ad(ptr && end_ptr);
 
 	/* The record is empty, except for the record initial part */
-
+    /*记录是空的，除了记录的初始部分*/
 	if (page) {
 		page_create(page, mtr);
 	}
@@ -238,13 +239,13 @@ page_parse_create(
 
 /**************************************************************
 The index page creation function. */
-
+/*索引页创建功能。*/
 page_t* 
 page_create(
 /*========*/
 				/* out: pointer to the page */
 	buf_frame_t*	frame,	/* in: a buffer frame where the page is
-				created */
+				created */  /*创建页面的缓冲区帧*/
 	mtr_t*		mtr)	/* in: mini-transaction handle */
 {
 	page_dir_slot_t* slot;
@@ -262,10 +263,10 @@ page_create(
 	ut_ad(PAGE_BTR_IBUF_FREE_LIST_NODE + FLST_NODE_SIZE
 	      <= PAGE_DATA);
 
-	/* 1. INCREMENT MODIFY CLOCK */
+	/* 1. INCREMENT MODIFY CLOCK */ /*增量修改时钟*/
 	buf_frame_modify_clock_inc(frame);
 
-	/* 2. WRITE LOG INFORMATION */
+	/* 2. WRITE LOG INFORMATION */ /*写日志信息*/
 	page_create_write_log(frame, mtr);
 	
 	page = frame;
@@ -273,7 +274,7 @@ page_create(
 	fil_page_set_type(page, FIL_PAGE_INDEX);
 
 	/* If we have a page template, copy the page structure from there */
-
+    /*如果我们有一个页面模板，从那里复制页面结构*/
 	if (page_template) {
 		ut_memcpy(page + PAGE_HEADER,
 			  page_template + PAGE_HEADER, PAGE_HEADER_PRIV_END);
@@ -289,7 +290,7 @@ page_create(
 	heap = mem_heap_create(200);
 		
 	/* 3. CREATE THE INFIMUM AND SUPREMUM RECORDS */
-
+    /* 创建下限值和上限值记录*/
 	/* Create first a data tuple for infimum record */
 	tuple = dtuple_create(heap, 1);
 	field = dtuple_get_nth_field(tuple, 0);
@@ -299,7 +300,7 @@ page_create(
 	
 	/* Set the corresponding physical record to its place in the page
 	record heap */
-
+    /* 将相应的物理记录设置为其在页记录堆中的位置*/
 	heap_top = page + PAGE_DATA;
 	
 	infimum_rec = rec_convert_dtuple_to_rec(heap_top, tuple);
@@ -312,7 +313,7 @@ page_create(
 	heap_top = rec_get_end(infimum_rec);
 		
 	/* Create then a tuple for supremum */
-
+    /* 然后为supremum创建一个元组*/
 	tuple = dtuple_create(heap, 1);
 	field = dtuple_get_nth_field(tuple, 0);
 
@@ -333,7 +334,7 @@ page_create(
 	mem_heap_free(heap);
 
 	/* 4. INITIALIZE THE PAGE HEADER */
-
+    /* 初始化页头*/
 	page_header_set_field(page, PAGE_N_DIR_SLOTS, 2);
 	page_header_set_ptr(page, PAGE_HEAP_TOP, heap_top);
 	page_header_set_field(page, PAGE_N_HEAP, 2);
@@ -344,9 +345,9 @@ page_create(
 	page_set_max_trx_id(page, ut_dulint_zero);
 	
 	/* 5. SET POINTERS IN RECORDS AND DIR SLOTS */
-
+    /* 在记录和目录插槽中设置指针*/
 	/* Set the slots to point to infimum and supremum. */
-
+    /*设置插槽指向下限值和上限值。*/
 	slot = page_dir_get_nth_slot(page, 0);
 	page_dir_slot_set_rec(slot, infimum_rec);
 
@@ -354,7 +355,7 @@ page_create(
 	page_dir_slot_set_rec(slot, supremum_rec);
 
 	/* Set next pointers in infimum and supremum */
-	
+	/* 将next指针设置为下限值和上限值*/
 	rec_set_next_offs(infimum_rec, (ulint)(supremum_rec - page)); 
 	rec_set_next_offs(supremum_rec, 0);
 
@@ -370,7 +371,7 @@ page_create(
 /*****************************************************************
 Differs from page_copy_rec_list_end, because this function does not
 touch the lock table and max trx id on page. */
-
+/*不同于page_copy_rec_list_end，因为这个函数不接触锁表和页上的最大trx id。*/
 void
 page_copy_rec_list_end_no_locks(
 /*============================*/
@@ -393,7 +394,7 @@ page_copy_rec_list_end_no_locks(
 	page_cur_set_before_first(new_page, &cur2);
 	
 	/* Copy records from the original page to the new page */	
-
+    /* 将记录从原始页复制到新页*/
 	sup = page_get_supremum_rec(page);
 	
 	while (sup != page_cur_get_rec(&cur1)) {
@@ -409,7 +410,8 @@ page_copy_rec_list_end_no_locks(
 Copies records from page to new_page, from a given record onward,
 including that record. Infimum and supremum records are not copied.
 The records are copied to the start of the record list on new_page. */
-
+/*从给定记录(包括该记录)将记录从page复制到new_page。下位记录和上位记录不被复制。
+记录被复制到new_page上的记录列表的开头。*/
 void
 page_copy_rec_list_end(
 /*===================*/
@@ -426,7 +428,7 @@ page_copy_rec_list_end(
 	}
 
 	/* Update the lock table, MAX_TRX_ID, and possible hash index */
-
+    /* 更新锁表、MAX_TRX_ID和可能的哈希索引*/
 	lock_move_rec_list_end(new_page, page, rec);
 
 	page_update_max_trx_id(new_page, page_get_max_trx_id(page));
@@ -438,7 +440,8 @@ page_copy_rec_list_end(
 Copies records from page to new_page, up to the given record,
 NOT including that record. Infimum and supremum records are not copied.
 The records are copied to the end of the record list on new_page. */
-
+/*将记录从page复制到new_page，直到给定的记录，不包括该记录。
+下位记录和上位记录不被复制。记录被复制到new_page上记录列表的末尾。*/
 void
 page_copy_rec_list_start(
 /*=====================*/
@@ -465,7 +468,7 @@ page_copy_rec_list_start(
 	old_end = page_cur_get_rec(&cur2);
 	
 	/* Copy records from the original page to the new page */	
-
+    /*将记录从原始页复制到新页*/
 	while (page_cur_get_rec(&cur1) != rec) {
 		ut_a(
 		page_cur_rec_insert(&cur2, page_cur_get_rec(&cur1), mtr));
@@ -475,7 +478,7 @@ page_copy_rec_list_start(
 	}
 
 	/* Update the lock table, MAX_TRX_ID, and possible hash index */
-	
+	/* 更新锁表、MAX_TRX_ID和可能的哈希索引*/
 	lock_move_rec_list_start(new_page, page, rec, old_end);
 
 	page_update_max_trx_id(new_page, page_get_max_trx_id(page));
@@ -485,6 +488,7 @@ page_copy_rec_list_start(
 
 /**************************************************************
 Writes a log record of a record list end or start deletion. */
+/*写记录列表结束或开始删除的日志记录。*/
 UNIV_INLINE
 void
 page_delete_rec_list_write_log(
@@ -505,7 +509,7 @@ page_delete_rec_list_write_log(
 
 /**************************************************************
 Parses a log record of a record list end or start deletion. */
-
+/*解析记录列表结束或开始删除的日志记录。*/
 byte*
 page_parse_delete_rec_list(
 /*=======================*/
@@ -522,7 +526,7 @@ page_parse_delete_rec_list(
 	      || (type == MLOG_LIST_START_DELETE)); 
 	      
 	/* Read the record offset as a 2-byte ulint */
-
+    /* 读取记录偏移量作为一个2字节的ulint*/
 	if (end_ptr < ptr + 2) {
 
 		return(NULL);
@@ -549,7 +553,7 @@ page_parse_delete_rec_list(
 /*****************************************************************
 Deletes records from a page from a given record onward, including that record.
 The infimum and supremum records are not deleted. */
-
+/*从一个给定记录开始从一个页面删除记录，包括该记录。下限值和上限值不被删除。*/
 void
 page_delete_rec_list_end(
 /*=====================*/
@@ -574,12 +578,12 @@ page_delete_rec_list_end(
 
 	/* Reset the last insert info in the page header and increment
 	the modify clock for the frame */
-
+    /*重置页眉中的最后一个插入信息，并增加帧的修改时钟*/
 	page_header_set_ptr(page, PAGE_LAST_INSERT, NULL);
 
 	/* The page gets invalid for optimistic searches: increment the
 	frame modify clock */
-
+    /*页面对乐观搜索无效:增加帧修改时钟*/
 	buf_frame_modify_clock_inc(page);
 	
 	sup = page_get_supremum_rec(page);
@@ -600,7 +604,7 @@ page_delete_rec_list_end(
 	last_rec = page_rec_get_prev(sup);
 
 	if ((size == ULINT_UNDEFINED) || (n_recs == ULINT_UNDEFINED)) {
-		/* Calculate the sum of sizes and the number of records */
+		/* Calculate the sum of sizes and the number of records *//*计算大小和记录数量的总和*/
 		size = 0;
 		n_recs = 0;
 		rec2 = rec;
@@ -616,7 +620,7 @@ page_delete_rec_list_end(
 	/* Update the page directory; there is no need to balance the number
 	of the records owned by the supremum record, as it is allowed to be
 	less than PAGE_DIR_SLOT_MIN_N_OWNED */
-	
+	/*更新页面目录;不需要平衡上一条记录拥有的记录数，因为允许它小于PAGE_DIR_SLOT_MIN_N_OWNED*/
 	rec2 = rec;
 	count = 0;
 	
@@ -638,10 +642,10 @@ page_delete_rec_list_end(
 
 	page_header_set_field(page, PAGE_N_DIR_SLOTS, slot_index + 1);
 	
-	/* Remove the record chain segment from the record chain */
+	/* Remove the record chain segment from the record chain */ /*从记录链中删除记录链段*/
 	page_rec_set_next(prev_rec, page_get_supremum_rec(page));
 
-	/* Catenate the deleted chain segment to the page free list */
+	/* Catenate the deleted chain segment to the page free list */ /*将已删除的链段连接到页面空闲列表*/
 
 	free = page_header_get_ptr(page, PAGE_FREE);
 
@@ -658,7 +662,7 @@ page_delete_rec_list_end(
 /*****************************************************************
 Deletes records from page, up to the given record, NOT including
 that record. Infimum and supremum records are not deleted. */
-
+/*从页面删除记录，直到给定的记录，不包括该记录。下位记录和上位记录不会被删除。*/
 void
 page_delete_rec_list_start(
 /*=======================*/
@@ -681,7 +685,7 @@ page_delete_rec_list_start(
 	page_cur_move_to_next(&cur1);
 	
 	/* Individual deletes are not logged */
-
+    /* 单个删除不会被记录*/
 	log_mode = mtr_set_log_mode(mtr, MTR_LOG_NONE);
 
 	while (page_cur_get_rec(&cur1) != rec) {
@@ -690,14 +694,14 @@ page_delete_rec_list_start(
 	}
 
 	/* Restore log mode */
-
+    /*恢复日志模式*/
 	mtr_set_log_mode(mtr, log_mode);
 }	
 
 /*****************************************************************
 Moves record list end to another page. Moved records include
 split_rec. */
-
+/*移动记录列表到另一个页面。移动的记录包括split_rec。*/
 void
 page_move_rec_list_end(
 /*===================*/
@@ -728,7 +732,7 @@ page_move_rec_list_end(
 /*****************************************************************
 Moves record list start to another page. Moved records do not include
 split_rec. */
-
+/*移动记录列表开始到另一个页面。移动的记录不包括split_rec。*/
 void
 page_move_rec_list_start(
 /*=====================*/
@@ -745,7 +749,7 @@ page_move_rec_list_start(
 /***************************************************************************
 This is a low-level operation which is used in a database index creation
 to update the page number of a created B-tree to a data dictionary record. */
-
+/*这是一种低级操作，用于创建数据库索引，将已创建的b -树的页码更新为数据字典记录。*/
 void
 page_rec_write_index_page_no(
 /*=========================*/
@@ -768,6 +772,7 @@ page_rec_write_index_page_no(
 Used to delete n slots from the directory. This function updates
 also n_owned fields in the records, so that the first slot after
 the deleted ones inherits the records of the deleted slots. */
+/*从目录中删除n个槽位。这个函数还更新记录中n_owned的字段，以便在被删除的槽之后的第一个槽继承被删除槽的记录。*/
 UNIV_INLINE
 void
 page_dir_delete_slots(
@@ -790,7 +795,7 @@ page_dir_delete_slots(
 	n_slots = page_dir_get_n_slots(page);
 
 	/* 1. Reset the n_owned fields of the slots to be
-	deleted */
+	deleted */ /*1.重置待删除槽位的n_owned字段*/
 	for (i = start; i < start + n; i++) {
 		slot = page_dir_get_nth_slot(page, i);
 		sum_owned += page_dir_slot_get_n_owned(slot);
@@ -798,12 +803,13 @@ page_dir_delete_slots(
 	}
 
 	/* 2. Update the n_owned value of the first non-deleted slot */
-
+	/*2. 更新第一个未删除槽位的n_owned值*/
 	slot = page_dir_get_nth_slot(page, start + n);
 	page_dir_slot_set_n_owned(slot,
 				sum_owned + page_dir_slot_get_n_owned(slot));
 
-	/* 3. Destroy start and other slots by copying slots */
+	/* 3. Destroy start and other slots by copying slots */ 
+	/*3.通过复制插槽来破坏start和其他插槽*/
 	for (i = start + n; i < n_slots; i++) {
 		slot = page_dir_get_nth_slot(page, i);
 		rec = page_dir_slot_get_rec(slot);
@@ -813,6 +819,7 @@ page_dir_delete_slots(
 	}
 
 	/* 4. Update the page header */
+	/*4. 更新页眉*/
 	page_header_set_field(page, PAGE_N_DIR_SLOTS, n_slots - n);
 }
 
@@ -820,6 +827,7 @@ page_dir_delete_slots(
 Used to add n slots to the directory. Does not set the record pointers
 in the added slots or update n_owned values: this is the responsibility
 of the caller. */
+/*用于向目录中添加n个槽位。在添加的槽中不设置记录指针或更新n_owned值:这是调用者的责任。*/
 UNIV_INLINE
 void
 page_dir_add_slots(
@@ -840,10 +848,10 @@ page_dir_add_slots(
 
 	ut_ad(start < n_slots - 1);
 
-	/* Update the page header */
+	/* Update the page header */ /*更新页眉*/
 	page_header_set_field(page, PAGE_N_DIR_SLOTS, n_slots + n);
 
-	/* Move slots up */
+	/* Move slots up */ /*移动槽了*/
 
 	for (i = n_slots - 1; i > start; i--) {
 
@@ -857,7 +865,7 @@ page_dir_add_slots(
 
 /********************************************************************
 Splits a directory slot which owns too many records. */
-
+/*分割拥有过多记录的目录槽。*/
 void
 page_dir_split_slot(
 /*================*/
@@ -881,7 +889,7 @@ page_dir_split_slot(
 
 	/* 1. We loop to find a record approximately in the middle of the 
 	records owned by the slot. */
-	
+	/*1. 我们循环查找一个记录，它大约位于槽拥有的记录的中间。*/
 	prev_slot = page_dir_get_nth_slot(page, slot_no - 1);
 	rec = page_dir_slot_get_rec(prev_slot);
 
@@ -893,23 +901,23 @@ page_dir_split_slot(
 
 	/* 2. We add one directory slot immediately below the slot to be
 	split. */
-
+    /*2. 我们在要拆分的槽的正下方添加一个目录槽。*/
 	page_dir_add_slots(page, slot_no - 1, 1);
 
 	/* The added slot is now number slot_no, and the old slot is
 	now number slot_no + 1 */
-
+    /*添加的槽位现在是slot_no号，旧的槽位现在是slot_no + 1号*/
 	new_slot = page_dir_get_nth_slot(page, slot_no);
 	slot = page_dir_get_nth_slot(page, slot_no + 1);
 
 	/* 3. We store the appropriate values to the new slot. */
-	
+	/*3.我们将适当的值存储到新槽中。*/
 	page_dir_slot_set_rec(new_slot, rec);
 	page_dir_slot_set_n_owned(new_slot, n_owned / 2);
 	
 	/* 4. Finally, we update the number of records field of the 
 	original slot */
-
+    /*4. 最后，我们更新原始槽的记录数字段*/
 	page_dir_slot_set_n_owned(slot, n_owned - (n_owned / 2));
 }
 
@@ -917,7 +925,7 @@ page_dir_split_slot(
 Tries to balance the given directory slot with too few records with the upper
 neighbor, so that there are at least the minimum number of records owned by
 the slot; this may result in the merging of two slots. */
-
+/*尝试与上层邻居平衡记录过少的给定目录槽，以便至少有最小数量的记录属于该槽;这可能导致两个槽的合并。*/
 void
 page_dir_balance_slot(
 /*==================*/
@@ -938,7 +946,7 @@ page_dir_balance_slot(
 	
 	/* The last directory slot cannot be balanced with the upper
 	neighbor, as there is none. */
-
+    /*最后一个目录槽位不能与上面的邻居进行均衡，因为上面没有目录槽位。*/
 	if (slot_no == page_dir_get_n_slots(page) - 1) {
 
 		return;
@@ -952,13 +960,14 @@ page_dir_balance_slot(
 	ut_ad(n_owned == PAGE_DIR_SLOT_MIN_N_OWNED - 1);
 
 	/* If the upper slot has the minimum value of n_owned, we will merge
-	the two slots, therefore we assert: */ 
+	the two slots, therefore we assert: */ /*如果上面的槽有最小的n_owned值，我们将合并这两个槽，因此我们断言:*/
 	ut_ad(2 * PAGE_DIR_SLOT_MIN_N_OWNED - 1 <= PAGE_DIR_SLOT_MAX_N_OWNED);
 	
 	if (up_n_owned > PAGE_DIR_SLOT_MIN_N_OWNED) {
 
 		/* In this case we can just transfer one record owned
 		by the upper slot to the property of the lower slot */
+		/*在这种情况下，我们只需要将上面槽拥有的一条记录转移到下面槽的属性中*/
 		old_rec = page_dir_slot_get_rec(slot);
 		new_rec = page_rec_get_next(old_rec);
 		
@@ -970,6 +979,7 @@ page_dir_balance_slot(
 		page_dir_slot_set_n_owned(up_slot, up_n_owned -1);
 	} else {
 		/* In this case we may merge the two slots */
+		/*在这种情况下，我们可以合并两个槽*/
 		page_dir_delete_slots(page, slot_no, 1);
 	}		
 }
@@ -977,7 +987,7 @@ page_dir_balance_slot(
 /****************************************************************
 Returns the middle record of the record list. If there are an even number
 of records in the list, returns the first record of the upper half-list. */
-
+/*返回记录列表的中间记录。如果列表中有偶数条记录，则返回上半列表的第一条记录。*/
 rec_t*
 page_get_middle_rec(
 /*================*/
@@ -991,7 +1001,7 @@ page_get_middle_rec(
 	ulint			count;
 	rec_t*			rec;
 
-	/* This many records we must leave behind */
+	/* This many records we must leave behind */ /*我们必须留下这么多记录*/
 	middle = (page_get_n_recs(page) + 2) / 2;
 
 	count = 0;
@@ -1014,7 +1024,7 @@ page_get_middle_rec(
 	rec = page_rec_get_next(rec);
 
 	/* There are now count records behind rec */
-
+    /* 现在有计数记录落后于rec*/
 	for (i = 0; i < middle - count; i++) {
 		rec = page_rec_get_next(rec);
 	}
@@ -1025,7 +1035,7 @@ page_get_middle_rec(
 /*******************************************************************
 Returns the number of records before the given record in chain.
 The number includes infimum and supremum records. */
-
+/*返回链中给定记录之前的记录数。该数字包括下限值和上限值记录。*/
 ulint
 page_rec_get_n_recs_before(
 /*=======================*/
@@ -1070,7 +1080,7 @@ page_rec_get_n_recs_before(
 /****************************************************************
 Prints record contents including the data relevant only in
 the index page context. */
- 
+/*打印记录内容，包括仅在索引页上下文中相关的数据。*/
 void
 page_rec_print(
 /*===========*/
@@ -1090,7 +1100,7 @@ page_rec_print(
 /*******************************************************************
 This is used to print the contents of the directory for
 debugging purposes. */
-
+/*它用于打印目录的内容，以供调试之用。*/
 void
 page_dir_print(
 /*===========*/
@@ -1127,7 +1137,7 @@ page_dir_print(
 /*******************************************************************
 This is used to print the contents of the page record list for
 debugging purposes. */
-
+/*它用于打印页面记录列表的内容，以供调试之用。*/
 void
 page_print_list(
 /*============*/
@@ -1184,7 +1194,7 @@ page_print_list(
 
 /*******************************************************************
 Prints the info in a page header. */
-
+/*打印页眉中的信息。*/
 void
 page_header_print(
 /*==============*/
@@ -1213,7 +1223,7 @@ page_header_print(
 /*******************************************************************
 This is used to print the contents of the page for
 debugging purposes. */
-
+/*它用于打印页面的内容以供调试之用。*/
 void
 page_print(
 /*======*/
@@ -1230,7 +1240,7 @@ page_print(
 The following is used to validate a record on a page. This function
 differs from rec_validate as it can also check the n_owned field and
 the heap_no field. */
-
+/*下面的代码用于验证页面上的记录。这个函数与rec_validate不同，因为它也可以检查n_owned字段和heap_no字段。*/
 ibool
 page_rec_validate(
 /*==============*/
@@ -1265,14 +1275,14 @@ page_rec_validate(
 	
 /*******************************************************************
 This function checks the consistency of an index page. */
-
+/*这个函数检查索引页的一致性。*/
 ibool
 page_validate(
 /*==========*/
 				/* out: TRUE if ok */
 	page_t*		page,	/* in: index page */
 	dict_index_t*	index)	/* in: data dictionary index containing
-				the page record type definition */
+				the page record type definition */ /*包含页记录类型定义的数据字典索引*/
 {
 	page_dir_slot_t* slot;
 	mem_heap_t*	heap;
@@ -1488,7 +1498,7 @@ func_exit:
 
 /*******************************************************************
 Looks in the page record list for a record with the given heap number. */
-
+/*在页记录列表中查找具有给定堆号的记录。*/
 rec_t*
 page_find_rec_with_heap_no(
 /*=======================*/
