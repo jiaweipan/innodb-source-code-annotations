@@ -5,12 +5,12 @@ The page cursor
 
 Created 10/4/1994 Heikki Tuuri
 *************************************************************************/
-
+/*页面的光标*/
 #include "page0page.h"
 
 
 /*************************************************************
-Gets pointer to the page frame where the cursor is positioned. */
+Gets pointer to the page frame where the cursor is positioned. */ /*获取指向游标所在页框架的指针。*/
 UNIV_INLINE
 page_t*
 page_cur_get_page(
@@ -24,7 +24,7 @@ page_cur_get_page(
 }
 
 /*************************************************************
-Gets the record where the cursor is positioned. */
+Gets the record where the cursor is positioned. */ /*获取游标所在位置的记录。*/
 UNIV_INLINE
 rec_t*
 page_cur_get_rec(
@@ -53,7 +53,7 @@ page_cur_set_before_first(
 
 /*************************************************************
 Sets the cursor object to point after the last user record on 
-the page. */
+the page. */ /*将光标对象指向页面上最后一条用户记录的后面。*/
 UNIV_INLINE
 void
 page_cur_set_after_last(
@@ -65,7 +65,7 @@ page_cur_set_after_last(
 }
 
 /*************************************************************
-Returns TRUE if the cursor is before first user record on page. */
+Returns TRUE if the cursor is before first user record on page. */ /*如果光标在页面上的第一个用户记录之前，返回TRUE。*/
 UNIV_INLINE
 ibool
 page_cur_is_before_first(
@@ -82,7 +82,7 @@ page_cur_is_before_first(
 }
 
 /*************************************************************
-Returns TRUE if the cursor is after last user record. */
+Returns TRUE if the cursor is after last user record. */ /*如果光标在最后一条用户记录之后，返回TRUE。*/
 UNIV_INLINE
 ibool
 page_cur_is_after_last(
@@ -99,7 +99,7 @@ page_cur_is_after_last(
 }
 
 /**************************************************************
-Positions the cursor on the given record. */
+Positions the cursor on the given record. */ /*将光标定位在给定的记录上。*/
 UNIV_INLINE
 void
 page_cur_position(
@@ -113,7 +113,7 @@ page_cur_position(
 }
 
 /**************************************************************
-Invalidates a page cursor by setting the record pointer NULL. */
+Invalidates a page cursor by setting the record pointer NULL. */ /*通过将记录指针设置为NULL使页面游标失效。*/
 UNIV_INLINE
 void
 page_cur_invalidate(
@@ -126,7 +126,7 @@ page_cur_invalidate(
 }
 
 /**************************************************************
-Moves the cursor to the next record on page. */
+Moves the cursor to the next record on page. */ /*将光标移到页面上的下一条记录。*/
 UNIV_INLINE
 void
 page_cur_move_to_next(
@@ -139,7 +139,7 @@ page_cur_move_to_next(
 }
 
 /**************************************************************
-Moves the cursor to the previous record on page. */
+Moves the cursor to the previous record on page. */ /*将光标移到页面上的前一条记录。*/
 UNIV_INLINE
 void
 page_cur_move_to_prev(
@@ -152,7 +152,7 @@ page_cur_move_to_prev(
 }
 
 /********************************************************************
-Searches the right position for a page cursor. */
+Searches the right position for a page cursor. */ /*搜索页面光标的正确位置。*/
 UNIV_INLINE
 ulint
 page_cur_search(
@@ -184,6 +184,7 @@ page_cur_search(
 Inserts a record next to page cursor. Returns pointer to inserted record if
 succeed, i.e., enough space available, NULL otherwise. The cursor stays at
 the same position. */
+/*在页面光标旁边插入一条记录。如果成功，返回指向插入记录的指针，即有足够的可用空间，否则为NULL。光标保持在相同的位置。*/
 UNIV_INLINE
 rec_t*
 page_cur_tuple_insert(
