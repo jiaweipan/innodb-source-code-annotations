@@ -5,7 +5,7 @@ The transaction lock system
 
 Created 5/7/1996 Heikki Tuuri
 *******************************************************/
-
+/*事务锁系统*/
 #include "lock0lock.h"
 
 #ifdef UNIV_NONINL
@@ -16,24 +16,24 @@ Created 5/7/1996 Heikki Tuuri
 #include "trx0purge.h"
 
 /* Restricts the length of search we will do in the waits-for
-graph of transactions */
+graph of transactions */ /*限制在事务的等待图中进行的搜索长度*/
 #define LOCK_MAX_N_STEPS_IN_DEADLOCK_CHECK 1000000
 
 /* When releasing transaction locks, this specifies how often we release
 the kernel mutex for a moment to give also others access to it */
-
+/*当释放事务锁时，这指定了我们释放内核互斥锁的频率，以便让其他人也可以访问它*/
 #define LOCK_RELEASE_KERNEL_INTERVAL	1000
 
 /* Safety margin when creating a new record lock: this many extra records
 can be inserted to the page without need to create a lock with a bigger
 bitmap */
-
+/*创建一个新的记录锁时的安全边距:这些额外的记录可以插入到页面中，而不需要创建一个更大的位图锁*/
 #define LOCK_PAGE_BITMAP_MARGIN		64
 
 /* An explicit record lock affects both the record and the gap before it.
 An implicit x-lock does not affect the gap, it only locks the index
 record from read or update. 
-
+显式记录锁同时影响记录和它之前的间隙。隐式的x-lock不影响gap，它只锁定从读或更新的索引记录。
 If a transaction has modified or inserted an index record, then
 it owns an implicit x-lock on the record. On a secondary index record,
 a transaction has an implicit x-lock also if it has modified the
@@ -41,7 +41,9 @@ clustered index record, the max trx id of the page where the secondary
 index record resides is >= trx id of the transaction (or database recovery
 is running), and there are no explicit non-gap lock requests on the
 secondary index record.
-
+如果一个事务修改或插入了一个索引记录，那么它对该记录拥有一个隐式x-锁。
+二级索引记录,一个事务有一个隐式的独占锁如果修改了聚集索引记录,
+二级索引记录所在页面的the max trx id > = trx的事务id(或数据库恢复运行),也没有明确的non-gap锁请求在二级索引记录。
 This complicated definition for a secondary index comes from the
 implementation: we want to be able to determine if a secondary index
 record has an implicit x-lock, just by looking at the present clustered
@@ -50,48 +52,55 @@ complicated definition can be explained to the user so that there is
 nondeterminism in the access path when a query is answered: we may,
 or may not, access the clustered index record and thus may, or may not,
 bump into an x-lock set there.
-
+二级索引的这个复杂定义来自于实现:我们希望能够确定二级索引记录是否具有隐式x-lock，
+只需查看当前聚集的索引记录，而不是该记录的历史版本。可以向用户解释复杂的定义，以便在回答查询时，
+访问路径中存在不确定性:我们可能访问聚集索引记录，也可能不访问聚集索引记录，因此可能会在那里碰到x-lock集。
 Different transaction can have conflicting locks set on the gap at the
 same time. The locks on the gap are purely inhibitive: an insert cannot
 be made, or a select cursor may have to wait, if a different transaction
 has a conflicting lock on the gap. An x-lock on the gap does not give
 the right to insert into the gap if there are conflicting locks granted
 on the gap at the same time.
-
+不同的事务可以同时在间隙上设置冲突锁。间隙上的锁是完全抑制的:如果不同的事务在间隙上有一个冲突的锁，
+那么就不能进行插入，或者选择游标可能不得不等待。
+如果在间隙上同时有冲突的锁，那么在间隙上的x锁不会给插入间隙的权利。
 An explicit lock can be placed on a user record or the supremum record of
 a page. The locks on the supremum record are always thought to be of the gap
 type, though the gap bit is not set. When we perform an update of a record
 where the size of the record changes, we may temporarily store its explicit
 locks on the infimum record of the page, though the infimum otherwise never
 carries locks.
-
+显式锁可以放在用户记录或页面的最高记录上。上记录上的锁总是被认为是间隙类型的，尽管间隙位没有被设置。
+当更新一条记录时，记录的大小发生了变化，我们可以将其显式锁临时存储在该页的下位记录上，尽管下位记录从不携带锁。
 A waiting record lock can also be of the gap type. A waiting lock request
 can be granted when there is no conflicting mode lock request by another
 transaction ahead of it in the explicit lock queue.
-
+等待记录锁也可以是间隙类型。当显式锁队列中前面的另一个事务没有冲突模式的锁请求时，可以授予一个等待的锁请求。
 -------------------------------------------------------------------------
 RULE 1: If there is an implicit x-lock on a record, and there are non-gap
--------
 lock requests waiting in the queue, then the transaction holding the implicit
 x-lock also has an explicit non-gap record x-lock. Therefore, as locks are
 released, we can grant locks to waiting lock requests purely by looking at
 the explicit lock requests in the queue.
-
+规则1:如果一个记录上有一个隐式的x-lock，并且队列中有非间隙锁请求在等待，
+那么持有该隐式x-lock的事务也有一个显式的非间隙记录x-lock。因此，当锁被释放时，
+我们可以通过查看队列中的显式锁请求，将锁授予等待的锁请求。
 RULE 2: Granted non-gap locks on a record are always ahead in the queue
--------
 of waiting non-gap locks on a record.
-
+规则2:一个记录上被授予的非间隙锁总是在一个记录上等待非间隙锁的队列中领先。
 RULE 3: Different transactions cannot have conflicting granted non-gap locks
--------
 on a record at the same time. However, they can have conflicting granted gap
 locks.
+规则3:不同的事务不能同时在一个记录上有冲突的授予非间隙锁。但是，它们可能有冲突的授予间隙锁。
 RULE 4: If a there is a waiting lock request in a queue, no lock request,
--------
 gap or not, can be inserted ahead of it in the queue. In record deletes
 and page splits, new gap type locks can be created by the database manager
 for a transaction, and without rule 4, the waits-for graph of transactions
 might become cyclic without the database noticing it, as the deadlock check
 is only performed when a transaction itself requests a lock!
+规则4:如果队列中有一个正在等待的锁请求，无论是否有间隙，都不能将锁请求插入到该队列的前面。
+在记录删除和页面分裂,可以创建新的缺口类型锁的事务数据库管理器,没有规则4,等待图的交易可能成为循环,
+数据库未曾注意到的僵局检查只有当事务本身执行请求锁!
 -------------------------------------------------------------------------
 
 An insert is allowed to a gap if there are no explicit lock requests by
@@ -101,16 +110,20 @@ implicit x-lock by another transaction does not prevent an insert, which
 allows for more concurrency when using an Oracle-style sequence number
 generator for the primary key with many transactions doing inserts
 concurrently.
-
+如果其他事务对下一个记录没有显式的锁请求，则允许插入间隔。
+这些锁请求是被授予还是等待、间隙位是否设置都没有关系。
+另一方面，另一个事务的隐式x-lock并不会阻止插入，因此当使用oracle风格的序列号生成器作为主键，
+同时有许多事务同时执行插入时，就会允许更多的并发性。
 A modify of a record is allowed if the transaction has an x-lock on the
 record, or if other transactions do not have any non-gap lock requests on the
 record.
-
+如果事务对记录有x-lock，或者其他事务对记录没有任何非间隙锁请求，则允许对记录进行修改。
 A read of a single user record with a cursor is allowed if the transaction
 has a non-gap explicit, or an implicit lock on the record, or if the other
 transactions have no x-lock requests on the record. At a page supremum a
 read is always allowed.
-
+如果事务对记录有非gap显式锁或隐式锁，或者其他事务对记录没有x-lock请求，
+则允许使用游标读取单个用户记录。在页面上，读取总是被允许的。
 In summary, an implicit lock is seen as a granted x-lock only on the
 record, not on the gap. An explicit lock with no gap bit set is a lock
 both on the record and the gap. If the gap bit is set, the lock is only
@@ -118,25 +131,31 @@ on the gap. Different transaction cannot own conflicting locks on the
 record at the same time, but they may own conflicting locks on the gap.
 Granted locks on a record give an access right to the record, but gap type
 locks just inhibit operations.
-
+总之，隐式锁只在记录上被视为授予的x-锁，而不是在间隙上。
+没有间隙位设置的显式锁是记录和间隙上的锁。如果间隙位被设置，锁只在间隙上。
+不同的事务不能同时拥有记录上的冲突锁，但它们可以拥有间隙上的冲突锁。
+对记录授予的锁赋予了对记录的访问权，但是间隙类型的锁只是禁止操作。
 NOTE: Finding out if some transaction has an implicit x-lock on a secondary
 index record can be cumbersome. We may have to look at previous versions of
 the corresponding clustered index record to find out if a delete marked
 secondary index record was delete marked by an active transaction, not by
 a committed one.
-
+注意:查找某个事务是否在二级索引记录上有隐式x-锁可能很麻烦。
+我们可能必须查看相应的聚集索引记录的以前版本，
+以找出一个被删除标记的二级索引记录是否被一个活动事务删除，而不是被一个已提交的事务删除。
 FACT A: If a transaction has inserted a row, it can delete it any time
 without need to wait for locks.
-
+事实A:如果一个事务插入了一行，它可以在任何时候删除它，而不需要等待锁。
 PROOF: The transaction has an implicit x-lock on every index record inserted
 for the row, and can thus modify each record without the need to wait. Q.E.D.
-
+PROOF:事务对为该行插入的每条索引记录都有一个隐式的x-lock，因此可以修改每条记录，而不需要等待。Q.E.D.
 FACT B: If a transaction has read some result set with a cursor, it can read
 it again, and retrieves the same result set, if it has not modified the
 result set in the meantime. Hence, there is no phantom problem. If the
 biggest record, in the alphabetical order, touched by the cursor is removed,
 a lock wait may occur, otherwise not.
-
+事实B:如果事务使用游标读取了某个结果集，它可以再次读取该结果集，并检索相同的结果集(如果它在此期间没有修改结果集的话)。
+因此，不存在幻像问题。如果游标所触摸的最大记录(按字母顺序)被删除，则可能发生锁等待，否则不会发生锁等待。
 PROOF: When a read cursor proceeds, it sets an s-lock on each user record
 it passes, and a gap type s-lock on each page supremum. The cursor must
 wait until it has these locks granted. Then no other transaction can
@@ -153,8 +172,15 @@ during the last pass or new inserted page supremums. It can immediately
 access all these records, and when it arrives at the biggest record, it
 notices that the result set is complete. If the biggest record was removed,
 lock wait can occur because the next record only inherits a gap type lock,
-and a wait may be needed. Q.E.D. */
-
+and a wait may be needed. Q.E.D. 
+证明:当读取指针继续时，它会对它所传递的每个用户记录设置一个s-lock，对每个页面上限值设置一个gap类型的s-lock。
+游标必须等待，直到授予这些锁。那么任何其他事务都不能对任何用户记录授予x-lock，因此不能修改用户记录。
+任何其他事务也不能插入由游标传递的间隙中。页面拆分和合并，以及删除过时版本的记录不会影响这一点，
+因为当一个用户记录或一个页面上限被删除时，下一个记录将继承它的锁作为间隙类型锁，因此block插入到相同的间隙。
+此外，如果插入了一个页面上限，它将从后续记录继承它的锁。当游标再次定位到结果集的开始位置时，
+它将在其路径上触摸的记录要么是它在上次传递期间触摸的记录，要么是新插入的页面上限。
+它可以立即访问所有这些记录，当它到达最大的记录时，它会注意到结果集已经完成。
+如果最大的记录被删除，就会发生锁等待，因为下一个记录只继承一个gap类型的锁，可能需要等待。Q.E.D.*/
 /* If an index record should be changed or a new inserted, we must check
 the lock on the record or the next. When a read cursor starts reading,
 we will set a record level s-lock on each record it passes, except on the
@@ -166,14 +192,21 @@ on an equality condition to a unique key, we could actually set a special
 lock on the record, a lock which would not prevent any insert before
 this record. In the next key locking an x-lock set on a record also
 prevents inserts just before that record.
+如果一个索引记录需要更改或新插入，则必须检查该记录或下一个记录上的锁。
+当读取游标开始读取时，我们将对它所通过的每条记录设置一个记录级别s-lock，
+除了在我们开始获取记录之前游标所定位的初始记录。我们的索引树搜索约定b -树游标定位在搜索中第一个可能匹配的记录之前。
+这里有可能进行优化:如果记录是在一个唯一键的相等条件下搜索的，我们实际上可以在记录上设置一个特殊的锁，
+这个锁不会阻止任何在这个记录之前的插入。在下一个键锁定中，记录上的x-lock集合也可以防止在该记录之前进行插入。
 	There are special infimum and supremum records on each page.
 A supremum record can be locked by a read cursor. This records cannot be
 updated but the lock prevents insert of a user record to the end of
 the page.
+每一页都有特殊的下位和上位记录。一个上限记录可以被一个读游标锁定。此记录不能更新，但锁阻止将用户记录插入到页面的末尾。
 	Next key locks will prevent the phantom problem where new rows
 could appear to SELECT result sets after the select operation has been
 performed. Prevention of phantoms ensures the serilizability of
 transactions.
+Next键锁将防止在执行选择操作后，新行可能出现在SELECT结果集中的幻像问题。防止幻像确保了事务的可串行化。
 	What should we check if an insert of a new record is wanted?
 Only the lock on the next record on the same page, because also the
 supremum record can carry a lock. An s-lock prevents insertion, but
@@ -190,26 +223,40 @@ implement. If we in this situation just enqueue a second x-lock request
 for our transaction on the next record, then the deadlock mechanism
 notices a deadlock between our transaction and the s-lock request
 transaction. This seems to be an ok solution.
+如果需要插入新记录，我们应该检查什么?只有锁在同一页上的下一个记录上，因为上记录也可以携带一个锁。
+s-lock可以防止插入，但是x-lock呢?如果它是通过搜索更新设置的，那么也会隐式地有一个s-lock，应该防止插入。
+如果我们的事务拥有下一个记录的x-lock，但是下一个记录上有一个等待s-lock请求，
+该怎么办?如果这个s-lock是由一个在索引中按升序移动的读游标放置的，那么我们不能立即执行插入操作，
+因为当我们最终提交事务时，读游标也应该看到新插入的记录。因此，我们应该将read游标从下一个记录向后移动，
+以便它传递新插入的记录。这种向后移动可能太麻烦而难以实现。如果在这种情况下，我们只是在下一个记录上为我们的事务排队第二个x-lock请求，
+那么死锁机制会注意到我们的事务和s-lock请求事务之间的死锁。这似乎是一个不错的解决方案。
 	We could have the convention that granted explicit record locks,
 lock the corresponding records from changing, and also lock the gaps
 before them from inserting. A waiting explicit lock request locks the gap
 before from inserting. Implicit record x-locks, which we derive from the
 transaction id in the clustered index record, only lock the record itself
 from modification, not the gap before it from inserting.
+我们可以有这样的约定，即授予显式的记录锁，从更改中锁定相应的记录，并从插入中锁定它们之前的间隙。
+一个等待的显式锁请求在插入之前锁定间隙。隐式记录x-locks(我们从聚集索引记录中的事务id派生)仅通过修改锁定记录本身，
+而不是通过插入之前的间隙锁定记录。
 	How should we store update locks? If the search is done by a unique
 key, we could just modify the record trx id. Otherwise, we could put a record
 x-lock on the record. If the update changes ordering fields of the
 clustered index record, the inserted new record needs no record lock in
 lock table, the trx id is enough. The same holds for a secondary index
 record. Searched delete is similar to update.
-
+我们应该如何存储更新锁?如果搜索是由一个唯一的键完成的，我们可以只修改记录trx id。
+否则，我们可以在记录上加一个记录x锁。如果更新改变了聚集索引记录的排序字段，插入的新记录不需要锁表中的记录锁，
+trx id就足够了。对于二级索引记录也是如此。搜索删除类似于更新。
 PROBLEM:
 What about waiting lock requests? If a transaction is waiting to make an
 update to a record which another modified, how does the other transaction
 know to send the end-lock-wait signal to the waiting transaction? If we have
 the convention that a transaction may wait for just one lock at a time, how
 do we preserve it if lock wait ends?
-
+等待锁请求呢?如果一个事务正在等待对另一个事务修改的记录进行更新，
+那么另一个事务如何知道向等待的事务发送end-lock-wait信号呢?
+如果我们约定一个事务一次只等待一个锁，那么如果锁等待结束，我们如何保持它
 PROBLEM:
 Checking the trx id label of a secondary index record. In the case of a
 modification, not an insert, is this necessary? A secondary index record
@@ -223,9 +270,12 @@ record, we do not have to care about trx ids, only the locks in the lock
 table must be checked. In the case of a select from a secondary index, the
 trx id is relevant, and in this case we may have to search the clustered
 index record.
-
+检查二级索引记录的trx id标签。在修改的情况下，而不是插入，这是必要的吗?
+二级索引记录只能通过设置或重置其已删除标志来修改。次要索引记录包含用于惟一地确定相应聚集索引记录的字段。
+因此，只有当我们也修改了聚集索引记录时，辅助索引记录才会被修改，并且在修改辅助索引记录之前，对聚集索引记录进行trx id检查。
+因此，在删除标记或不标记二级索引记录的情况下，我们不必关心trx id，只需要检查锁表中的锁。
+对于从二级索引进行选择的情况，trx id是相关的，在这种情况下，我们可能必须搜索聚集索引记录。
 PROBLEM: How to update record locks when page is split or merged, or
---------------------------------------------------------------------
 a record is deleted or updated?
 If the size of fields in a record changes, we perform the update by
 a delete followed by an insert. How can we retain the locks set or
@@ -242,7 +292,13 @@ in the old one).
 	A more complicated case is the one where the reinsertion of the
 updated record is done pessimistically, because the structure of the
 tree may change.
-
+问题:当页面被分割或合并，或记录被删除或更新时，如何更新记录锁?
+如果记录中字段的大小发生变化，我们将通过删除和插入来执行更新。我们如何保持锁集或等待记录?
+因为记录锁在位图中是根据记录的堆号索引的，所以当我们从记录列表中删除记录时，仍然可以保留锁位。
+如果重新组织页，我们可以创建一个包含新旧堆数的表，并相应地排列锁中的位图。
+我们可以向表中添加一行，说明更新记录的结束位置。
+如果更新不需要重组的页面,我们可以简单地将锁位更新记录的位置决定了它的新堆数量(我们可能需要分配一个新的锁,如果我们用完旧的位图)。
+更复杂的情况是，重新插入更新后的记录是悲观的，因为树的结构可能会改变。
 PROBLEM: If a supremum record is removed in a page merge, or a record
 ---------------------------------------------------------------------
 removed in a purge, what to do to the waiting lock requests? In a split to
@@ -252,7 +308,10 @@ next record in the index. But, the next record may already have lock
 requests on its own queue. A new deadlock check should be made then. Maybe
 it is easier just to release the waiting transactions. They can then enqueue
 new lock requests on appropriate records.
-
+问题:如果一个上记录在页面合并中被删除，或者一个记录在清除中被删除，该如何处理等待的锁请求?
+在右侧的拆分中，我们只是将锁请求移动到新的上界。如果删除了一条记录，我们可以将等待的锁请求移动到它的继承者，即索引中的下一条记录。
+但是，下一个记录可能在它自己的队列上已经有了锁请求。然后应该进行一个新的死锁检查。也许释放等待的事务更容易。
+然后，它们可以在适当的记录上对新锁请求进行排队。
 PROBLEM: When a record is inserted, what locks should it inherit from the
 -------------------------------------------------------------------------
 upper neighbor? An insert of a new supremum record in a page split is
@@ -260,7 +319,10 @@ always possible, but an insert of a new user record requires that the upper
 neighbor does not have any lock requests by other transactions, granted or
 waiting, in its lock queue. Solution: We can copy the locks as gap type
 locks, so that also the waiting locks are transformed to granted gap type
-locks on the inserted record. */
+locks on the inserted record. 
+问题:当一个记录被插入时，它应该从上邻居继承什么锁?在分页中插入一条新的上邻居记录总是可能的，
+但是插入一条新的用户记录要求上邻居的锁队列中没有任何其他事务的锁请求，无论是被授予的还是正在等待的。
+解决方案:我们可以将锁复制为间隙类型锁，这样等待的锁也会被转换为插入记录上的间隙类型锁。*/
 
 ibool	lock_print_waits	= FALSE;
 
@@ -302,7 +364,7 @@ struct lock_struct{
 };
 
 /************************************************************************
-Checks if a lock request results in a deadlock. */
+Checks if a lock request results in a deadlock. */ /*检查锁请求是否导致死锁。*/
 static
 ibool
 lock_deadlock_occurs(
@@ -311,7 +373,7 @@ lock_deadlock_occurs(
 	lock_t*	lock,	/* in: lock the transaction is requesting */
 	trx_t*	trx);	/* in: transaction */
 /************************************************************************
-Looks recursively for a deadlock. */
+Looks recursively for a deadlock. */ /*递归查找死锁。*/
 static
 ibool
 lock_deadlock_recursive(
@@ -327,7 +389,7 @@ lock_deadlock_recursive(
 /*************************************************************************
 Reserves the kernel mutex. This function is used in this module to allow
 monitoring the contention degree on the kernel mutex caused by the lock
-operations. */
+operations. *//*保留内核互斥。这个函数用于监控锁操作引起的内核互斥锁的争用程度。*/
 UNIV_INLINE
 void
 lock_mutex_enter_kernel(void)
@@ -339,7 +401,7 @@ lock_mutex_enter_kernel(void)
 /*************************************************************************
 Releses the kernel mutex. This function is used in this module to allow
 monitoring the contention degree on the kernel mutex caused by the lock
-operations. */
+operations. */ /*释放内核互斥锁。这个函数用于监控锁操作引起的内核互斥锁的争用程度。*/
 UNIV_INLINE
 void
 lock_mutex_exit_kernel(void)
@@ -352,6 +414,7 @@ lock_mutex_exit_kernel(void)
 
 /*************************************************************************
 Gets the mutex protecting record locks for a page in the buffer pool. */
+/*获取保护缓冲池中某一页的记录锁的互斥锁。*/
 UNIV_INLINE
 mutex_t*
 lock_rec_get_mutex(
@@ -363,6 +426,7 @@ lock_rec_get_mutex(
 	
 /*************************************************************************
 Reserves the mutex protecting record locks for a page in the buffer pool. */
+/*在缓冲池中为页面保留保护记录锁的互斥锁。*/
 UNIV_INLINE
 void
 lock_rec_mutex_enter(
@@ -374,6 +438,7 @@ lock_rec_mutex_enter(
 
 /*************************************************************************
 Releases the mutex protecting record locks for a page in the buffer pool. */
+/*释放保护缓冲池中某个页面的记录锁的互斥锁。*/
 UNIV_INLINE
 void
 lock_rec_mutex_exit(
@@ -385,7 +450,7 @@ lock_rec_mutex_exit(
 
 /*************************************************************************
 Checks if the caller owns the mutex to record locks of a page. Works only in
-the debug version. */
+the debug version. */ /*检查调用者是否拥有记录页面锁的互斥锁。只能在调试版本中工作。*/
 UNIV_INLINE
 ibool
 lock_rec_mutex_own(
@@ -399,7 +464,7 @@ lock_rec_mutex_own(
 
 /*************************************************************************
 Gets the mutex protecting record locks on a given page address. */
-
+/*获取保护给定页面地址上的记录锁的互斥锁。*/
 mutex_t*
 lock_rec_get_mutex_for_addr(
 /*========================*/
@@ -412,7 +477,7 @@ lock_rec_get_mutex_for_addr(
 
 /*************************************************************************
 Checks if the caller owns the mutex to record locks of a page. Works only in
-the debug version. */
+the debug version. */ /*检查调用者是否拥有记录页面锁的互斥锁。只能在调试版本中工作。*/
 UNIV_INLINE
 ibool
 lock_rec_mutex_own_addr(
@@ -424,7 +489,7 @@ lock_rec_mutex_own_addr(
 }
 
 /*************************************************************************
-Reserves all the mutexes protecting record locks. */
+Reserves all the mutexes protecting record locks. */ /*保留保护记录锁的所有互斥锁。*/
 UNIV_INLINE
 void
 lock_rec_mutex_enter_all(void)
@@ -445,7 +510,7 @@ lock_rec_mutex_enter_all(void)
 }
 
 /*************************************************************************
-Releases all the mutexes protecting record locks. */
+Releases all the mutexes protecting record locks. */ /*释放保护记录锁的所有互斥锁。*/
 UNIV_INLINE
 void
 lock_rec_mutex_exit_all(void)
@@ -467,7 +532,7 @@ lock_rec_mutex_exit_all(void)
 
 /*************************************************************************
 Checks that the current OS thread owns all the mutexes protecting record
-locks. */
+locks. */ /*检查当前操作系统线程是否拥有保护记录锁的所有互斥锁。*/
 UNIV_INLINE
 ibool
 lock_rec_mutex_own_all(void)
@@ -497,7 +562,7 @@ lock_rec_mutex_own_all(void)
 
 /*************************************************************************
 Checks that a record is seen in a consistent read. */
-
+/*检查是否在一致的读取中看到一条记录。*/
 ibool
 lock_clust_rec_cons_read_sees(
 /*==========================*/
@@ -525,7 +590,7 @@ lock_clust_rec_cons_read_sees(
 
 /*************************************************************************
 Checks that a non-clustered index record is seen in a consistent read. */
-
+/*检查非聚集索引记录是否出现在一致的读取中。*/
 ulint
 lock_sec_rec_cons_read_sees(
 /*========================*/
@@ -564,7 +629,7 @@ lock_sec_rec_cons_read_sees(
 
 /*************************************************************************
 Creates the lock system at database start. */
-
+/*在数据库启动时创建锁系统。*/
 void
 lock_sys_create(
 /*============*/
@@ -579,7 +644,7 @@ lock_sys_create(
 
 /*************************************************************************
 Gets the size of a lock struct. */
-
+/*获取锁结构体的大小。*/
 ulint
 lock_get_size(void)
 /*===============*/
@@ -589,7 +654,7 @@ lock_get_size(void)
 }
 
 /*************************************************************************
-Gets the mode of a lock. */
+Gets the mode of a lock. */ /*获取锁的模式。*/
 UNIV_INLINE
 ulint
 lock_get_mode(
@@ -603,7 +668,7 @@ lock_get_mode(
 }
 
 /*************************************************************************
-Gets the type of a lock. */
+Gets the type of a lock. */ /*获取锁的类型。*/
 UNIV_INLINE
 ulint
 lock_get_type(
@@ -617,7 +682,7 @@ lock_get_type(
 }
 
 /*************************************************************************
-Gets the wait flag of a lock. */
+Gets the wait flag of a lock. */ /*获取锁的等待标志。*/
 UNIV_INLINE
 ibool
 lock_get_wait(
@@ -637,6 +702,7 @@ lock_get_wait(
 
 /*************************************************************************
 Sets the wait flag of a lock and the back pointer in trx to lock. */
+/*设置锁的等待标志和trx中的返回指针来锁定。*/
 UNIV_INLINE
 void
 lock_set_lock_and_trx_wait(
@@ -654,6 +720,7 @@ lock_set_lock_and_trx_wait(
 /**************************************************************************
 The back pointer to a waiting lock request in the transaction is set to NULL
 and the wait bit in lock type_mode is reset. */
+/*事务中等待锁请求的返回指针被设置为NULL，锁类型模式中的等待位被重置。*/
 UNIV_INLINE
 void
 lock_reset_lock_and_trx_wait(
@@ -670,7 +737,7 @@ lock_reset_lock_and_trx_wait(
 }
 
 /*************************************************************************
-Gets the gap flag of a record lock. */
+Gets the gap flag of a record lock. */ /*获取记录锁的间隙标志。*/
 UNIV_INLINE
 ibool
 lock_rec_get_gap(
@@ -690,7 +757,7 @@ lock_rec_get_gap(
 }
 
 /*************************************************************************
-Sets the gap flag of a record lock. */
+Sets the gap flag of a record lock. */ /*设置记录锁的间隙标志。*/
 UNIV_INLINE
 void
 lock_rec_set_gap(
@@ -711,6 +778,7 @@ lock_rec_set_gap(
 
 /*************************************************************************
 Calculates if lock mode 1 is stronger or equal to lock mode 2. */
+/*计算锁定模式1是否更强或等于锁定模式2。*/
 UNIV_INLINE
 ibool
 lock_mode_stronger_or_eq(
@@ -748,7 +816,7 @@ lock_mode_stronger_or_eq(
 }
 
 /*************************************************************************
-Calculates if lock mode 1 is compatible with lock mode 2. */
+Calculates if lock mode 1 is compatible with lock mode 2. */ /*计算锁模式1是否与锁模式2兼容。*/
 UNIV_INLINE
 ibool
 lock_mode_compatible(
@@ -790,7 +858,7 @@ lock_mode_compatible(
 }
 
 /*************************************************************************
-Returns LOCK_X if mode is LOCK_S, and vice versa. */
+Returns LOCK_X if mode is LOCK_S, and vice versa. */ /*如果模式为LOCK_S，则返回LOCK_X，反之亦然。*/
 UNIV_INLINE
 ulint
 lock_get_confl_mode(
@@ -811,7 +879,8 @@ lock_get_confl_mode(
 /*************************************************************************
 Checks if a lock request lock1 has to wait for request lock2. NOTE that we,
 for simplicity, ignore the gap bits in locks, and treat gap type lock
-requests like non-gap lock requests. */
+requests like non-gap lock requests. */ 
+/*检查锁请求lock1是否必须等待请求lock2。注意，为了简单起见，我们忽略锁中的间隙位，而将间隙类型的锁请求视为非间隙锁请求。*/
 UNIV_INLINE
 ibool
 lock_has_to_wait(
@@ -833,7 +902,7 @@ lock_has_to_wait(
 /*============== RECORD LOCK BASIC FUNCTIONS ============================*/
 
 /*************************************************************************
-Gets the number of bits in a record lock bitmap. */
+Gets the number of bits in a record lock bitmap. */ /*获取记录锁定位图中的位数。*/
 UNIV_INLINE
 ulint
 lock_rec_get_n_bits(
@@ -845,7 +914,7 @@ lock_rec_get_n_bits(
 }
 
 /*************************************************************************
-Gets the nth bit of a record lock. */
+Gets the nth bit of a record lock. */ /*获取记录锁的第n位。*/
 UNIV_INLINE
 ibool
 lock_rec_get_nth_bit(
@@ -875,7 +944,7 @@ lock_rec_get_nth_bit(
 }	
 
 /**************************************************************************
-Sets the nth bit of a record lock to TRUE. */
+Sets the nth bit of a record lock to TRUE. */ /*设置记录锁的第n位。*/
 UNIV_INLINE
 void
 lock_rec_set_nth_bit(
@@ -906,7 +975,7 @@ lock_rec_set_nth_bit(
 
 /**************************************************************************
 Looks for a set bit in a record lock bitmap. Returns ULINT_UNDEFINED,
-if none found. */
+if none found. */ /*在记录锁位图中查找设置位。如果没有找到，返回ULINT_UNDEFINED。*/
 static
 ulint
 lock_rec_find_set_bit(
@@ -930,6 +999,7 @@ lock_rec_find_set_bit(
 
 /**************************************************************************
 Resets the nth bit of a record lock. */
+/*重置记录锁定的第n位。*/
 UNIV_INLINE
 void
 lock_rec_reset_nth_bit(
@@ -960,7 +1030,7 @@ lock_rec_reset_nth_bit(
 }	
 
 /*************************************************************************
-Gets the first or next record lock on a page. */
+Gets the first or next record lock on a page. */ /*获取页上的第一个或下一个记录锁定。*/
 UNIV_INLINE
 lock_t*
 lock_rec_get_next_on_page(
@@ -996,7 +1066,7 @@ lock_rec_get_next_on_page(
 
 /*************************************************************************
 Gets the first record lock on a page, where the page is identified by its
-file address. */
+file address. *//*获取页上的第一个记录锁定，其中页由其文件地址标识。*/
 UNIV_INLINE
 lock_t*
 lock_rec_get_first_on_page_addr(
@@ -1026,7 +1096,7 @@ lock_rec_get_first_on_page_addr(
 	
 /*************************************************************************
 Returns TRUE if there are explicit record locks on a page. */
-
+/*如果页面上有显式记录锁，则返回TRUE。*/
 ibool
 lock_rec_expl_exist_on_page(
 /*========================*/
@@ -1052,7 +1122,7 @@ lock_rec_expl_exist_on_page(
 
 /*************************************************************************
 Gets the first record lock on a page, where the page is identified by a
-pointer to it. */
+pointer to it. */ /*获取页上的第一个记录锁定，其中页由指向它的指针标识。*/
 UNIV_INLINE
 lock_t*
 lock_rec_get_first_on_page(
@@ -1088,7 +1158,7 @@ lock_rec_get_first_on_page(
 }
 
 /*************************************************************************
-Gets the next explicit lock request on a record. */
+Gets the next explicit lock request on a record. */ /*获取记录上的下一个显式锁请求。*/
 UNIV_INLINE
 lock_t*
 lock_rec_get_next(
@@ -1115,7 +1185,7 @@ lock_rec_get_next(
 }
 
 /*************************************************************************
-Gets the first explicit lock request on a record. */
+Gets the first explicit lock request on a record. */ /*获取记录上的第一个显式锁请求。*/
 UNIV_INLINE
 lock_t*
 lock_rec_get_first(
@@ -1145,6 +1215,7 @@ lock_rec_get_first(
 Resets the record lock bitmap to zero. NOTE: does not touch the wait_lock
 pointer in the transaction! This function is used in lock object creation
 and resetting. */
+/*将记录锁定位图重置为零。注意:不接触事务中的wait_lock指针!此函数用于创建和重置锁对象。*/
 static
 void
 lock_rec_bitmap_reset(
@@ -1156,7 +1227,7 @@ lock_rec_bitmap_reset(
 	ulint	i;
 
 	/* Reset to zero the bitmap which resides immediately after the lock
-	struct */
+	struct */ /*将紧挨着锁结构体的位图重置为零*/
 
 	ptr = (byte*)lock + sizeof(lock_t);
 
@@ -1172,7 +1243,7 @@ lock_rec_bitmap_reset(
 }
 
 /*************************************************************************
-Copies a record lock to heap. */
+Copies a record lock to heap. */ /*将记录锁复制到堆。*/
 static
 lock_t*
 lock_rec_copy(
@@ -1194,7 +1265,7 @@ lock_rec_copy(
 }
 
 /*************************************************************************
-Gets the previous record lock set on a record. */
+Gets the previous record lock set on a record. */ /*获取在记录上设置的前一个记录锁。*/
 static
 lock_t*
 lock_rec_get_prev(
@@ -1235,9 +1306,10 @@ lock_rec_get_prev(
 }
 
 /*============= FUNCTIONS FOR ANALYZING TABLE LOCK QUEUE ================*/
-
+/*用于分析表锁队列的函数*/
 /*************************************************************************
 Checks if a transaction has the specified table lock, or stronger. */
+/*检查事务是否具有指定的表锁或更强的锁。*/
 UNIV_INLINE
 lock_t*
 lock_table_has(

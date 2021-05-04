@@ -5,7 +5,7 @@ The transaction lock system
 
 Created 5/7/1996 Heikki Tuuri
 *******************************************************/
-
+/*事务锁系统*/
 #include "sync0sync.h"
 #include "srv0srv.h"
 #include "dict0dict.h"
@@ -23,7 +23,7 @@ Created 5/7/1996 Heikki Tuuri
 
 /*************************************************************************
 Calculates the fold value of a page file address: used in inserting or
-searching for a lock in the hash table. */
+searching for a lock in the hash table. */ /*计算页面文件地址的折叠值:用于在哈希表中插入或搜索锁。*/
 UNIV_INLINE
 ulint
 lock_rec_fold(
@@ -37,7 +37,7 @@ lock_rec_fold(
 
 /*************************************************************************
 Calculates the hash value of a page file address: used in inserting or
-searching for a lock in the hash table. */
+searching for a lock in the hash table. */ /*计算页面文件地址的哈希值:用于在哈希表中插入或搜索锁。*/
 UNIV_INLINE
 ulint
 lock_rec_hash(
@@ -52,7 +52,7 @@ lock_rec_hash(
 
 /*************************************************************************
 Checks if some transaction has an implicit x-lock on a record in a clustered
-index. */
+index. */ /*检查某个事务是否对聚集索引中的记录具有隐式x-锁。*/
 UNIV_INLINE
 trx_t*
 lock_clust_rec_some_has_impl(
@@ -72,7 +72,7 @@ lock_clust_rec_some_has_impl(
 
 	if (trx_is_active(trx_id)) {
 		/* The modifying or inserting transaction is active */
-
+        /* 修改或插入事务处于活动状态 */
 		return(trx_get_on_id(trx_id));
 	}
 

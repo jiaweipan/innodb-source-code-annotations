@@ -5,7 +5,7 @@ The transaction lock system global types
 
 Created 5/7/1996 Heikki Tuuri
 *******************************************************/
-
+/*事务锁系统全局类型*/
 #ifndef lock0types_h
 #define lock0types_h
 
