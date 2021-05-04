@@ -1038,31 +1038,31 @@ page_cur_delete_rec(
 	page = page_cur_get_page(cursor);
 	current_rec = cursor->rec;
 
-	/* The record must not be the supremum or infimum record. */
+	/* The record must not be the supremum or infimum record. */ /*记录不能是上记录或下记录。*/
 	ut_ad(current_rec != page_get_supremum_rec(page));	
 	ut_ad(current_rec != page_get_infimum_rec(page));	
 	
-	/* Save to local variables some data associated with current_rec */
+	/* Save to local variables some data associated with current_rec *//*将与current_rec相关的一些数据保存到本地变量*/
 	cur_slot_no = page_dir_find_owner_slot(current_rec);
 	cur_dir_slot = page_dir_get_nth_slot(page, cur_slot_no);
 	cur_n_owned = page_dir_slot_get_n_owned(cur_dir_slot);
 
-	/* 0. Write the log record */
+	/* 0. Write the log record */ /*0. 写入日志记录*/
 	page_cur_delete_rec_write_log(current_rec, mtr);
 
 	/* 1. Reset the last insert info in the page header and increment
-	the modify clock for the frame */
-
+	the modify clock for the frame */ 
+     /*1. 重置页眉中的最后一个插入信息，并增加帧的修改时钟*/
 	page_header_set_ptr(page, PAGE_LAST_INSERT, NULL);
 
 	/* The page gets invalid for optimistic searches: increment the
 	frame modify clock */
-
+    /*页面对乐观搜索无效:增加帧修改时钟*/
 	buf_frame_modify_clock_inc(page);
 	
 	/* 2. Find the next and the previous record. Note that the cursor is
 	left at the next record. */
-
+    /*2. 查找下一个和上一个记录。注意，游标留在下一个记录处。*/
 	ut_ad(cur_slot_no > 0);
 	prev_slot = page_dir_get_nth_slot(page, cur_slot_no - 1);
 	
@@ -1070,7 +1070,7 @@ page_cur_delete_rec(
 	
 	/* rec now points to the record of the previous directory slot. Look
 	for the immediate predecessor of current_rec in a loop. */
-
+    /*Rec现在指向前一个目录槽的记录。在循环中查找current_rec的直接前身。*/
 	while(current_rec != rec) {
 		prev_rec = rec;
 		rec = page_rec_get_next(rec);
@@ -1080,7 +1080,7 @@ page_cur_delete_rec(
 	next_rec = cursor->rec;
 	
 	/* 3. Remove the record from the linked list of records */
-
+    /*3.从记录链表中删除该记录*/
 	page_rec_set_next(prev_rec, next_rec);
 	page_header_set_field(page, PAGE_N_RECS,
 				(ulint)(page_get_n_recs(page) - 1));
@@ -1089,7 +1089,8 @@ page_cur_delete_rec(
 	record pointer in slot. In the following if-clause we assume that
 	prev_rec is owned by the same slot, i.e., PAGE_DIR_SLOT_MIN_N_OWNED
 	>= 2. */
-	
+	/*4. 如果被删除的记录是由dir槽指向的，更新槽中的记录指针。
+	在下面的if-子句中，我们假设prev_rec属于同一个槽位，即PAGE_DIR_SLOT_MIN_N_OWNED>= 2。*/
 	ut_ad(PAGE_DIR_SLOT_MIN_N_OWNED >= 2);
 	ut_ad(cur_n_owned > 1);
 
@@ -1098,16 +1099,16 @@ page_cur_delete_rec(
 	}
 	
 	/* 5. Update the number of owned records of the slot */
-
+    /*5. 更新槽位拥有的记录数*/
 	page_dir_slot_set_n_owned(cur_dir_slot, cur_n_owned - 1);
 
-	/* 6. Free the memory occupied by the record */
+	/* 6. Free the memory occupied by the record */ /*6. 释放记录占用的内存*/
 	page_mem_free(page, current_rec);
 
 	/* 7. Now we have decremented the number of owned records of the slot.
 	If the number drops below PAGE_DIR_SLOT_MIN_N_OWNED, we balance the
 	slots. */
-	
+	/*7. 现在我们已经减少了槽拥有的记录的数量。如果数字低于PAGE_DIR_SLOT_MIN_N_OWNED，我们就平衡插槽。*/
 	if (cur_n_owned <= PAGE_DIR_SLOT_MIN_N_OWNED) {
 		page_dir_balance_slot(page, cur_slot_no);
 	}
