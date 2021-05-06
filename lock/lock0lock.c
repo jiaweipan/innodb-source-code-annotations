@@ -1506,7 +1506,7 @@ lock_sec_rec_some_has_impl_off_kernel(
 
 /*************************************************************************
 Creates a new record lock and inserts it to the lock queue. Does NOT check
-for deadlocks or lock compatibility! */
+for deadlocks or lock compatibility! */ /*创建一个新的记录锁并将其插入到锁队列中。不检查死锁或锁兼容性!*/
 static
 lock_t*
 lock_rec_create(
@@ -1537,13 +1537,13 @@ lock_rec_create(
 	all locks on the supremum are automatically of the gap type, and
 	we try to avoid unnecessary memory consumption of a new record lock
 	struct for a gap type lock */
-
+    /*如果rec是上记录，那么我们重置gap位，因为上记录上的所有锁都自动是gap类型的，并且我们试图避免对gap类型锁的新记录锁结构的不必要的内存消耗*/
 	if (rec == page_get_supremum_rec(page)) {
 
 		type_mode = type_mode & ~LOCK_GAP;
 	}
 
-	/* Make lock bitmap bigger by a safety margin */
+	/* Make lock bitmap bigger by a safety margin */ /*使锁位图在安全裕度上变大*/
 	n_bits = page_header_get_field(page, PAGE_N_HEAP)
 						+ LOCK_PAGE_BITMAP_MARGIN;
 	n_bytes = 1 + n_bits / 8;
@@ -1568,10 +1568,10 @@ lock_rec_create(
 
 	/* Reset to zero the bitmap which resides immediately after the
 	lock struct */
-
+    /*将紧挨着锁结构体的位图重置为零*/
 	lock_rec_bitmap_reset(lock);
 
-	/* Set the bit corresponding to rec */
+	/* Set the bit corresponding to rec */ /*设置对应于rec的位*/
 	lock_rec_set_nth_bit(lock, heap_no);
 
 	HASH_INSERT(lock_t, hash, lock_sys->rec_hash,
@@ -1586,7 +1586,7 @@ lock_rec_create(
 
 /*************************************************************************
 Enqueues a waiting request for a lock which cannot be granted immediately.
-Checks for deadlocks. */
+Checks for deadlocks. */ /*对一个不能立即授予的锁的等待请求进行排队。检查死锁。*/
 static
 ulint
 lock_rec_enqueue_waiting(
@@ -1608,7 +1608,7 @@ lock_rec_enqueue_waiting(
 	/* Test if there already is some other reason to suspend thread:
 	we do not enqueue a lock request if the query thread should be
 	stopped anyway */
-
+    /*测试是否已经有其他原因挂起线程:如果查询线程应该停止，我们不会将锁请求排队*/
 	if (que_thr_stop(thr)) {
 
 		return(DB_QUE_THR_SUSPENDED);
@@ -1616,12 +1616,12 @@ lock_rec_enqueue_waiting(
 		
 	trx = thr_get_trx(thr);
 
-	/* Enqueue the lock request that will wait to be granted */
+	/* Enqueue the lock request that will wait to be granted *//*将等待被授予的锁请求排队*/
 	lock = lock_rec_create(type_mode | LOCK_WAIT, rec, index, trx);
 
 	/* Check if a deadlock occurs: if yes, remove the lock request and
 	return an error code */
-	
+	/*检查是否发生死锁:如果是，移除锁请求并返回错误代码*/
 	if (lock_deadlock_occurs(lock, trx)) {
 
 		lock_reset_lock_and_trx_wait(lock);
@@ -1649,6 +1649,8 @@ on the record, and the request to be added is not a waiting request, we
 can reuse a suitable record lock object already existing on the same page,
 just setting the appropriate bit in its bitmap. This is a low-level function
 which does NOT check for deadlocks or lock compatibility! */
+/*在记录队列中添加一个记录锁定请求。请求在队列中通常是作为最后添加,但如果没有等待锁请求记录,和请求添加并不是一个等待请求,
+我们可以重用一个合适的记录锁对象已经存在在同一页面,设置适当的位的位图。这是一个低级函数，不检查死锁或锁兼容性!*/
 static
 lock_t*
 lock_rec_add_to_queue(
@@ -1683,7 +1685,7 @@ lock_rec_add_to_queue(
 	all locks on the supremum are automatically of the gap type, and we
 	try to avoid unnecessary memory consumption of a new record lock
 	struct for a gap type lock */
-
+    /*如果rec是上记录，那么我们可以重置间隙位，因为上记录上的所有锁都自动是gap类型的，并且我们尽量避免间隙类型锁的新记录锁结构的不必要内存消耗*/
 	if (rec == page_get_supremum_rec(page)) {
 
 		type_mode = type_mode & ~LOCK_GAP;
@@ -1691,7 +1693,7 @@ lock_rec_add_to_queue(
 
 	/* Look for a waiting lock request on the same record, or for a
 	similar record lock on the same page */
-
+    /*在同一记录上寻找一个等待的锁请求，或者在同一页上寻找一个类似的记录锁*/
 	heap_no = rec_get_heap_no(rec);
 	lock = lock_rec_get_first_on_page(rec);
 
@@ -2749,12 +2751,12 @@ lock_rec_restore_from_page_infimum(
 /*=========== DEADLOCK CHECKING ======================================*/
 
 /************************************************************************
-Checks if a lock request results in a deadlock. */
+Checks if a lock request results in a deadlock. */ /*检查锁请求是否导致死锁。*/
 static
 ibool
 lock_deadlock_occurs(
 /*=================*/
-			/* out: TRUE if a deadlock was detected */
+			/* out: TRUE if a deadlock was detected */ /*out:如果检测到死锁，则为TRUE*/
 	lock_t*	lock,	/* in: lock the transaction is requesting */
 	trx_t*	trx)	/* in: transaction */
 {
@@ -2770,7 +2772,7 @@ lock_deadlock_occurs(
 	/* We check that adding this trx to the waits-for graph
 	does not produce a cycle. First mark all active transactions
 	with 0: */
-
+    /*我们检查将这个trx添加到waiting -for图中不会产生一个循环。首先将所有活动事务标记为0:*/
 	mark_trx = UT_LIST_GET_FIRST(trx_sys->trx_list);
 
 	while (mark_trx) {
@@ -2798,19 +2800,19 @@ lock_deadlock_occurs(
 }
 
 /************************************************************************
-Looks recursively for a deadlock. */
+Looks recursively for a deadlock. */ /*递归查找死锁。*/
 static
 ibool
 lock_deadlock_recursive(
 /*====================*/
 				/* out: TRUE if a deadlock was detected
-				or the calculation took too long */
-	trx_t*	start,		/* in: recursion starting point */
-	trx_t*	trx,		/* in: a transaction waiting for a lock */
-	lock_t*	wait_lock,	/* in: the lock trx is waiting to be granted */
+				or the calculation took too long */ /*out:如果检测到死锁或计算时间过长，则为TRUE*/
+	trx_t*	start,		/* in: recursion starting point */ /*递归起点*/
+	trx_t*	trx,		/* in: a transaction waiting for a lock */ /*等待锁的事务*/
+	lock_t*	wait_lock,	/* in: the lock trx is waiting to be granted */ /*锁定TRX正在等待被授予*/
 	ulint*	cost)		/* in/out: number of calculation steps thus
-				far: if this exceeds LOCK_MAX_N_STEPS_...
-				we return TRUE */
+				far: if this exceeds LOCK_MAX_N_STEPS_... 
+				we return TRUE */ /* 到目前为止的计算步骤数:如果这个超过LOCK_MAX_N_STEPS_…我们返回真 */
 {
 	lock_t*	lock;
 	ulint	bit_no;
@@ -2822,7 +2824,7 @@ lock_deadlock_recursive(
 	if (trx->deadlock_mark == 1) {
 		/* We have already exhaustively searched the subtree starting
 		from this trx */
-
+        /*我们已经从这个trx开始详尽地搜索了子树*/
 		return(FALSE);
 	}
 
@@ -2843,7 +2845,7 @@ lock_deadlock_recursive(
 	}
 
 	/* Look at the locks ahead of wait_lock in the lock queue */
-
+    /* 查看锁队列中wait_lock前面的锁*/
 	for (;;) {
 		if (lock_get_type(lock) == LOCK_TABLE) {
 
@@ -2878,7 +2880,7 @@ lock_deadlock_recursive(
 				/* Another trx ahead has requested lock	in an
 				incompatible mode, and is itself waiting for
 				a lock */
-
+                /*前面的另一个trx以不兼容的模式请求锁定，并且本身正在等待锁定*/
 				if (lock_deadlock_recursive(start, lock_trx,
 						lock_trx->wait_lock, cost)) {
 

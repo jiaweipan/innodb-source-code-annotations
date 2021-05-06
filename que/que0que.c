@@ -996,7 +996,7 @@ que_thr_dec_refer_count(
 Stops a query thread if graph or trx is in a state requiring it. The
 conditions are tested in the order (1) graph, (2) trx. The kernel mutex has
 to be reserved. */
-
+/*如果graph或trx处于需要它的状态，则停止查询线程。在顺序图(1)、(2)trx中检验了这些条件。内核互斥锁必须被保留。*/
 ibool
 que_thr_stop(
 /*=========*/
