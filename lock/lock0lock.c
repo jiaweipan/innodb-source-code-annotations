@@ -1324,7 +1324,7 @@ lock_table_has(
 	ut_ad(mutex_own(&kernel_mutex));
 
 	/* Look for stronger locks the same trx already has on the table */
-
+    /* 寻找更强的锁相同的trx已经在表上*/
 	lock = UT_LIST_GET_LAST(table->locks);
 
 	while (lock != NULL) {
@@ -1334,7 +1334,7 @@ lock_table_has(
 
 			/* The same trx already has locked the table in 
 			a mode stronger or equal to the mode given */
-
+            /*相同的trx已经以更强或等于给定模式的模式锁定了表*/
 			ut_ad(!lock_get_wait(lock)); 
 
 			return(lock);
@@ -1350,7 +1350,7 @@ lock_table_has(
 
 /*************************************************************************
 Checks if a transaction has a GRANTED explicit non-gap lock on rec, stronger
-or equal to mode. */
+or equal to mode. */ /*检查一个事务是否在rec上有一个GRANTED显式非间隙锁，更强或等于mode。*/
 UNIV_INLINE
 lock_t*
 lock_rec_has_expl(
@@ -1385,6 +1385,7 @@ lock_rec_has_expl(
 /*************************************************************************
 Checks if some other transaction has an explicit lock request stronger or
 equal to mode on rec or gap, waiting or granted, in the lock queue. */
+/*检查是否有其他事务的锁请求更强或等于模式上的rec或gap，等待或批准，在锁队列中。*/
 UNIV_INLINE
 lock_t*
 lock_rec_other_has_expl_req(
@@ -1426,6 +1427,8 @@ lock_rec_other_has_expl_req(
 Looks for a suitable type record lock struct by the same trx on the same page.
 This can be used to save space when a new record lock should be set on a page:
 no new struct is needed, if a suitable old is found. */
+/*在同一页面上通过相同的trx寻找合适的类型记录锁结构体。当一个新的记录锁被设置在一个页面上时，
+这可以用来节省空间:如果找到一个合适的旧结构，则不需要新的结构。*/
 UNIV_INLINE
 lock_t*
 lock_rec_find_similar_on_page(
@@ -1461,7 +1464,7 @@ lock_rec_find_similar_on_page(
 /*************************************************************************
 Checks if some transaction has an implicit x-lock on a record in a secondary
 index. */
-
+/*检查某个事务是否对二级索引中的记录具有隐式x-锁。*/
 trx_t*
 lock_sec_rec_some_has_impl_off_kernel(
 /*==================================*/
@@ -1483,7 +1486,9 @@ lock_sec_rec_some_has_impl_off_kernel(
 	database recovery is running. We do not write the changes of a page
 	max trx id to the log, and therefore during recovery, this value
 	for a page may be incorrect. */
-
+    /*只有当页面的最大trx id >= trx列表的最小trx id，或者数据库恢复正在运行时，
+	某些事务可能在记录上有一个隐式的x-lock。我们不会将页面最大trx id的更改写入日志，
+	因此在恢复期间，页面的这个值可能是不正确的。*/
 	if (!(ut_dulint_cmp(page_get_max_trx_id(page),
 					trx_list_get_min_trx_id()) >= 0)
 	   		&& !recv_recovery_is_on()) {
@@ -1493,7 +1498,7 @@ lock_sec_rec_some_has_impl_off_kernel(
 
 	/* Ok, in this case it is possible that some transaction has an
 	implicit x-lock. We have to look in the clustered index. */
-			
+	/*在这种情况下，有可能某个事务有一个隐式的x-锁。我们得看看聚集索引。*/		
 	return(row_vers_impl_x_locked_off_kernel(rec, index));
 }
 
