@@ -1725,6 +1725,7 @@ there are no explicit locks on the page, or there is just one lock, owned
 by this transaction, and of the right type_mode. This is a low-level function
 which does NOT look at implicit locks! Checks lock compatibility within
 explicit locks. */
+/*这是最常见情况下锁定记录的快速例程:页面上没有显式锁，或者只有一个锁，由该事务拥有，并且属于正确的type_mode。这是一个低级函数，不关注隐式锁!检查显式锁中的锁兼容性。*/
 UNIV_INLINE
 ibool
 lock_rec_lock_fast(
@@ -1778,6 +1779,7 @@ lock_rec_lock_fast(
 This is the general, and slower, routine for locking a record. This is a
 low-level function which does NOT look at implicit locks! Checks lock
 compatibility within explicit locks. */
+/*这是锁定记录的一般且较慢的例行程序。这是一个低级函数，不关注隐式锁!检查显式锁中的锁兼容性。*/
 static
 ulint
 lock_rec_lock_slow(
@@ -1809,19 +1811,19 @@ lock_rec_lock_slow(
 	if (lock_rec_has_expl(mode, rec, trx)) {
 		/* The trx already has a strong enough lock on rec: do
 		nothing */
-
+        /*trx已经有一个足够强的rec锁:什么也不做*/
 		err = DB_SUCCESS;
 	} else if (lock_rec_other_has_expl_req(confl_mode, 0, LOCK_WAIT, rec,
 								trx)) {
 		/* If another transaction has a non-gap conflicting request in
 		the queue, as this transaction does not have a lock strong
 		enough already granted on the record, we have to wait. */
-    				
+    	/*如果另一个事务在队列中有一个非间隙冲突请求，因为这个事务没有对记录授予足够强的锁，我们必须等待。*/			
 		err = lock_rec_enqueue_waiting(mode, rec, index, thr);
 	} else {
 		if (!impl) {
 			/* Set the requested lock on the record */
-
+			/*在记录上设置请求的锁*/
 			lock_rec_add_to_queue(LOCK_REC | mode, rec, index,
 									trx);
 		}
@@ -1837,7 +1839,7 @@ Tries to lock the specified record in the mode requested. If not immediately
 possible, enqueues a waiting lock request. This is a low-level function
 which does NOT look at implicit locks! Checks lock compatibility within
 explicit locks. */
-
+/*尝试以请求的模式锁定指定记录。如果不能立即执行，则将一个等待的锁请求排队。这是一个低级函数，不关注隐式锁!检查显式锁中的锁兼容性。*/
 ulint
 lock_rec_lock(
 /*==========*/
@@ -1863,7 +1865,7 @@ lock_rec_lock(
 
 		/* We try a simplified and faster subroutine for the most
 		common cases */
-
+		/*对于最常见的情况，我们尝试一个简化的、更快的子程序*/
 		err = DB_SUCCESS;
 	} else {
 		err = lock_rec_lock_slow(impl, mode, rec, index, thr);
@@ -1876,6 +1878,7 @@ lock_rec_lock(
 Checks if a waiting record lock request still has to wait in a queue.
 NOTE that we, for simplicity, ignore the gap bits in locks, and treat
 gap type lock requests like non-gap lock requests. */
+/*检查一个等待记录锁定请求是否仍然必须在队列中等待。注意，为了简单起见，我们忽略锁中的间隙位，而将间隙类型的锁请求视为非间隙锁请求。*/
 static
 ibool
 lock_rec_has_to_wait_in_queue(
@@ -1914,7 +1917,7 @@ lock_rec_has_to_wait_in_queue(
 /*****************************************************************
 Grants a lock to a waiting lock request and releases the waiting
 transaction. */
-
+/*将一个锁授予一个正在等待的锁请求，并释放等待的事务。*/
 void
 lock_grant(
 /*=======*/
@@ -1936,6 +1939,7 @@ lock_grant(
 Cancels a waiting record lock request and releases the waiting transaction
 that requested it. NOTE: does NOT check if waiting lock requests behind this
 one can now be granted! */
+/*取消一个等待的记录锁定请求，并释放请求它的等待事务。注意:不检查是否等待锁请求后面这个现在可以被授予!*/
 static
 void
 lock_rec_cancel(
@@ -1945,14 +1949,15 @@ lock_rec_cancel(
 	ut_ad(mutex_own(&kernel_mutex));
 
 	/* Reset the bit (there can be only one set bit) in the lock bitmap */
+	/* 重置锁位图中的位(只能有一个set位)*/
 	lock_rec_reset_nth_bit(lock, lock_rec_find_set_bit(lock));
 
 	/* Reset the wait flag and the back pointer to lock in trx */
-
+    /*重置等待标志和返回指针以锁定trx*/
 	lock_reset_lock_and_trx_wait(lock);
 
 	/* The following function releases the trx from lock wait */
-
+    /*下面的函数从锁等待中释放trx*/
 	trx_end_lock_wait(lock->trx);
 }
 	
@@ -1960,7 +1965,7 @@ lock_rec_cancel(
 Removes a record lock request, waiting or granted, from the queue and
 grants locks to other transactions in the queue if they now are entitled
 to a lock. NOTE: all record locks contained in in_lock are removed. */
-
+/*从队列中删除一个等待或已授予的记录锁请求，并将锁授予队列中的其他事务(如果它们现在有资格获得锁)。注意:in_lock中包含的所有记录锁将被删除。*/
 void
 lock_rec_dequeue_from_page(
 /*=======================*/
@@ -1989,7 +1994,7 @@ lock_rec_dequeue_from_page(
 
 	/* Check if waiting locks in the queue can now be granted: grant
 	locks if there are no conflicting locks ahead. */
-
+    /*检查队列中的等待锁现在是否可以被授予:如果前面没有冲突锁，就授予锁。*/
 	lock = lock_rec_get_first_on_page_addr(space, page_no);
 
 	while (lock != NULL) {		

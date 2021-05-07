@@ -803,7 +803,7 @@ trx_handle_commit_sig_off_kernel(
 The transaction must be in the TRX_QUE_LOCK_WAIT state. Puts it to
 the TRX_QUE_RUNNING state and releases query threads which were
 waiting for a lock in the wait_thrs list. */
-
+/*事务必须处于TRX_QUE_LOCK_WAIT状态。将其置为TRX_QUE_RUNNING状态，并释放wait_thrs列表中等待锁的查询线程。*/
 void
 trx_end_lock_wait(
 /*==============*/
