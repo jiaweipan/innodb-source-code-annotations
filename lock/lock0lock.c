@@ -731,7 +731,7 @@ lock_reset_lock_and_trx_wait(
 	ut_ad(lock_get_wait(lock));
 
 	/* Reset the back pointer in trx to this waiting lock request */
-
+    /* 将trx中的后退指针重置为这个等待锁请求*/
 	(lock->trx)->wait_lock = NULL;
  	lock->type_mode = lock->type_mode & ~LOCK_WAIT;
 }
@@ -2011,6 +2011,7 @@ lock_rec_dequeue_from_page(
 
 /*****************************************************************
 Removes a record lock request, waiting or granted, from the queue. */
+/*从队列中删除正在等待或已授予的记录锁定请求。*/
 static
 void
 lock_rec_discard(
@@ -2040,6 +2041,7 @@ lock_rec_discard(
 Removes record lock objects set on an index page which is discarded. This
 function does not move locks, or check for waiting locks, therefore the
 lock bitmaps must already be reset when this function is called. */
+/*删除在被丢弃的索引页上设置的记录锁对象。这个函数不移动锁，也不检查等待的锁，因此当这个函数被调用时，锁位图必须已经被重置。n*/
 static
 void
 lock_rec_free_all_from_discard_page(
@@ -2071,11 +2073,11 @@ lock_rec_free_all_from_discard_page(
 }	
 
 /*============= RECORD LOCK MOVING AND INHERITING ===================*/
-
+/*记录锁定移动和继承*/
 /*****************************************************************
 Resets the lock bits for a single record. Releases transactions waiting for
 lock requests here. */
-
+/*重置单个记录的锁定位。在这里释放等待锁请求的事务。*/
 void
 lock_rec_reset_and_release_wait(
 /*============================*/
@@ -2105,7 +2107,7 @@ lock_rec_reset_and_release_wait(
 Makes a record to inherit the locks of another record as gap type locks, but
 does not reset the lock bits of the other record. Also waiting lock requests
 on rec are inherited as GRANTED gap locks. */
-
+/*创建一个记录以继承另一个记录的锁作为间隙类型锁，但不重置另一个记录的锁位。在rec上等待的锁请求也被继承为GRANTED间隙锁。*/
 void
 lock_rec_inherit_to_gap(
 /*====================*/
@@ -2128,7 +2130,7 @@ lock_rec_inherit_to_gap(
 
 /*****************************************************************
 Moves the locks of a record to another record and resets the lock bits of
-the donating record. */
+the donating record. */ /*将一个记录的锁移到另一个记录，并重置捐赠记录的锁位。*/
 static
 void
 lock_rec_move(
@@ -2160,7 +2162,7 @@ lock_rec_move(
 
 		/* Note that we FIRST reset the bit, and then set the lock:
 		the function works also if donator == receiver */
-
+        /*注意，我们首先重置位，然后设置锁:如果donor == receiver函数也工作*/
 		lock_rec_add_to_queue(type_mode, receiver, lock->index,
 								lock->trx);
 		lock = lock_rec_get_next(donator, lock);
@@ -2174,7 +2176,7 @@ Updates the lock table when we have reorganized a page. NOTE: we copy
 also the locks set on the infimum of the page; the infimum may carry
 locks if an update of a record is occurring on the page, and its locks
 were temporarily stored on the infimum. */
-
+/*在重新组织页面后更新锁表。注意:我们也复制了设置在页面底部的锁;如果页面上的记录正在发生更新，且其锁临时存储在下限值上，则下限值可以携带锁。*/
 void
 lock_move_reorganize_page(
 /*======================*/
@@ -2205,7 +2207,7 @@ lock_move_reorganize_page(
 	/* Copy first all the locks on the page to heap and reset the
 	bitmaps in the original locks; chain the copies of the locks
 	using the trx_locks field in them. */
-
+   /*首先复制页面上所有要堆的锁，并重置原始锁中的位图;使用锁中的trx_locks字段将锁的副本链起来。*/
 	UT_LIST_INIT(old_locks);
 	
 	while (lock != NULL) {
@@ -2234,11 +2236,11 @@ lock_move_reorganize_page(
 		supremum of the page; the infimum may carry locks if an
 		update of a record is occurring on the page, and its locks
 		were temporarily stored on the infimum */
-		
+		/*注意:我们还复制了设置在页面的下位和上位的锁;如果页面上的记录正在发生更新，且其锁临时存储在下限值上，则下限值可以携带锁*/
 		page_cur_set_before_first(page, &cur1);
 		page_cur_set_before_first(old_page, &cur2);
 
-		/* Set locks according to old locks */
+		/* Set locks accordingto old locks  */ /*根据旧的锁设置锁*/
 		for (;;) {
 			ut_ad(0 == ut_memcmp(page_cur_get_rec(&cur1),
 						page_cur_get_rec(&cur2),
@@ -2251,7 +2253,7 @@ lock_move_reorganize_page(
 
 				/* NOTE that the old lock bitmap could be too
 				small for the new heap number! */
-
+                /*注意，旧的锁位图对于新的堆号来说太小了!*/
 				lock_rec_add_to_queue(lock->type_mode,
 						page_cur_get_rec(&cur1),
 						lock->index, lock->trx);
@@ -2274,7 +2276,7 @@ lock_move_reorganize_page(
 		}
 
 		/* Remember that we chained old locks on the trx_locks field: */
-
+        /*记得我们在trx_locks字段中链接了旧的锁:*/
 		lock = UT_LIST_GET_NEXT(trx_locks, lock);
 	}
 
@@ -2289,7 +2291,7 @@ lock_move_reorganize_page(
 /*****************************************************************
 Moves the explicit locks on user records to another page if a record
 list end is moved to another page. */
-
+/*如果记录列表的结尾被移到另一个页面，则将用户记录上的显式锁移到另一个页面。*/
 void
 lock_move_rec_list_end(
 /*===================*/
@@ -2312,7 +2314,8 @@ lock_move_rec_list_end(
 	the original order, because new elements are inserted to a hash
 	table to the end of the hash chain, and lock_rec_add_to_queue
 	does not reuse locks if there are waiters in the queue. */
-
+    /*注意:当我们把锁从记录到记录,等待锁类型和可能授予差距锁背后原始顺序进行排队,
+	因为新元素插入到哈希表的散列链,和lock_rec_add_to_queue不重用锁如果有服务员在队列中。*/
 	sup = page_get_supremum_rec(page);
 	
 	lock = lock_rec_get_first_on_page(page);
@@ -2330,7 +2333,7 @@ lock_move_rec_list_end(
 	
 		/* Copy lock requests on user records to new page and
 		reset the lock bits on the old */
-
+        /*将用户记录上的锁定请求复制到新页面，并重置旧页面上的锁定位*/
 		while (page_cur_get_rec(&cur1) != sup) {
 
 			ut_ad(0 == ut_memcmp(page_cur_get_rec(&cur1),
@@ -2372,7 +2375,7 @@ lock_move_rec_list_end(
 /*****************************************************************
 Moves the explicit locks on user records to another page if a record
 list start is moved to another page. */
-
+/*如果记录列表开始移动到另一个页面，则将用户记录上的显式锁移动到另一个页面。*/
 void
 lock_move_rec_list_start(
 /*=====================*/
@@ -2381,7 +2384,7 @@ lock_move_rec_list_start(
 	rec_t*	rec,		/* in: record on page: this is the
 				first record NOT copied */
 	rec_t*	old_end)	/* in: old previous-to-last record on
-				new_page before the records were copied */
+				new_page before the records were copied */ /*在记录被复制之前，new_page上从上到下的旧记录*/
 {
 	lock_t*		lock;
 	page_cur_t	cur1;
@@ -2405,7 +2408,7 @@ lock_move_rec_list_start(
 
 		/* Copy lock requests on user records to new page and
 		reset the lock bits on the old */
-
+        /* 将用户记录上的锁定请求复制到新页面，并重置旧页面上的锁定位*/
 		while (page_cur_get_rec(&cur1) != rec) {
 
 			ut_ad(0 == ut_memcmp(page_cur_get_rec(&cur1),
@@ -2446,7 +2449,7 @@ lock_move_rec_list_start(
 
 /*****************************************************************
 Updates the lock table when a page is split to the right. */
-
+/*当页面向右拆分时更新锁表。*/
 void
 lock_update_split_right(
 /*====================*/
@@ -2457,13 +2460,13 @@ lock_update_split_right(
 	
 	/* Move the locks on the supremum of the left page to the supremum
 	of the right page */
-
+    /*将左边页面上限值的锁移到右边页面上限值*/
 	lock_rec_move(page_get_supremum_rec(right_page),
 					page_get_supremum_rec(left_page));
 	
 	/* Inherit the locks to the supremum of left page from the successor
 	of the infimum on right page */
-
+    /*从右页上下标的后继对象继承左页上标的锁*/
 	lock_rec_inherit_to_gap(page_get_supremum_rec(left_page),
 			page_rec_get_next(page_get_infimum_rec(right_page)));
 
@@ -2472,7 +2475,7 @@ lock_update_split_right(
 
 /*****************************************************************
 Updates the lock table when a page is merged to the right. */
-
+/*当页面合并到右侧时更新锁表。*/
 void
 lock_update_merge_right(
 /*====================*/
@@ -2486,12 +2489,12 @@ lock_update_merge_right(
 	/* Inherit the locks from the supremum of the left page to the
 	original successor of infimum on the right page, to which the left
 	page was merged */
-
+    /*从左页的上限值继承锁到右页的下限值的原始后继锁，左页被合并到右页*/
 	lock_rec_inherit_to_gap(orig_succ, page_get_supremum_rec(left_page));
 
 	/* Reset the locks on the supremum of the left page, releasing
 	waiting transactions */
-
+    /*重置左页面上限上的锁，释放等待的事务*/
 	lock_rec_reset_and_release_wait(page_get_supremum_rec(left_page));
 	
 	lock_rec_free_all_from_discard_page(left_page);
