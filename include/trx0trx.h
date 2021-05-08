@@ -285,7 +285,7 @@ struct trx_sig_struct{
 /* The transaction handle; every session has a trx object which is freed only
 when the session is freed; in addition there may be session-less transactions
 rolling back after a database recovery */
-
+/*事务处理;每个会话都有一个TRX对象，该对象只有在会话被释放时才被释放;此外，在数据库恢复之后可能会出现无会话的事务回滚*/
 struct trx_struct{
 	ulint		magic_n;
 	/* All the next fields are protected by the kernel mutex, except the

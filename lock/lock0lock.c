@@ -2509,7 +2509,8 @@ root page, even though they do not make sense on other than leaf
 pages: the reason is that in a pessimistic update the infimum record
 of the root page will act as a dummy carrier of the locks of the record
 to be updated. */
-
+/*当根页被复制到btr_root_raise_and_insert中的另一个页时更新锁表。
+注意,我们将锁结构在根页面,即使他们不理解其他比叶页面:悲观的原因是更新页面的下确界记录根将作为一个虚拟载波锁的记录被更新。*/
 void
 lock_update_root_raise(
 /*===================*/
@@ -2520,7 +2521,7 @@ lock_update_root_raise(
 	
 	/* Move the locks on the supremum of the root to the supremum
 	of new_page */
-
+    /*将根节点上的锁移到new_page上的锁*/
 	lock_rec_move(page_get_supremum_rec(new_page),
 						page_get_supremum_rec(root));
 	lock_mutex_exit_kernel();
@@ -2529,7 +2530,7 @@ lock_update_root_raise(
 /*****************************************************************
 Updates the lock table when a page is copied to another and the original page
 is removed from the chain of leaf pages, except if page is the root! */
-
+/*当一个页被复制到另一个页并且原始页从叶页链中删除时，更新锁表，除非page是根页!*/
 void
 lock_update_copy_and_discard(
 /*=========================*/
@@ -2540,7 +2541,7 @@ lock_update_copy_and_discard(
 	
 	/* Move the locks on the supremum of the old page to the supremum
 	of new_page */
-
+    /*将旧页面的上界锁定移到new_page的上界*/
 	lock_rec_move(page_get_supremum_rec(new_page),
 						page_get_supremum_rec(page));
 	lock_rec_free_all_from_discard_page(page);
@@ -2550,7 +2551,7 @@ lock_update_copy_and_discard(
 
 /*****************************************************************
 Updates the lock table when a page is split to the left. */
-
+/*当一个页面被拆分到左边时更新锁表。*/
 void
 lock_update_split_left(
 /*===================*/
@@ -2561,7 +2562,7 @@ lock_update_split_left(
 	
 	/* Inherit the locks to the supremum of the left page from the
 	successor of the infimum on the right page */
-
+    /*从右页上下标的后继对象继承左页上标的锁*/
 	lock_rec_inherit_to_gap(page_get_supremum_rec(left_page),
 			page_rec_get_next(page_get_infimum_rec(right_page)));
 
@@ -2570,7 +2571,7 @@ lock_update_split_left(
 
 /*****************************************************************
 Updates the lock table when a page is merged to the left. */
-
+/*当一个页面合并到左边时更新锁表。*/
 void
 lock_update_merge_left(
 /*===================*/
@@ -2586,20 +2587,20 @@ lock_update_merge_left(
 
 		/* Inherit the locks on the supremum of the left page to the
 		first record which was moved from the right page */
-
+        /*将左页上限值上的锁继承到从右页移动的第一个记录*/
 		lock_rec_inherit_to_gap(page_rec_get_next(orig_pred),
 					page_get_supremum_rec(left_page));
 
 		/* Reset the locks on the supremum of the left page,
 		releasing waiting transactions */
-
+        /*重置左页面上限上的锁，释放等待的事务*/
 		lock_rec_reset_and_release_wait(page_get_supremum_rec(
 								left_page));
 	}
 
 	/* Move the locks from the supremum of right page to the supremum
 	of the left page */
-	
+	/*将锁从右页面的上限移动到左页面的上限*/
 	lock_rec_move(page_get_supremum_rec(left_page),
 					 page_get_supremum_rec(right_page));
 
@@ -2611,7 +2612,7 @@ lock_update_merge_left(
 /*****************************************************************
 Resets the original locks on heir and replaces them with gap type locks
 inherited from rec. */
-
+/*重置继承对象上的原始锁，并用从rec继承的间隙类型锁替换它们。*/
 void
 lock_rec_reset_and_inherit_gap_locks(
 /*=================================*/
@@ -2629,7 +2630,7 @@ lock_rec_reset_and_inherit_gap_locks(
 
 /*****************************************************************
 Updates the lock table when a page is discarded. */
-
+/*当一个页被丢弃时更新锁表。*/
 void
 lock_update_discard(
 /*================*/
@@ -2650,7 +2651,7 @@ lock_update_discard(
 	
 	/* Inherit all the locks on the page to the record and reset all
 	the locks on the page */
-
+    /*将该页上的所有锁继承到记录，并重置该页上的所有锁*/
 	rec = page_get_infimum_rec(page);
 
 	for (;;) {
@@ -2675,7 +2676,7 @@ lock_update_discard(
 
 /*****************************************************************
 Updates the lock table when a new user record is inserted. */
-
+/*插入新用户记录时更新锁表。*/
 void
 lock_update_insert(
 /*===============*/
@@ -2684,7 +2685,7 @@ lock_update_insert(
 	lock_mutex_enter_kernel();
 
 	/* Inherit the locks for rec, in gap mode, from the next record */
-
+    /*在间隙模式下，从下一个记录继承rec的锁*/
 	lock_rec_inherit_to_gap(rec, page_rec_get_next(rec));
 
 	lock_mutex_exit_kernel();
@@ -2692,7 +2693,7 @@ lock_update_insert(
 
 /*****************************************************************
 Updates the lock table when a record is removed. */
-
+/*当记录被删除时更新锁表。*/
 void
 lock_update_delete(
 /*===============*/
@@ -2701,11 +2702,11 @@ lock_update_delete(
 	lock_mutex_enter_kernel();
 
 	/* Let the next record inherit the locks from rec, in gap mode */
-
+    /* 在间隙模式下，让下一个记录继承rec中的锁*/
 	lock_rec_inherit_to_gap(page_rec_get_next(rec), rec);
 
 	/* Reset the lock bits on rec and release waiting transactions */
-
+    /* 重置rec上的锁定位并释放等待的事务*/
 	lock_rec_reset_and_release_wait(rec);	
 
 	lock_mutex_exit_kernel();
@@ -2718,7 +2719,8 @@ updated and the size of the record changes in the update. The record
 is moved in such an update, perhaps to another page. The infimum record
 acts as a dummy carrier record, taking care of lock releases while the
 actual record is being moved. */
-
+/*页下的存储记录另一个记录的显式锁。这个函数用于存储记录更新时的锁状态，以及记录的大小在更新中发生变化。
+在这样的更新中，记录会被移动到另一个页面。最低值记录充当一个虚拟的载体记录，当实际记录被移动时，它负责锁的释放。*/
 void
 lock_rec_store_on_page_infimum(
 /*===========================*/
@@ -2740,7 +2742,7 @@ lock_rec_store_on_page_infimum(
 /*************************************************************************
 Restores the state of explicit lock requests on a single record, where the
 state was stored on the infimum of the page. */
-
+/*恢复单个记录上显式锁请求的状态，该状态存储在页面的下端。*/
 void
 lock_rec_restore_from_page_infimum(
 /*===============================*/
@@ -2866,6 +2868,7 @@ lock_deadlock_recursive(
 
 		if (lock == NULL) {
 			/* We can mark this subtree as searched */
+			/*我们可以将这个子树标记为已搜索*/
 			trx->deadlock_mark = 1;
 
 			return(FALSE);
@@ -2904,6 +2907,7 @@ lock_deadlock_recursive(
 /*************************************************************************
 Creates a table lock object and adds it as the last in the lock queue
 of the table. Does NOT check for deadlocks or lock compatibility. */
+/*创建一个表锁对象，并将其添加为该表的锁队列中的最后一个。不检查死锁或锁兼容性。*/
 UNIV_INLINE
 lock_t*
 lock_table_create(
@@ -2924,7 +2928,7 @@ lock_table_create(
 		/* Only one trx can have the lock on the table
 		at a time: we may use the memory preallocated
 		to the table object */
-
+        /*一次只能有一个trx拥有该表上的锁:我们可以使用预先分配给该表对象的内存*/
 		lock = table->auto_inc_lock;
 
 		ut_a(trx->auto_inc_lock == NULL);
@@ -2958,7 +2962,7 @@ lock_table_create(
 /*****************************************************************
 Removes a table lock request from the queue and the trx list of locks;
 this is a low-level function which does NOT check if waiting requests
-can now be granted. */
+can now be granted. */ /*从队列和trx锁列表中删除一个表锁请求;这是一个低级函数，它不检查等待的请求现在是否可以被授予。*/
 UNIV_INLINE
 void
 lock_table_remove_low(
@@ -2984,7 +2988,7 @@ lock_table_remove_low(
 /*************************************************************************
 Enqueues a waiting request for a table lock which cannot be granted
 immediately. Checks for deadlocks. */
-
+/*排队等待不能立即授予表锁的请求。检查死锁。*/
 ulint
 lock_table_enqueue_waiting(
 /*=======================*/
@@ -3003,7 +3007,7 @@ lock_table_enqueue_waiting(
 	/* Test if there already is some other reason to suspend thread:
 	we do not enqueue a lock request if the query thread should be
 	stopped anyway */
-
+    /*测试是否已经有其他原因挂起线程:如果查询线程应该停止，我们不会将锁请求排队*/
 	if (que_thr_stop(thr)) {
 
 		return(DB_QUE_THR_SUSPENDED);
@@ -3012,12 +3016,12 @@ lock_table_enqueue_waiting(
 	trx = thr_get_trx(thr);
 	
 	/* Enqueue the lock request that will wait to be granted */
-
+    /* 将等待被授予的锁请求排队*/
 	lock = lock_table_create(table, mode | LOCK_WAIT, trx);
 
 	/* Check if a deadlock occurs: if yes, remove the lock request and
 	return an error code */
-
+    /*检查是否发生死锁:如果是，移除锁请求并返回错误代码*/
 	if (lock_deadlock_occurs(lock, trx)) {
 
 		lock_reset_lock_and_trx_wait(lock);
@@ -3035,7 +3039,7 @@ lock_table_enqueue_waiting(
 
 /*************************************************************************
 Checks if other transactions have an incompatible mode lock request in
-the lock queue. */
+the lock queue. *//*检查其他事务是否在锁队列中有不兼容的模式锁请求。*/
 UNIV_INLINE
 ibool
 lock_table_other_has_incompatible(
