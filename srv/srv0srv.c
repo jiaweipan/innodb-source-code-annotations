@@ -2064,7 +2064,7 @@ srv_suspend_mysql_thread(
 /************************************************************************
 Releases a MySQL OS thread waiting for a lock to be released, if the
 thread is already suspended. */
-
+/*释放一个正在等待锁被释放的MySQL OS线程，如果这个线程已经挂起。*/
 void
 srv_release_mysql_thread_if_suspended(
 /*==================================*/

@@ -3075,7 +3075,7 @@ lock_table_other_has_incompatible(
 /*************************************************************************
 Locks the specified database table in the mode given. If the lock cannot
 be granted immediately, the query thread is put to wait. */
-
+/*以给定的模式锁定指定的数据库表。如果不能立即授予锁，则将查询线程置于等待状态。*/
 ulint
 lock_table(
 /*=======*/
@@ -3102,7 +3102,7 @@ lock_table(
 	lock_mutex_enter_kernel();
 
 	/* Look for stronger locks the same trx already has on the table */
-
+    /*寻找更强的锁相同的trx已经在表上 */
 	if (lock_table_has(trx, table, mode)) {
 
 		lock_mutex_exit_kernel();
@@ -3112,12 +3112,12 @@ lock_table(
 
 	/* We have to check if the new lock is compatible with any locks
 	other transactions have in the table lock queue. */
-
+    /*我们必须检查新锁是否与其他事务在表锁队列中拥有的任何锁兼容。*/
 	if (lock_table_other_has_incompatible(trx, LOCK_WAIT, table, mode)) {
 	
 		/* Another trx has a request on the table in an incompatible
 		mode: this trx must wait */
-
+        /*另一个trx以不兼容的模式对表发出请求:这个trx必须等待*/
 		err = lock_table_enqueue_waiting(mode, table, thr);
 			
 		lock_mutex_exit_kernel();
@@ -3134,7 +3134,7 @@ lock_table(
 
 /*************************************************************************
 Checks if there are any locks set on the table. */
-
+/*检查table上是否有锁。*/
 ibool
 lock_is_on_table(
 /*=============*/
@@ -3159,7 +3159,7 @@ lock_is_on_table(
 }
 
 /*************************************************************************
-Checks if a waiting table lock request still has to wait in a queue. */
+Checks if a waiting table lock request still has to wait in a queue. */ /*检查等待中的表锁请求是否仍必须在队列中等待。*/
 static
 ibool
 lock_table_has_to_wait_in_queue(
@@ -3193,7 +3193,7 @@ lock_table_has_to_wait_in_queue(
 Removes a table lock request, waiting or granted, from the queue and grants
 locks to other transactions in the queue, if they now are entitled to a
 lock. */
-
+/*从队列中移除正在等待或已授予的表锁请求，并将锁授予队列中的其他事务(如果它们现在有权获得锁)。*/
 void
 lock_table_dequeue(
 /*===============*/
@@ -3212,7 +3212,7 @@ lock_table_dequeue(
 	
 	/* Check if waiting locks in the queue can now be granted: grant
 	locks if there are no conflicting locks ahead. */
-
+    /*检查队列中的等待锁现在是否可以被授予:如果前面没有冲突锁，就授予锁。*/
 	while (lock != NULL) {
 
 		if (lock_get_wait(lock)
@@ -3231,7 +3231,7 @@ lock_table_dequeue(
 /*************************************************************************
 Releases an auto-inc lock a transaction possibly has on a table.
 Releases possible other transactions waiting for this lock. */
-
+/*释放一个事务可能在表上拥有的auto-inc锁。释放可能等待此锁的其他事务。*/
 void
 lock_table_unlock_auto_inc(
 /*=======================*/
@@ -3249,7 +3249,7 @@ lock_table_unlock_auto_inc(
 /*************************************************************************
 Releases transaction locks, and releases possible other transactions waiting
 because of these locks. */
-
+/*释放事务锁，并释放可能因这些锁而等待的其他事务。*/
 void
 lock_release_off_kernel(
 /*====================*/
@@ -3280,7 +3280,7 @@ lock_release_off_kernel(
 		if (count == LOCK_RELEASE_KERNEL_INTERVAL) {
 			/* Release the kernel mutex for a while, so that we
 			do not monopolize it */
-
+            /*释放内核互斥锁一段时间，这样我们就不会独占它*/
 			lock_mutex_exit_kernel();
 
 			lock_mutex_enter_kernel();
@@ -3299,7 +3299,7 @@ lock_release_off_kernel(
 /*************************************************************************
 Cancels a waiting lock request and releases possible other transactions
 waiting behind it. */
-
+/*取消一个等待的锁请求并释放在它后面等待的其他可能的事务。*/
 void
 lock_cancel_waiting_and_release(
 /*============================*/
@@ -3317,17 +3317,18 @@ lock_cancel_waiting_and_release(
 	}
 
 	/* Reset the wait flag and the back pointer to lock in trx */
-
+    /* 重置等待标志和返回指针以锁定trx*/
 	lock_reset_lock_and_trx_wait(lock);
 
 	/* The following function releases the trx from lock wait */
-
+    /*下面的函数从锁等待中释放trx*/
 	trx_end_lock_wait(lock->trx);
 }
 
 /*************************************************************************
 Resets all record and table locks of a transaction on a table to be dropped.
 No lock is allowed to be a wait lock. */
+/*重置要删除的表上事务的所有记录和表锁。不允许任何锁是等待锁。*/
 static
 void
 lock_reset_all_on_table_for_trx(
@@ -3365,7 +3366,7 @@ lock_reset_all_on_table_for_trx(
 /*************************************************************************
 Resets all locks, both table and record locks, on a table to be dropped.
 No lock is allowed to be a wait lock. */
-
+/*重置要删除的表上的所有锁，包括表锁和记录锁。不允许任何锁是等待锁。*/
 void
 lock_reset_all_on_table(
 /*====================*/
@@ -3392,7 +3393,7 @@ lock_reset_all_on_table(
 
 /*************************************************************************
 Prints info of a table lock. */
-
+/*打印表锁的信息。*/
 void
 lock_table_print(
 /*=============*/
@@ -3428,7 +3429,7 @@ lock_table_print(
 				
 /*************************************************************************
 Prints info of a record lock. */
-
+/*打印记录锁的信息。*/
 void
 lock_rec_print(
 /*===========*/
@@ -3479,7 +3480,7 @@ lock_rec_print(
 	/* If the page is not in the buffer pool, we cannot load it
 	because we have the kernel mutex and ibuf operations would
 	break the latching order */
-	
+	/*如果页面不在缓冲池中，我们就不能加载它，因为我们有内核互斥锁，而ibuf操作会破坏锁存顺序*/
 	page = buf_page_get_gen(space, page_no, RW_NO_LATCH,
 					NULL, BUF_GET_IF_IN_POOL,
 					IB__FILE__, __LINE__, &mtr);
@@ -3547,7 +3548,7 @@ lock_get_n_rec_locks(void)
 	
 /*************************************************************************
 Prints info of locks for all transactions. */
-
+/*打印所有事务的锁信息。*/
 void
 lock_print_info(void)
 /*=================*/
@@ -3580,7 +3581,7 @@ lock_print_info(void)
 						lock_get_n_rec_locks());
 
 	/* First print info on non-active transactions */
-
+    /* 首先打印非活动事务的信息*/
 	trx = UT_LIST_GET_FIRST(trx_sys->mysql_trx_list);
 
 	while (trx) {
@@ -3601,7 +3602,8 @@ loop:
 	reading a database page in below, variable trx may be
 	obsolete now and we must loop through the trx list to
 	get probably the same trx, or some other trx. */
-	
+	/*由于我们在读取下面的数据库页面时临时释放了内核互斥锁，变量trx现在可能已经过时了，
+	我们必须循环遍历trx列表来获得可能相同的trx，或者其他的trx。*/
 	while (trx && (i < nth_trx)) {
 		trx = UT_LIST_GET_NEXT(trx_list, trx);
 		i++;
@@ -3652,7 +3654,7 @@ loop:
 
 	/* Look at the note about the trx loop above why we loop here:
 	lock may be an obsolete pointer now. */
-	
+	/*看看上面关于trx循环的注释，为什么我们在这里循环:lock现在可能是一个过时的指针。*/
 	lock = UT_LIST_GET_FIRST(trx->trx_locks);
 		
 	while (lock && (i < nth_lock)) {
@@ -3713,7 +3715,7 @@ loop:
 
 /*************************************************************************
 Validates the lock queue on a table. */
-
+/*验证表上的锁队列。*/
 ibool
 lock_table_queue_validate(
 /*======================*/
@@ -3753,7 +3755,7 @@ lock_table_queue_validate(
 
 /*************************************************************************
 Validates the lock queue on a single record. */
-
+/*在单个记录上验证锁队列。*/
 ibool
 lock_rec_queue_validate(
 /*====================*/
@@ -3812,7 +3814,7 @@ lock_rec_queue_validate(
 		/* The kernel mutex may get released temporarily in the
 		next function call: we have to release lock table mutex
 		to obey the latching order */
-		
+		/*内核互斥锁可能会在下一个函数调用中被暂时释放:我们必须释放锁表互斥锁以遵守锁定顺序*/
 		impl_trx = lock_sec_rec_some_has_impl_off_kernel(rec, index);
 
 		if (impl_trx && lock_rec_other_has_expl_req(LOCK_S, 0,
@@ -3865,7 +3867,7 @@ lock_rec_queue_validate(
 
 /*************************************************************************
 Validates the record lock queues on a page. */
-
+/*验证页上的记录锁定队列。*/
 ibool
 lock_rec_validate_page(
 /*===================*/
@@ -3946,7 +3948,7 @@ function_exit:
 				
 /*************************************************************************
 Validates the lock system. */
-
+/*验证锁系统。*/
 ibool
 lock_validate(void)
 /*===============*/
@@ -4022,7 +4024,7 @@ lock_validate(void)
 }
 
 /*============ RECORD LOCK CHECKS FOR ROW OPERATIONS ====================*/
-
+/*记录行操作的锁检查*/
 /*************************************************************************
 Checks if locks of other transactions prevent an immediate insert of
 a record. If they do, first tests if the query thread should anyway

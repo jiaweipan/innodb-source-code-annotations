@@ -248,13 +248,13 @@ que_thr_end_wait(
 
 /**************************************************************************
 Same as que_thr_end_wait, but no parameter next_thr available. */
-
+/*与que_thr_end_wait相同，但是没有next_thr参数可用。*/
 void
 que_thr_end_wait_no_next_thr(
 /*=========================*/
 	que_thr_t*	thr)	/* in: query thread in the QUE_THR_LOCK_WAIT,
 				or QUE_THR_PROCEDURE_WAIT, or
-				QUE_THR_SIG_REPLY_WAIT state */
+				QUE_THR_SIG_REPLY_WAIT state *//*查询线程处于QUE_THR_LOCK_WAIT、QUE_THR_PROCEDURE_WAIT、QUE_THR_SIG_REPLY_WAIT状态*/
 {
 	ibool	was_active;
 
@@ -277,7 +277,7 @@ que_thr_end_wait_no_next_thr(
 
 	/* In MySQL we let the OS thread (not just the query thread) to wait
 	for the lock to be released: */
-	
+	/*在MySQL中，我们让OS线程(不仅仅是查询线程)等待锁被释放:*/
 	srv_release_mysql_thread_if_suspended(thr);
 
 	/* srv_que_task_enqueue_low(thr); */
