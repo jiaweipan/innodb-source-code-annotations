@@ -593,7 +593,7 @@ row_search_on_row_ref(
 /*************************************************************************
 Fetches the clustered index record for a secondary index record. The latches
 on the secondary index record are preserved. */
-/**/
+/*获取次级索引记录的聚集索引记录。二级索引记录的锁存被保留。*/
 rec_t*
 row_get_clust_rec(
 /*==============*/
