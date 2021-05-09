@@ -9,7 +9,7 @@ Created 5/27/1996 Heikki Tuuri
 #include "usr0sess.h"
 
 /***************************************************************************
-Gets the trx of a query thread. */
+Gets the trx of a query thread. */ /*获取查询线程的trx。*/
 UNIV_INLINE
 trx_t*
 thr_get_trx(

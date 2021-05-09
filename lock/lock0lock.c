@@ -4031,7 +4031,8 @@ a record. If they do, first tests if the query thread should anyway
 be suspended for some reason; if not, then puts the transaction and
 the query thread to the lock wait state and inserts a waiting request
 for a gap x-lock to the lock queue. */
-
+/*检查其他事务的锁是否阻止了记录的立即插入。
+如果有，首先测试查询线程是否应该出于某种原因挂起;如果不是，则将事务和查询线程置于锁等待状态，并向锁队列插入一个间隙x-lock的等待请求。*/
 ulint
 lock_rec_insert_check_and_lock(
 /*===========================*/
@@ -4044,7 +4045,7 @@ lock_rec_insert_check_and_lock(
 	que_thr_t*	thr,	/* in: query thread */
 	ibool*		inherit)/* out: set to TRUE if the new inserted
 				record maybe should inherit LOCK_GAP type
-				locks from the successor record */
+				locks from the successor record */ /*如果新插入的记录可能应该从后续记录继承LOCK_GAP类型锁，则设置为TRUE*/
 {
 	rec_t*	next_rec;
 	trx_t*	trx;
@@ -4071,12 +4072,12 @@ lock_rec_insert_check_and_lock(
 
 	if (lock == NULL) {
 		/* We optimize CPU time usage in the simplest case */
-
+        /*我们在最简单的情况下优化CPU时间使用*/
 		lock_mutex_exit_kernel();
 
 		if (!(index->type & DICT_CLUSTERED)) {
 
-			/* Update the page max trx id field */
+			/* Update the page max trx id field */ /*更新页面最大trx id字段*/
 			page_update_max_trx_id(buf_frame_align(rec),
 							thr_get_trx(thr)->id);
 		}
@@ -4088,7 +4089,7 @@ lock_rec_insert_check_and_lock(
 
 	/* If another transaction has an explicit lock request, gap or not,
 	waiting or granted, on the successor, the insert has to wait */
-
+    /*如果另一个事务有一个显式的锁请求(间隔与否)，在后续事务上等待或授予锁，则插入必须等待*/
 	if (lock_rec_other_has_expl_req(LOCK_S, LOCK_GAP, LOCK_WAIT, next_rec,
 								trx)) {
 		err = lock_rec_enqueue_waiting(LOCK_X | LOCK_GAP, next_rec,
@@ -4115,6 +4116,8 @@ lock_rec_insert_check_and_lock(
 If a transaction has an implicit x-lock on a record, but no explicit x-lock
 set on the record, sets one for it. NOTE that in the case of a secondary
 index, the kernel mutex may get temporarily released. */
+/*如果一个事务在一个记录上有一个隐式的x-lock，但是没有在记录上设置显式的x-lock，为它设置一个。
+注意，在使用二级索引的情况下，内核互斥锁可能会被临时释放。*/
 static
 void
 lock_rec_convert_impl_to_expl(
@@ -4136,7 +4139,7 @@ lock_rec_convert_impl_to_expl(
 	if (impl_trx) {
 		/* If the transaction has no explicit x-lock set on the
 		record, set one for it */
-
+        /*如果事务没有对记录设置显式的x-lock，为它设置一个*/
 		if (!lock_rec_has_expl(LOCK_X, rec, impl_trx)) {
 
 			lock_rec_add_to_queue(LOCK_REC | LOCK_X, rec, index,
@@ -4152,7 +4155,8 @@ first tests if the query thread should anyway be suspended for some
 reason; if not, then puts the transaction and the query thread to the
 lock wait state and inserts a waiting request for a record x-lock to the
 lock queue. */
-
+/*检查其他事务的锁是否阻止对聚集索引记录的立即修改(更新、删除标记或删除未标记)。
+如果有，首先测试查询线程是否应该出于某种原因挂起;如果没有，则将事务和查询线程置于锁等待状态，并向锁队列插入一个记录x-lock的等待请求。*/
 ulint
 lock_clust_rec_modify_check_and_lock(
 /*=================================*/
@@ -4182,7 +4186,7 @@ lock_clust_rec_modify_check_and_lock(
 
 	/* If a transaction has no explicit x-lock set on the record, set one
 	for it */
-
+    /*如果一个事务没有对记录设置显式的x-lock，为它设置一个*/
 	lock_rec_convert_impl_to_expl(rec, index);
 
 	err = lock_rec_lock(TRUE, LOCK_X, rec, index, thr);
@@ -4197,7 +4201,7 @@ lock_clust_rec_modify_check_and_lock(
 /*************************************************************************
 Checks if locks of other transactions prevent an immediate modify (delete
 mark or delete unmark) of a secondary index record. */
-
+/*检查其他事务的锁是否阻止对二级索引记录的立即修改(删除标记或删除未标记)。*/
 ulint
 lock_sec_rec_modify_check_and_lock(
 /*===============================*/
@@ -4225,7 +4229,8 @@ lock_sec_rec_modify_check_and_lock(
 	because when we come here, we already have modified the clustered
 	index record, and this would not have been possible if another active
 	transaction had modified this secondary index record. */
-
+    /*另一个事务不能对该记录拥有隐式锁，因为当我们到达这里时，我们已经修改了聚集索引记录，
+	而如果另一个活动事务修改了这个二级索引记录，这就不可能了。*/
 	lock_mutex_enter_kernel();
 
 	ut_ad(lock_table_has(thr_get_trx(thr), index->table, LOCK_IX));
@@ -4249,7 +4254,7 @@ lock_sec_rec_modify_check_and_lock(
 /*************************************************************************
 Like the counterpart for a clustered index below, but now we read a
 secondary index record. */
-
+/*就像下面聚集索引的对应，但是现在我们读取一个二级索引记录。*/
 ulint
 lock_sec_rec_read_check_and_lock(
 /*=============================*/
@@ -4286,7 +4291,7 @@ lock_sec_rec_read_check_and_lock(
 	/* Some transaction may have an implicit x-lock on the record only
 	if the max trx id for the page >= min trx id for the trx list or a
 	database recovery is running. */
-
+    /*只有当页面>的最大trx id = trx列表的最小trx id或数据库恢复正在运行时，某些事务可能在记录上有一个隐式的x-lock。*/
 	if (((ut_dulint_cmp(page_get_max_trx_id(buf_frame_align(rec)),
 					trx_list_get_min_trx_id()) >= 0)
 	     		|| recv_recovery_is_on())
@@ -4311,7 +4316,10 @@ if the query thread should anyway be suspended for some reason; if not, then
 puts the transaction and the query thread to the lock wait state and inserts a
 waiting request for a record lock to the lock queue. Sets the requested mode
 lock on the record. */
-
+/*检查其他事务的锁是否阻止对聚集索引记录的立即读取或读取游标传递。
+如果有，首先测试查询线程是否应该出于某种原因挂起;
+如果没有，则将事务和查询线程置于锁等待状态，并向锁队列插入一个记录锁的等待请求。
+对记录设置请求的模式锁定。*/
 ulint
 lock_clust_rec_read_check_and_lock(
 /*===============================*/

@@ -32,7 +32,7 @@ Created 2/6/1997 Heikki Tuuri
 Finds out if an active transaction has inserted or modified a secondary
 index record. NOTE: the kernel mutex is temporarily released in this
 function! */
-
+/*查明活动事务是否插入或修改了二级索引记录。注意:在这个函数中，内核互斥是临时释放的!*/
 trx_t*
 row_vers_impl_x_locked_off_kernel(
 /*==============================*/
@@ -71,7 +71,8 @@ row_vers_impl_x_locked_off_kernel(
 	is required by the latching order convention. The latch on the
 	clustered index locks the top of the stack of versions. We also
 	reserve purge_latch to lock the bottom of the version stack. */	
-
+    /*搜索聚集索引记录:这是一个耗时的操作:因此我们释放了内核互斥锁;另外，释放也是锁存顺序约定所要求的。
+	聚集索引上的锁存器锁定版本堆栈的顶部。我们还保留了purge_latch来锁定版本堆栈的底部。*/
 	clust_rec = row_get_clust_rec(BTR_SEARCH_LEAF, rec, index,
 							&clust_index, &mtr);
 	ut_a(clust_rec);

@@ -227,7 +227,7 @@ trx_read_trx_id(
 }
 
 /********************************************************************
-Looks for the trx handle with the given id in trx_list. */
+Looks for the trx handle with the given id in trx_list. */ /*在trx_list中查找具有给定id的trx句柄。*/
 UNIV_INLINE
 trx_t*
 trx_get_on_id(
