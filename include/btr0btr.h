@@ -20,20 +20,20 @@ Created 6/2/1994 Heikki Tuuri
 
 /* Maximum record size which can be stored on a page, without using the
 special big record storage structure */
-
+/*在不使用特殊的大记录存储结构的情况下，可以存储在一个页面上的最大记录大小*/
 #define	BTR_PAGE_MAX_REC_SIZE	(UNIV_PAGE_SIZE / 2 - 200)
 
 /* Maximum key size in a B-tree: the records on non-leaf levels must be
 shorter than this */
-
+/*b -树中的最大键大小:非叶级别上的记录必须比它短*/
 #define	BTR_PAGE_MAX_KEY_SIZE	1024
 
 /* If data in page drops below this limit, we try to compress it.
 NOTE! The value has to be > 2 * BTR_MAX_KEY_SIZE */
-
+/*如果页面中的数据低于此限制，则尝试压缩它。注意!值必须是> 2 * BTR_MAX_KEY_SIZE*/
 #define BTR_COMPRESS_LIMIT	(UNIV_PAGE_SIZE / 4 + 1);
 
-/* Latching modes for the search function (in btr0cur.*) */
+/* Latching modes for the search function (in btr0cur.*) */ /*搜索函数的锁定模式(在btr0cur.*中)*/
 #define BTR_SEARCH_LEAF		RW_S_LATCH
 #define BTR_MODIFY_LEAF		RW_X_LATCH
 #define BTR_NO_LATCHES		RW_NO_LATCH
@@ -43,14 +43,14 @@ NOTE! The value has to be > 2 * BTR_MAX_KEY_SIZE */
 #define	BTR_MODIFY_PREV		36
 
 /* If this is ORed to the latch mode, it means that the search tuple will be
-inserted to the index, at the searched position */
+inserted to the index, at the searched position */ /*如果这是ORed到闩锁模式，这意味着搜索元组将被插入到索引中，在搜索的位置*/
 #define BTR_INSERT		512
 
 /* This flag ORed to latch mode says that we do the search in query
-optimization */
+optimization */ /*这个标记或到闩锁模式表示我们在查询优化中进行搜索*/
 #define BTR_ESTIMATE		1024
 /******************************************************************
-Gets a buffer page and declares its latching order level. */
+Gets a buffer page and declares its latching order level. */ /*获取缓冲页并声明其锁存顺序级别。*/
 UNIV_INLINE
 page_t*
 btr_page_get(
@@ -60,7 +60,7 @@ btr_page_get(
 	ulint	mode,		/* in: latch mode */
 	mtr_t*	mtr);		/* in: mtr */
 /******************************************************************
-Gets the index id field of a page. */
+Gets the index id field of a page. */ /*获取页面的索引id字段。*/
 UNIV_INLINE
 dulint
 btr_page_get_index_id(
@@ -68,7 +68,7 @@ btr_page_get_index_id(
 				/* out: index id */
 	page_t*		page);	/* in: index page */
 /************************************************************
-Gets the node level field in an index page. */
+Gets the node level field in an index page. */ /*获取索引页中的节点级字段。*/
 UNIV_INLINE
 ulint
 btr_page_get_level_low(
@@ -76,7 +76,7 @@ btr_page_get_level_low(
 			/* out: level, leaf level == 0 */
 	page_t*	page);	/* in: index page */
 /************************************************************
-Gets the node level field in an index page. */
+Gets the node level field in an index page. */ /*获取索引页中的节点级字段。*/
 UNIV_INLINE
 ulint
 btr_page_get_level(
@@ -85,7 +85,7 @@ btr_page_get_level(
 	page_t*	page,	/* in: index page */
 	mtr_t*	mtr);	/* in: mini-transaction handle */
 /************************************************************
-Gets the next index page number. */
+Gets the next index page number. */ /*获取下一个索引页号。*/
 UNIV_INLINE
 ulint
 btr_page_get_next(
@@ -94,7 +94,7 @@ btr_page_get_next(
 	page_t*	page,	/* in: index page */
 	mtr_t*	mtr);	/* in: mini-transaction handle */
 /************************************************************
-Gets the previous index page number. */
+Gets the previous index page number. */ /*获取前一个索引页号。*/
 UNIV_INLINE
 ulint
 btr_page_get_prev(
@@ -105,7 +105,7 @@ btr_page_get_prev(
 /*****************************************************************
 Gets pointer to the previous user record in the tree. It is assumed
 that the caller has appropriate latches on the page and its neighbor. */
-
+/*获取指向树中前一个用户记录的指针。假设调用者在页面及其邻居上有适当的锁存。*/
 rec_t*
 btr_get_prev_user_rec(
 /*==================*/
@@ -116,7 +116,7 @@ btr_get_prev_user_rec(
 /*****************************************************************
 Gets pointer to the next user record in the tree. It is assumed
 that the caller has appropriate latches on the page and its neighbor. */
-
+/*获取指向树中下一条用户记录的指针。假设调用者在页面及其邻居上有适当的锁存。*/
 rec_t*
 btr_get_next_user_rec(
 /*==================*/
@@ -125,7 +125,7 @@ btr_get_next_user_rec(
 	mtr_t*	mtr);	/* in: mtr holding a latch on the page, and if
 			needed, also to the next page */
 /******************************************************************
-Releases the latch on a leaf page and bufferunfixes it. */
+Releases the latch on a leaf page and bufferunfixes it. */ /*释放叶页上的锁闩，bufferunch修复它。*/
 UNIV_INLINE
 void
 btr_leaf_page_release(
@@ -134,7 +134,7 @@ btr_leaf_page_release(
 	ulint	latch_mode,	/* in: BTR_SEARCH_LEAF or BTR_MODIFY_LEAF */
 	mtr_t*	mtr);		/* in: mtr */
 /******************************************************************
-Gets the child node file address in a node pointer. */
+Gets the child node file address in a node pointer. */ /*获取节点指针中的子节点文件地址。*/
 UNIV_INLINE
 ulint
 btr_node_ptr_get_child_page_no(
@@ -143,7 +143,7 @@ btr_node_ptr_get_child_page_no(
 	rec_t*	rec);		/* in: node pointer record */
 /****************************************************************
 Creates the root node for a new index tree. */
-
+/*为新索引树创建根节点。*/
 ulint
 btr_create(
 /*=======*/
@@ -156,7 +156,7 @@ btr_create(
 /****************************************************************
 Frees a B-tree except the root page, which MUST be freed after this
 by calling btr_free_root. */
-
+/*释放除根页面以外的b -树，在此之后必须通过调用btr_free_root来释放根页面。*/
 void
 btr_free_but_not_root(
 /*==================*/
@@ -164,7 +164,7 @@ btr_free_but_not_root(
 	ulint	root_page_no);	/* in: root page number */
 /****************************************************************
 Frees the B-tree root page. Other tree MUST already have been freed. */
-
+/*释放b树的根页面。其他树必须已经被释放。*/
 void
 btr_free_root(
 /*==========*/
@@ -178,7 +178,8 @@ the tuple. It is assumed that mtr contains an x-latch on the tree.
 NOTE that the operation of this function must always succeed,
 we cannot reverse it: therefore enough free disk space must be
 guaranteed to be available before this function is called. */
-
+/*通过拆分根，将tree提高一个级别，并插入元组。假设mtr在树上包含一个x-闩锁。
+注意，此函数的操作必须始终成功，我们不能逆转它:因此，必须保证在调用此函数之前有足够的空闲磁盘空间可用。*/
 rec_t*
 btr_root_raise_and_insert(
 /*======================*/
@@ -186,12 +187,12 @@ btr_root_raise_and_insert(
 	btr_cur_t*	cursor,	/* in: cursor at which to insert: must be
 				on the root page; when the function returns,
 				the cursor is positioned on the predecessor
-				of the inserted record */
+				of the inserted record */ /*要插入的游标:必须位于根页上;当函数返回时，游标将定位在插入记录的前身上*/
 	dtuple_t*	tuple,	/* in: tuple to insert */
 	mtr_t*		mtr);	/* in: mtr */
 /*****************************************************************
 Reorganizes an index page. */
-
+/*重新组织索引页。*/
 void
 btr_page_reorganize(
 /*================*/
@@ -199,7 +200,7 @@ btr_page_reorganize(
 	mtr_t*	mtr);	/* in: mtr */
 /*****************************************************************
 Reorganizes an index page. */
-
+/*重新组织索引页。*/
 void
 btr_page_reorganize_low(
 /*====================*/

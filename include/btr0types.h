@@ -1,6 +1,6 @@
 /************************************************************************
 The index tree general types
-
+索引树的一般类型
 (c) 1996 Innobase Oy
 
 Created 2/17/1996 Heikki Tuuri
