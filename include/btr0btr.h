@@ -211,7 +211,7 @@ btr_page_reorganize_low(
 /*****************************************************************
 Decides if the page should be split at the convergence point of
 inserts converging to left. */
-
+/*决定是否应该在insert向左收敛的收敛点拆分页面。*/
 ibool
 btr_page_get_split_rec_to_left(
 /*===========================*/
@@ -223,7 +223,7 @@ btr_page_get_split_rec_to_left(
 /*****************************************************************
 Decides if the page should be split at the convergence point of
 inserts converging to right. */
-
+/*决定是否应在插入向右收敛的收敛点拆分页面。*/
 ibool
 btr_page_get_split_rec_to_right(
 /*============================*/
@@ -239,7 +239,8 @@ is released within this function! NOTE that the operation of this
 function must always succeed, we cannot reverse it: therefore
 enough free disk space must be guaranteed to be available before
 this function is called. */
-
+/*将索引页分成两部分并插入元组。假设mtr持有索引树的x-latch。注意:树x锁存器是在这个功能中释放的!
+注意，此函数的操作必须始终成功，我们不能逆转它:因此，必须保证在调用此函数之前有足够的空闲磁盘空间可用。*/
 rec_t*
 btr_page_split_and_insert(
 /*======================*/
@@ -254,7 +255,7 @@ btr_page_split_and_insert(
 /***********************************************************
 Inserts a data tuple to a tree on a non-leaf level. It is assumed
 that mtr holds an x-latch on the tree. */
-
+/*在非叶级上将数据元组插入到树中。我们假设mtr在树上有一个x-闩锁。*/
 void
 btr_insert_on_non_leaf_level(
 /*=========================*/
@@ -264,7 +265,7 @@ btr_insert_on_non_leaf_level(
 	mtr_t*		mtr);	/* in: mtr */
 /********************************************************************
 Sets a record as the predefined minimum record. */
-
+/*将一条记录设置为预定义的最小记录。*/
 void
 btr_set_min_rec_mark(
 /*=================*/
@@ -272,7 +273,7 @@ btr_set_min_rec_mark(
 	mtr_t*	mtr);	/* in: mtr */
 /*****************************************************************
 Deletes on the upper level the node pointer to a page. */
-
+/*从上一级删除指向页面的节点指针。*/
 void
 btr_node_ptr_delete(
 /*================*/
@@ -281,7 +282,7 @@ btr_node_ptr_delete(
 	mtr_t*		mtr);	/* in: mtr */
 /****************************************************************
 Checks that the node pointer to a page is appropriate. */
-
+/*检查指向页面的节点指针是否合适。*/
 ibool
 btr_check_node_ptr(
 /*===============*/
@@ -299,6 +300,10 @@ tree height. It is assumed that mtr holds an x-latch on the tree and on the
 page. If cursor is on the leaf level, mtr must also hold x-latches to
 the brothers, if they exist. NOTE: it is assumed that the caller has reserved
 enough free extents so that the compression will always succeed if done! */
+/*如果存在左直属页，则尝试先将该页合并到左直属页，并且指向当前页和指向该直属页的节点指针位于同一页上。
+如果左兄弟不满足这些条件，就看右兄弟。如果该页是该级别上唯一的页，则将该页的记录提升到父页，从而降低树的高度。
+假设mtr在树和页面上持有一个x闩锁。如果游标位于叶级，则mtr还必须包含兄弟的x-latches(如果兄弟存在的话)。
+注意:假设调用者保留了足够的空闲区段，这样压缩就总是成功!*/
 void
 btr_compress(
 /*=========*/
@@ -311,7 +316,7 @@ btr_compress(
 Discards a page from a B-tree. This is used to remove the last record from
 a B-tree page: the whole page must be removed at the same time. This cannot
 be used for the root page, which is allowed to be empty. */
-
+/*从b树中丢弃一个页面。这用于从B-tree页面中删除最后一条记录:必须同时删除整个页面。这不能用于允许为空的根页面。*/
 void
 btr_discard_page(
 /*=============*/
@@ -320,6 +325,7 @@ btr_discard_page(
 	mtr_t*		mtr);	/* in: mtr */
 /************************************************************************
 Declares the latching order level for the page latch in the debug version. */
+/*在调试版本中声明页面闩锁的闩锁顺序级别。*/
 UNIV_INLINE
 void
 btr_declare_page_latch(
@@ -329,7 +335,7 @@ btr_declare_page_latch(
 /********************************************************************
 Parses the redo log record for setting an index record as the predefined
 minimum record. */
-
+/*解析重做日志记录，将索引记录设置为预定义的最小记录。*/
 byte*
 btr_parse_set_min_rec_mark(
 /*=======================*/
@@ -340,7 +346,7 @@ btr_parse_set_min_rec_mark(
 	mtr_t*	mtr);	/* in: mtr or NULL */
 /***************************************************************
 Parses a redo log record of reorganizing a page. */
-
+/*解析重组页面的重做日志记录。*/
 byte*
 btr_parse_page_reorganize(
 /*======================*/
@@ -351,7 +357,7 @@ btr_parse_page_reorganize(
 	mtr_t*	mtr);	/* in: mtr or NULL */
 /******************************************************************
 Gets the number of pages in a B-tree. */
-
+/*获取b -树中的页面数。*/
 ulint
 btr_get_size(
 /*=========*/
@@ -361,7 +367,7 @@ btr_get_size(
 /******************************************************************
 Allocates a new file page to be used in an index tree. NOTE: we assume
 that the caller has made the reservation for free extents! */
-
+/*分配一个在索引树中使用的新文件页。注意:我们假定调用者已经预订了免费的区段!*/
 page_t*
 btr_page_alloc(
 /*===========*/
@@ -377,7 +383,7 @@ btr_page_alloc(
 /******************************************************************
 Frees a file page used in an index tree. NOTE: cannot free field external
 storage pages because the page must contain info on its level. */
-
+/*释放索引树中使用的文件页。注意:不能释放字段外部存储页面，因为页面必须包含其级别的信息。*/
 void
 btr_page_free(
 /*==========*/
@@ -388,7 +394,7 @@ btr_page_free(
 Frees a file page used in an index tree. Can be used also to BLOB
 external storage pages, because the page level 0 can be given as an
 argument. */
-
+/*释放索引树中使用的文件页。也可以用于BLOB外部存储页面，因为页面级别0可以作为参数给出。*/
 void
 btr_page_free_low(
 /*==============*/
@@ -398,14 +404,14 @@ btr_page_free_low(
 	mtr_t*		mtr);	/* in: mtr */
 /*****************************************************************
 Prints size info of a B-tree. */
-
+/*打印b -树的大小信息。*/
 void
 btr_print_size(
 /*===========*/
 	dict_tree_t*	tree);	/* in: index tree */
 /******************************************************************
 Prints directories and other info of all nodes in the tree. */
-
+/*打印目录和树中所有节点的其他信息。*/
 void
 btr_print_tree(
 /*===========*/
@@ -414,7 +420,7 @@ btr_print_tree(
 				and end */
 /******************************************************************
 Checks the consistency of an index tree. */
-
+/*检查索引树的一致性。*/
 ibool
 btr_validate_tree(
 /*==============*/
