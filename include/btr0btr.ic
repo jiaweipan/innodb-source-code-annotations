@@ -10,10 +10,10 @@ Created 6/2/1994 Heikki Tuuri
 #include "mtr0mtr.h"
 #include "mtr0log.h"
 
-#define BTR_MAX_NODE_LEVEL	50	/* used in debug checking */
+#define BTR_MAX_NODE_LEVEL	50	/* used in debug checking */ /*用于调试检查*/
 
 /******************************************************************
-Gets a buffer page and declares its latching order level. */
+Gets a buffer page and declares its latching order level. */ /*获取缓冲页并声明其锁存顺序级别。*/
 UNIV_INLINE
 page_t*
 btr_page_get(
@@ -36,7 +36,7 @@ btr_page_get(
 }
 
 /******************************************************************
-Sets the index id field of a page. */
+Sets the index id field of a page. */ /*设置页面的索引id字段。*/
 UNIV_INLINE
 void
 btr_page_set_index_id(
@@ -50,7 +50,7 @@ btr_page_set_index_id(
 }
 
 /******************************************************************
-Gets the index id field of a page. */
+Gets the index id field of a page. */ /*获取页面的索引id字段。*/
 UNIV_INLINE
 dulint
 btr_page_get_index_id(
@@ -62,7 +62,7 @@ btr_page_get_index_id(
 }
 
 /************************************************************
-Gets the node level field in an index page. */
+Gets the node level field in an index page. */ /*获取索引页中的节点级字段。*/
 UNIV_INLINE
 ulint
 btr_page_get_level_low(
@@ -82,7 +82,7 @@ btr_page_get_level_low(
 }
 
 /************************************************************
-Gets the node level field in an index page. */
+Gets the node level field in an index page. */ /*获取索引页中的节点级字段。*/
 UNIV_INLINE
 ulint
 btr_page_get_level(
@@ -97,7 +97,7 @@ btr_page_get_level(
 }
 
 /************************************************************
-Sets the node level field in an index page. */
+Sets the node level field in an index page. */ /*在索引页中设置节点级别字段。*/
 UNIV_INLINE
 void
 btr_page_set_level(
@@ -114,7 +114,7 @@ btr_page_set_level(
 }
 
 /************************************************************
-Gets the next index page number. */
+Gets the next index page number. */ /*获取下一个索引页号。*/
 UNIV_INLINE
 ulint
 btr_page_get_next(
@@ -133,7 +133,7 @@ btr_page_get_next(
 }
 
 /************************************************************
-Sets the next index page field. */
+Sets the next index page field. */   /*设置下一个索引页号。*/
 UNIV_INLINE
 void
 btr_page_set_next(
@@ -148,7 +148,7 @@ btr_page_set_next(
 }
 
 /************************************************************
-Gets the previous index page number. */
+Gets the previous index page number. */ /*获取前一个索引页号。*/
 UNIV_INLINE
 ulint
 btr_page_get_prev(
@@ -163,7 +163,7 @@ btr_page_get_prev(
 }
 
 /************************************************************
-Sets the previous index page field. */
+Sets the previous index page field. */ /*设置前一个索引页字段。*/
 UNIV_INLINE
 void
 btr_page_set_prev(
@@ -178,7 +178,7 @@ btr_page_set_prev(
 }
 
 /******************************************************************
-Gets the child node file address in a node pointer. */
+Gets the child node file address in a node pointer. */ /*获取节点指针中的子节点文件地址。*/
 UNIV_INLINE
 ulint
 btr_node_ptr_get_child_page_no(
@@ -192,7 +192,7 @@ btr_node_ptr_get_child_page_no(
 
 	n_fields = rec_get_n_fields(rec);
 
-	/* The child address is in the last field */	
+	/* The child address is in the last field *//*子地址在最后一个字段中*/
 	field = rec_get_nth_field(rec, n_fields - 1, &len);
 
 	ut_ad(len == 4);
@@ -201,7 +201,7 @@ btr_node_ptr_get_child_page_no(
 }
 
 /******************************************************************
-Releases the latches on a leaf page and bufferunfixes it. */
+Releases the latches on a leaf page and bufferunfixes it. */ /*释放叶页上的锁存，bufferunch修复它。*/
 UNIV_INLINE
 void
 btr_leaf_page_release(
