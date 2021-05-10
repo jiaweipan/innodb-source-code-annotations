@@ -22,47 +22,54 @@ Created 6/2/1994 Heikki Tuuri
 #include "ibuf0ibuf.h"
 
 /*
-Node pointers
+Node pointers 节点的指针
 -------------
 Leaf pages of a B-tree contain the index records stored in the
 tree. On levels n > 0 we store 'node pointers' to pages on level
 n - 1. For each page there is exactly one node pointer stored:
 thus the our tree is an ordinary B-tree, not a B-link tree.
-
+b -树的叶页包含存储在树中的索引记录。在级别n > 0上，我们存储到级别n - 1的页面的“节点指针”。
+对于每个页面都存储了一个节点指针:因此我们的树是一个普通的b -树，而不是b -链接树。
 A node pointer contains a prefix P of an index record. The prefix
 is long enough so that it determines an index record uniquely.
 The file page number of the child page is added as the last
 field. To the child page we can store node pointers or index records
 which are >= P in the alphabetical order, but < P1 if there is
 a next node pointer on the level, and P1 is its prefix.
-
+节点指针包含索引记录的前缀P。前缀足够长，可以唯一地确定一个索引记录。
+子页面的文件页码被添加为最后一个字段。对于子页面，我们可以存储按字母顺序为>= P的节点指针或索引记录，
+但如果该层上有下一个节点指针，且P1是其前缀，则< P1。
 If a node pointer with a prefix P points to a non-leaf child, 
 then the leftmost record in the child must have the same
 prefix P. If it points to a leaf node, the child is not required
 to contain any record with a prefix equal to P. The leaf case
 is decided this way to allow arbitrary deletions in a leaf node
 without touching upper levels of the tree.
-
+如果一个前缀为P的节点指针指向一个非叶节点，那么子节点中最左边的记录必须具有相同的前缀P。
+不要求子节点包含前缀为p的任何记录。通过这种方式确定叶节点的大小写，允许在不涉及树的上层的情况下对叶节点进行任意删除。
 We have predefined a special minimum record which we
 define as the smallest record in any alphabetical order.
 A minimum record is denoted by setting a bit in the record
 header. A minimum record acts as the prefix of a node pointer
 which points to a leftmost node on any level of the tree.
-
-File page allocation
+我们预先定义了一个特殊的最小记录，它是任意字母顺序中最小的记录。
+通过在记录头中设置位来表示最小记录。最小记录作为节点指针的前缀，该节点指针指向树的任何层次上的最左边的节点。
+File page allocation 文件页面配置
 --------------------
 In the root node of a B-tree there are two file segment headers.
 The leaf pages of a tree are allocated from one file segment, to
 make them consecutive on disk if possible. From the other file segment
 we allocate pages for the non-leaf levels of the tree.
+在b -树的根节点中有两个文件段头。树的叶页是从一个文件段分配的，如果可能的话，使它们在磁盘上连续。我们从其他文件段为树的非叶级分配页面。
 */
 
-/* If this many inserts occur sequentially, it affects page split */
+/* If this many inserts occur sequentially, it affects page split */ 
+/* 如果这么多插入顺序发生，就会影响页面分割*/
 #define BTR_PAGE_SEQ_INSERT_LIMIT	5
 
 /******************************************************************
 Creates a new index page to the tree (not the root, and also not
-used in page reorganization). */
+used in page reorganization). */ /*为树创建一个新的索引页(不是根，也不用于页面重组)。*/
 static
 void
 btr_page_create(
@@ -71,7 +78,7 @@ btr_page_create(
 	dict_tree_t*	tree,	/* in: index tree */
 	mtr_t*		mtr);	/* in: mtr */
 /******************************************************************
-Sets the child node file address in a node pointer. */
+Sets the child node file address in a node pointer. */ /*在节点指针中设置子节点文件地址。*/
 UNIV_INLINE
 void
 btr_node_ptr_set_child_page_no(
@@ -81,7 +88,7 @@ btr_node_ptr_set_child_page_no(
 	mtr_t*	mtr);		/* in: mtr */
 /****************************************************************
 Returns the upper level node pointer to a page. It is assumed that
-mtr holds an x-latch on the tree. */
+mtr holds an x-latch on the tree. */ /*返回指向页面的上层节点指针。我们假设mtr在树上有一个x-闩锁。*/
 static
 rec_t*
 btr_page_get_father_node_ptr(
@@ -92,7 +99,7 @@ btr_page_get_father_node_ptr(
 				user record */
 	mtr_t*		mtr);	/* in: mtr */
 /*****************************************************************
-Empties an index page. */
+Empties an index page. */ /*清空索引页。*/
 static
 void
 btr_page_empty(
@@ -101,7 +108,7 @@ btr_page_empty(
 	mtr_t*	mtr);	/* in: mtr */
 /*****************************************************************
 Returns TRUE if the insert fits on the appropriate half-page
-with the chosen split_rec. */
+with the chosen split_rec. */ /*如果插入符合所选split_rec对应的半页，则返回TRUE。*/
 static
 ibool
 btr_page_insert_fits(
@@ -115,7 +122,7 @@ btr_page_insert_fits(
 	dtuple_t*	tuple);		/* in: tuple to insert */	
 
 /******************************************************************
-Gets the root node of a tree and x-latches it. */
+Gets the root node of a tree and x-latches it. */ /*获取树的根节点并x-latch它。*/
 static
 page_t*
 btr_root_get(
@@ -142,7 +149,7 @@ btr_root_get(
 /*****************************************************************
 Gets pointer to the previous user record in the tree. It is assumed that
 the caller has appropriate latches on the page and its neighbor. */
-
+/*获取指向树中前一个用户记录的指针。假设调用者在页面及其邻居上有适当的锁存。*/
 rec_t*
 btr_get_prev_user_rec(
 /*==================*/
@@ -176,7 +183,7 @@ btr_get_prev_user_rec(
 
 		prev_page = buf_page_get_with_no_latch(space, prev_page_no,
 									mtr);
-		/* The caller must already have a latch to the brother */
+		/* The caller must already have a latch to the brother *//*调用人肯定已经有他兄弟的门闩了*/
 		ut_ad((mtr_memo_contains(mtr, buf_block_align(prev_page),
 		      				MTR_MEMO_PAGE_S_FIX))
 		      || (mtr_memo_contains(mtr, buf_block_align(prev_page),
@@ -193,7 +200,7 @@ btr_get_prev_user_rec(
 /*****************************************************************
 Gets pointer to the next user record in the tree. It is assumed that the
 caller has appropriate latches on the page and its neighbor. */
-
+/*获取指向树中下一条用户记录的指针。假设调用者在页面及其邻居上有适当的锁存。*/
 rec_t*
 btr_get_next_user_rec(
 /*==================*/
@@ -243,7 +250,7 @@ btr_get_next_user_rec(
 
 /******************************************************************
 Creates a new index page to the tree (not the root, and also not used in
-page reorganization). */
+page reorganization). */ /*为树创建一个新的索引页(不是根，也不用于页面重组)。*/
 static
 void
 btr_page_create(
@@ -261,7 +268,7 @@ btr_page_create(
 
 /******************************************************************
 Allocates a new file page to be used in an ibuf tree. Takes the page from
-the free list of the tree, which must contain pages! */
+the free list of the tree, which must contain pages! */ /*分配一个在ibuf树中使用的新文件页。从树的空闲列表中获取页面，该列表中必须包含页面!*/
 static
 page_t*
 btr_page_alloc_for_ibuf(
@@ -295,7 +302,7 @@ btr_page_alloc_for_ibuf(
 /******************************************************************
 Allocates a new file page to be used in an index tree. NOTE: we assume
 that the caller has made the reservation for free extents! */
-
+/*分配一个在索引树中使用的新文件页。注意:我们假定调用人已经预订了免费的区段!*/
 page_t*
 btr_page_alloc(
 /*===========*/
@@ -332,7 +339,7 @@ btr_page_alloc(
 	/* Parameter TRUE below states that the caller has made the
 	reservation for free extents, and thus we know that a page can
 	be allocated: */
-	
+	/*下面的参数TRUE表示调用者已经预留了空闲区段，因此我们知道可以分配一个页面:*/
 	new_page_no = fseg_alloc_free_page_general(seg_header, hint_page_no,
 						file_direction, TRUE, mtr);
 	if (new_page_no == FIL_NULL) {
@@ -349,7 +356,7 @@ btr_page_alloc(
 
 /******************************************************************
 Gets the number of pages in a B-tree. */
-
+/*获取b -树中的页面数。*/
 ulint
 btr_get_size(
 /*=========*/
@@ -393,7 +400,7 @@ btr_get_size(
 
 /******************************************************************
 Frees a page used in an ibuf tree. Puts the page to the free list of the
-ibuf tree. */
+ibuf tree. */ /*释放ibuf树中使用的页面。将页面放到ibuf树的空闲列表中。*/
 static
 void
 btr_page_free_for_ibuf(
@@ -418,7 +425,7 @@ btr_page_free_for_ibuf(
 Frees a file page used in an index tree. Can be used also to (BLOB)
 external storage pages, because the page level 0 can be given as an
 argument. */
-
+/*释放索引树中使用的文件页。也可以用于(BLOB)外部存储页面，因为页面级别0可以作为参数给出。*/
 void
 btr_page_free_low(
 /*==============*/
@@ -436,7 +443,7 @@ btr_page_free_low(
 			      				MTR_MEMO_PAGE_X_FIX));
 	/* The page gets invalid for optimistic searches: increment the frame
 	modify clock */
-
+    /*页面对乐观搜索无效:增加帧修改时钟*/
 	buf_frame_modify_clock_inc(page);
 	
 	if (tree->type & DICT_IBUF) {
@@ -463,7 +470,7 @@ btr_page_free_low(
 /******************************************************************
 Frees a file page used in an index tree. NOTE: cannot free field external
 storage pages because the page must contain info on its level. */
-
+/*释放索引树中使用的文件页。注意:不能释放字段外部存储页面，因为页面必须包含其级别的信息。*/
 void
 btr_page_free(
 /*==========*/
@@ -481,7 +488,7 @@ btr_page_free(
 }	
 
 /******************************************************************
-Sets the child node file address in a node pointer. */
+Sets the child node file address in a node pointer. */ /*在节点指针中设置子节点文件地址。*/
 UNIV_INLINE
 void
 btr_node_ptr_set_child_page_no(
@@ -507,7 +514,7 @@ btr_node_ptr_set_child_page_no(
 }
 
 /****************************************************************
-Returns the child page of a node pointer and x-latches it. */
+Returns the child page of a node pointer and x-latches it. */ /*返回节点指针的子页并x-latch它。*/
 static
 page_t*
 btr_node_ptr_get_child(
@@ -530,7 +537,7 @@ btr_node_ptr_get_child(
 
 /****************************************************************
 Returns the upper level node pointer to a page. It is assumed that mtr holds
-an x-latch on the tree. */
+an x-latch on the tree. */ /*返回指向页面的上层节点指针。我们假设mtr在树上有一个x-闩锁。*/
 static
 rec_t*
 btr_page_get_father_for_rec(
