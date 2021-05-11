@@ -601,28 +601,28 @@ struct btr_path_struct{
 
 /* The tree cursor: the definition appears here only for the compiler
 to know struct size! */
-
+/*树游标:这里的定义只是为了让编译器知道结构体的大小!*/
 struct btr_cur_struct {
-	dict_index_t*	index;		/* index where positioned */
-	page_cur_t	page_cur;	/* page cursor */
+	dict_index_t*	index;		/* index where positioned */ /*指数在定位*/
+	page_cur_t	page_cur;	/* page cursor */ /*页面光标*/
 	page_t*		left_page;	/* this field is used to store a pointer
 					to the left neighbor page, in the cases
-					BTR_SEARCH_PREV and BTR_MODIFY_PREV */
+					BTR_SEARCH_PREV and BTR_MODIFY_PREV */ /*BTR_SEARCH_PREV和BTR_MODIFY_PREV的情况下，该字段用于存储指向左邻居页面的指针*/
 	/*------------------------------*/
 	que_thr_t*	thr;		/* this field is only used when
 					btr_cur_search_... is called for an
 					index entry insertion: the calling
 					query thread is passed here to be
-					used in the insert buffer */
+					used in the insert buffer */ /*该字段仅在btr_cur_search_…在插入索引项时调用:调用查询线程在插入缓冲区中被传递*/
 	/*------------------------------*/
 	/* The following fields are used in btr_cur_search... to pass
-	information: */
+	information: */ /*以下字段用于btr_cur_search…通过信息:*/
 	ulint		flag;		/* BTR_CUR_HASH, BTR_CUR_HASH_FAIL,
 					BTR_CUR_BINARY, or
 					BTR_CUR_INSERT_TO_IBUF */
 	ulint		tree_height;	/* Tree height if the search is done
 					for a pessimistic insert or update
-					operation */
+					operation */ /*如果执行了悲观插入或更新操作的搜索，则为树的高度*/
 	ulint		up_match;	/* If the search mode was PAGE_CUR_LE,
 					the number of matched fields to the
 					the first user record to the right of
@@ -636,11 +636,13 @@ struct btr_cur_struct {
 					for comparison to the adjacent user
 					record if that record is on a
 					different leaf page! (See the note in
-					row_ins_duplicate_key.) */
+					row_ins_duplicate_key.) */ /*如果搜索模式为PAGE_CUR_LE，则搜索模式为PAGE_CUR_GE时，btr_cur_search_…
+					注意，up_match和low_match的值可能会超过与相邻用户记录进行比较的正确值，如果相邻用户记录位于不同的叶子页面上!
+					(参见row_ins_duplicate_key中的注释。)*/
 	ulint		up_bytes;	/* number of matched bytes to the
 					right at the time cursor positioned;
 					only used internally in searches: not
-					defined after the search */
+					defined after the search */ /*光标定位时向右匹配的字节数;只在内部搜索中使用:在搜索之后没有定义*/
 	ulint		low_match;	/* if search mode was PAGE_CUR_LE,
 					the number of matched fields to the
 					first user record AT THE CURSOR or
@@ -648,13 +650,13 @@ struct btr_cur_struct {
 					btr_cur_search_...;
 					NOT defined for PAGE_CUR_GE or any
 					other search modes; see also the NOTE
-					in up_match! */
+					in up_match! */ /*如果搜索模式为PAGE_CUR_LE，则匹配到the CURSOR处或btr_cur_search_后的第一个用户记录的字段数;请参见up_match!*/
 	ulint		low_bytes;	/* number of matched bytes to the
 					right at the time cursor positioned;
 					only used internally in searches: not
-					defined after the search */
+					defined after the search */ /*游标定位时向右匹配的字节数;仅在搜索中内部使用:搜索后未定义*/
 	ulint		n_fields;	/* prefix length used in a hash
-					search if hash_node != NULL */
+					search if hash_node != NULL */ /*如果hash_node != NULL，则在哈希搜索中使用的前缀长度*/
 	ulint		n_bytes;	/* hash prefix bytes if hash_node !=
 					NULL */
 	ulint		fold;		/* fold value used in the search if
@@ -663,7 +665,7 @@ struct btr_cur_struct {
 	btr_path_t*	path_arr;	/* in estimating the number of
 					rows in range, we store in this array
 					information of the path through
-					the tree */
+					the tree */ /*在估计范围内的行数时，我们在这个数组中存储通过树的路径信息*/
 };
 
 /* Values for the flag documenting the used search method */

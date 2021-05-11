@@ -192,7 +192,7 @@ dict_table_get_sys_col_no(
 
 /************************************************************************
 Gets the number of fields in the internal representation of an index,
-including fields added by the dictionary system. */
+including fields added by the dictionary system. */ /*获取索引的内部表示形式中的字段数，包括字典系统添加的字段。*/
 UNIV_INLINE
 ulint
 dict_index_get_n_fields(

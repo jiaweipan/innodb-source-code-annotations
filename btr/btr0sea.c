@@ -592,7 +592,8 @@ Tries to guess the right search position based on the hash search info
 of the index. Note that if mode is PAGE_CUR_LE, which is used in inserts,
 and the function returns TRUE, then cursor->up_match and cursor->low_match
 both have sensible values. */
-
+/*尝试根据索引的哈希搜索信息猜测正确的搜索位置。注意，如果mode是PAGE_CUR_LE(在插入中使用)，
+并且函数返回TRUE，那么cursor->up_match和cursor->low_match都有合理的值。*/
 ibool
 btr_search_guess_on_hash(
 /*=====================*/
@@ -606,7 +607,7 @@ btr_search_guess_on_hash(
 					is 0, we will have a latch set on
 					the cursor page, otherwise we assume
 					the caller uses his search latch
-					to protect the record! */
+					to protect the record! */ /*注意，只有当has_search_latch为0时，我们才会在游标页上设置一个闩锁，否则我们假设调用者使用他的搜索闩锁来保护记录!*/
 	btr_cur_t*	cursor, 	/* out: tree cursor */
 	ulint		has_search_latch,/* in: latch mode the caller
 					currently has on btr_search_latch:
@@ -629,7 +630,7 @@ btr_search_guess_on_hash(
 
 	/* Note that, for efficiency, the struct info may not be protected by
 	any latch here! */
-
+    /*注意，为了提高效率，struct信息在这里可能不受任何闩锁的保护!*/
 	if (info->n_hash_potential == 0) {
 
 		return(FALSE);
@@ -792,7 +793,7 @@ failure:
 
 /************************************************************************
 Drops a page hash index. */
-
+/*删除页散列索引。*/
 void
 btr_search_drop_page_hash_index(
 /*============================*/

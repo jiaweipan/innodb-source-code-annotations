@@ -1188,7 +1188,7 @@ dict_index_copy(
 
 /***********************************************************************
 Copies types of fields contained in index to tuple. */
-
+/*将index中包含的字段类型复制到元组。*/
 void
 dict_index_copy_types(
 /*==================*/
@@ -2463,14 +2463,14 @@ dict_tree_check_search_tuple(
 
 /**************************************************************************
 Builds a node pointer out of a physical record and a page number. */
-
+/*根据物理记录和页码构建节点指针。*/
 dtuple_t*
 dict_tree_build_node_ptr(
 /*=====================*/
 				/* out, own: node pointer */
 	dict_tree_t*	tree,	/* in: index tree */
-	rec_t*		rec,	/* in: record for which to build node pointer */
-	ulint		page_no,/* in: page number to put in node pointer */
+	rec_t*		rec,	/* in: record for which to build node pointer */ /*记录要构建哪个节点指针*/
+	ulint		page_no,/* in: page number to put in node pointer */ /*放入节点指针的页码*/
 	mem_heap_t*	heap,	/* in: memory heap where pointer created */
 	ulint           level)  /* in: level of rec in tree: 0 means leaf
 				level */
@@ -2488,7 +2488,7 @@ dict_tree_build_node_ptr(
 		the node pointer if the reord is on the leaf level,
 		on non-leaf levels we remove the last field, which
 		contains the page number of the child page */
-
+        /*在通用索引树中，如果记录在叶级上，我们将整个记录作为节点指针，在非叶级上，我们删除最后一个字段，它包含子页的页码*/
 		n_unique = rec_get_n_fields(rec);
 
 		if (level > 0) {
@@ -2506,7 +2506,8 @@ dict_tree_build_node_ptr(
 	levels in the tree there may be identical node pointers with a
 	different page number; therefore, we set the n_fields_cmp to one
 	less: */
-	
+	/*在树中搜索节点指针时，不能对最后一个字段(页码字段)进行比较，
+	因为在树的上层可能存在具有不同页码的相同节点指针;因此，我们将n_fields_cmp设置为少1:*/
 	dtuple_set_n_fields_cmp(tuple, n_unique);
 
 	dict_index_copy_types(tuple, ind, n_unique);

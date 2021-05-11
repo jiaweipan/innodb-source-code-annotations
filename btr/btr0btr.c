@@ -569,7 +569,7 @@ btr_page_get_father_for_rec(
 
 	/* In the following, we choose just any index from the tree as the
 	first parameter for btr_cur_search_to_nth_level. */
-	
+	/*在下面的代码中，我们选择树中的任意索引作为btr_cur_search_to_nth_level的第一个参数。*/
 	btr_cur_search_to_nth_level(UT_LIST_GET_FIRST(tree->tree_indexes),
 				btr_page_get_level(page, mtr) + 1,
 				tuple, PAGE_CUR_LE,
@@ -586,7 +586,7 @@ btr_page_get_father_for_rec(
 
 /****************************************************************
 Returns the upper level node pointer to a page. It is assumed that
-mtr holds an x-latch on the tree. */
+mtr holds an x-latch on the tree. */ /*返回指向页面的上层节点指针。我们假设mtr在树上有一个x-闩锁。*/
 static
 rec_t*
 btr_page_get_father_node_ptr(
@@ -603,7 +603,7 @@ btr_page_get_father_node_ptr(
 
 /****************************************************************
 Creates the root node for a new index tree. */
-
+/*为新索引树创建根节点。*/
 ulint
 btr_create(
 /*=======*/
@@ -623,9 +623,9 @@ btr_create(
 	the index tree; the segment headers are put on the allocated root page
 	(for an ibuf tree, not in the root, but on a separate ibuf header
 	page) */
-
+    /*为索引树创建两个新段(一个，在ibuf树的情况下);段头被放在分配的根页上(对于一个ibuf树，不是在根，而是在一个单独的ibuf头页上)*/
 	if (type & DICT_IBUF) {
-		/* Allocate first the ibuf header page */
+		/* Allocate first the ibuf header page */ /*首先分配ibuf头页*/
 		ibuf_hdr_frame = fseg_create(space, 0,
 				IBUF_HEADER + IBUF_TREE_SEG_HEADER, mtr);
 
@@ -635,7 +635,7 @@ btr_create(
  						== IBUF_HEADER_PAGE_NO);
 		/* Allocate then the next page to the segment: it will be the
  		tree root page */
-
+        /*然后将下一页分配给分段:它将是树根页*/
  		page_no = fseg_alloc_free_page(
 				ibuf_hdr_frame + IBUF_HEADER
  				+ IBUF_TREE_SEG_HEADER, IBUF_TREE_ROOT_PAGE_NO,
@@ -659,43 +659,43 @@ btr_create(
 
 	if (type & DICT_IBUF) {
 		/* It is an insert buffer tree: initialize the free list */
-
+		/* 它是一个插入缓冲区树:初始化空闲列表*/
 		ut_ad(page_no == IBUF_TREE_ROOT_PAGE_NO);
 		
 		flst_init(frame + PAGE_HEADER + PAGE_BTR_IBUF_FREE_LIST, mtr);
 	} else {	
 		/* It is a non-ibuf tree: create a file segment for leaf
-		pages */
+		pages */ /*它是一个非ibuf树:为叶页创建一个文件段*/
 		fseg_create(space, page_no, PAGE_HEADER + PAGE_BTR_SEG_LEAF,
 									mtr);
 		/* The fseg create acquires a second latch on the page,
-		therefore we must declare it: */
+		therefore we must declare it: */ /*fseg create在页面上获得了第二个闩锁，因此必须声明它:*/
 		buf_page_dbg_add_level(frame, SYNC_TREE_NODE_NEW);
 	}
 	
-	/* Create a new index page on the the allocated segment page */
+	/* Create a new index page on the the allocated segment page */ /*在分配的段页上创建一个新的索引页*/
 	page = page_create(frame, mtr);
 
-	/* Set the index id of the page */
+	/* Set the index id of the page */ /*设置页面的索引id*/
 	btr_page_set_index_id(page, index_id, mtr);
 
-	/* Set the level of the new index page */
+	/* Set the level of the new index page */ /*设置新索引页的级别*/
 	btr_page_set_level(page, 0, mtr);
 	
-	/* Set the next node and previous node fields */
+	/* Set the next node and previous node fields */ /*设置下一个节点和上一个节点字段*/
 	btr_page_set_next(page, FIL_NULL, mtr);
 	btr_page_set_prev(page, FIL_NULL, mtr);
 
 	/* We reset the free bits for the page to allow creation of several
 	trees in the same mtr, otherwise the latch on a bitmap page would
-	prevent it because of the latching order */
-	
+	prevent it because of the latching order */ 
+	/*我们重置页面的空闲位，以允许在同一mtr中创建几个树，否则位图页面上的闩锁会因为闩锁顺序而阻止它*/
 	ibuf_reset_free_bits_with_type(type, page);
 
 	/* In the following assertion we test that two records of maximum
 	allowed size fit on the root page: this fact is needed to ensure
 	correctness of split algorithms */
-
+    /*在下面的断言中，我们测试了根页面上的两条最大允许大小的记录:这是确保拆分算法正确性所必需的*/
 	ut_ad(page_get_max_insert_size(page, 2) > 2 * BTR_PAGE_MAX_REC_SIZE);
 
 	return(page_no);
@@ -704,7 +704,7 @@ btr_create(
 /****************************************************************
 Frees a B-tree except the root page, which MUST be freed after this
 by calling btr_free_root. */
-
+/*释放除根页面以外的b -树，在此之后必须通过调用btr_free_root来释放根页面。*/
 void
 btr_free_but_not_root(
 /*==================*/
@@ -722,7 +722,7 @@ leaf_loop:
 
 	/* NOTE: page hash indexes are dropped when a page is freed inside
 	fsp0fsp. */
-
+    /*注意:当fsp0fsp内部释放一个页时，页哈希索引将被删除。*/
 	finished = fseg_free_step(
 				root + PAGE_HEADER + PAGE_BTR_SEG_LEAF, &mtr);
 	mtr_commit(&mtr);
@@ -748,7 +748,7 @@ top_loop:
 
 /****************************************************************
 Frees the B-tree root page. Other tree MUST already have been freed. */
-
+/*释放b树的根页面。其他树必须已经被释放。*/
 void
 btr_free_root(
 /*==========*/
@@ -774,12 +774,12 @@ top_loop:
 
 /*****************************************************************
 Reorganizes an index page. */
-
+/*重新组织索引页。*/
 void
 btr_page_reorganize_low(
 /*====================*/
 	ibool	low,	/* in: TRUE if locks should not be updated, i.e.,
-			there cannot exist locks on the page */
+			there cannot exist locks on the page */ /*如果锁不应该被更新，即页面上不存在锁，则为TRUE*/
 	page_t*	page,	/* in: page to be reorganized */
 	mtr_t*	mtr)	/* in: mtr */
 {
@@ -788,34 +788,34 @@ btr_page_reorganize_low(
 
 	ut_ad(mtr_memo_contains(mtr, buf_block_align(page),
 			      				MTR_MEMO_PAGE_X_FIX));
-	/* Write the log record */
+	/* Write the log record */ /*写入日志记录*/
 	mlog_write_initial_log_record(page, MLOG_PAGE_REORGANIZE, mtr);
 
-	/* Turn logging off */
+	/* Turn logging off */ /*关闭日志*/
 	log_mode = mtr_set_log_mode(mtr, MTR_LOG_NONE);
 
 	new_page = buf_frame_alloc();
 
-	/* Copy the old page to temporary space */
+	/* Copy the old page to temporary space */ /*将旧页复制到临时空间*/
 	buf_frame_copy(new_page, page);
 
 	btr_search_drop_page_hash_index(page);
 
 	/* Recreate the page: note that global data on page (possible
 	segment headers, next page-field, etc.) is preserved intact */
-
+    /*重新创建页面:注意页面上的全局数据(可能的段标头、下一页字段等)被完整地保留*/
 	page_create(page, mtr);
 	
 	/* Copy the records from the temporary space to the recreated page;
 	do not copy the lock bits yet */
-
+   /*将记录从临时空间复制到重新创建的页;不要复制锁定位*/
 	page_copy_rec_list_end_no_locks(page, new_page,
 					page_get_infimum_rec(new_page), mtr);
-	/* Copy max trx id to recreated page */
+	/* Copy max trx id to recreated page */ /*复制最大trx id到重新创建的页面*/
 	page_set_max_trx_id(page, page_get_max_trx_id(new_page));
 	
 	if (!low) {
-		/* Update the record lock bitmaps */
+		/* Update the record lock bitmaps */ /*更新记录锁定位图*/
 		lock_move_reorganize_page(page, new_page);
 	}
 
@@ -827,7 +827,7 @@ btr_page_reorganize_low(
 
 /*****************************************************************
 Reorganizes an index page. */
-
+/*重新组织索引页。*/
 void
 btr_page_reorganize(
 /*================*/
@@ -839,7 +839,7 @@ btr_page_reorganize(
 
 /***************************************************************
 Parses a redo log record of reorganizing a page. */
-
+/*解析重组页面的重做日志记录。*/
 byte*
 btr_parse_page_reorganize(
 /*======================*/
@@ -852,7 +852,7 @@ btr_parse_page_reorganize(
 	ut_ad(ptr && end_ptr);
 
 	/* The record is empty, except for the record initial part */
-
+    /* 记录是空的，除了记录的初始部分*/
 	if (page) {
 		btr_page_reorganize_low(TRUE, page, mtr);
 	}
@@ -861,7 +861,7 @@ btr_parse_page_reorganize(
 }
 
 /*****************************************************************
-Empties an index page. */
+Empties an index page. */ /*清空索引页。*/
 static
 void
 btr_page_empty(
@@ -875,7 +875,7 @@ btr_page_empty(
 
 	/* Recreate the page: note that global data on page (possible
 	segment headers, next page-field, etc.) is preserved intact */
-
+    /*重新创建页面:注意页面上的全局数据(可能的段标头、下一页字段等)被完整地保留*/
 	page_create(page, mtr);
 }
 
@@ -885,7 +885,8 @@ the tuple. It is assumed that mtr contains an x-latch on the tree.
 NOTE that the operation of this function must always succeed,
 we cannot reverse it: therefore enough free disk space must be
 guaranteed to be available before this function is called. */
-
+/*通过拆分根，将tree提高一个级别，并插入元组。假设mtr在树上包含一个x-闩锁。
+注意，此函数的操作必须始终成功，我们不能逆转它:因此，必须保证在调用此函数之前有足够的空闲磁盘空间可用。*/
 rec_t*
 btr_root_raise_and_insert(
 /*======================*/
@@ -893,7 +894,7 @@ btr_root_raise_and_insert(
 	btr_cur_t*	cursor,	/* in: cursor at which to insert: must be
 				on the root page; when the function returns,
 				the cursor is positioned on the predecessor
-				of the inserted record */
+				of the inserted record */ /*要插入的游标:必须位于根页上;当函数返回时，游标将定位在插入记录的前身上*/
 	dtuple_t*	tuple,	/* in: tuple to insert */
 	mtr_t*		mtr)	/* in: mtr */
 {
@@ -921,7 +922,7 @@ btr_root_raise_and_insert(
 	/* Allocate a new page to the tree. Root splitting is done by first
 	moving the root records to the new page, emptying the root, putting
 	a node pointer to the new page, and then splitting the new page. */
-	
+	/*为树分配一个新页面。根拆分是这样完成的:首先将根记录移动到新页，清空根，将一个节点指针指向新页，然后拆分新页。*/
 	new_page = btr_page_alloc(tree, 0, FSP_NO_DIR,
 				  btr_page_get_level(root, mtr), mtr);
 
@@ -929,15 +930,15 @@ btr_root_raise_and_insert(
 
 	level = btr_page_get_level(root, mtr);
 	
-	/* Set the levels of the new index page and root page */
+	/* Set the levels of the new index page and root page */ /*设置新索引页和根页的级别*/
 	btr_page_set_level(new_page, level, mtr);
 	btr_page_set_level(root, level + 1, mtr);
 	
-	/* Set the next node and previous node fields of new page */
+	/* Set the next node and previous node fields of new page */ /*设置新页面的下一个节点和上一个节点字段*/
 	btr_page_set_next(new_page, FIL_NULL, mtr);
 	btr_page_set_prev(new_page, FIL_NULL, mtr);
 
-	/* Move the records from root to the new page */
+	/* Move the records from root to the new page */ /*将记录从根目录移动到新页面*/
 
 	page_move_rec_list_end(new_page, root, page_get_infimum_rec(root),
 									mtr);
@@ -945,10 +946,10 @@ btr_root_raise_and_insert(
 	perform a pessimistic update then we have stored the lock
 	information of the record to be inserted on the infimum of the
 	root page: we cannot discard the lock structs on the root page */
-	
+	/*如果这是一个悲观插入(实际上是执行悲观更新)，那么我们已经将要插入的记录的锁信息存储在根页的下端:我们不能丢弃根页上的锁结构体*/
 	lock_update_root_raise(new_page, root);
 
-	/* Create a memory heap where the node pointer is stored */
+	/* Create a memory heap where the node pointer is stored */ /*创建存储节点指针的内存堆*/
 	heap = mem_heap_create(100);
 
 	rec = page_rec_get_next(page_get_infimum_rec(new_page));
@@ -956,15 +957,15 @@ btr_root_raise_and_insert(
 	
 	/* Build the node pointer (= node key and page address) for the
 	child */
-
+    /*为子节点构建节点指针(=节点键和页面地址)*/
 	node_ptr = dict_tree_build_node_ptr(tree, rec, new_page_no, heap,
 					                          level);
-	/* Reorganize the root to get free space */
+	/* Reorganize the root to get free space */ /*重新组织根目录以获得空闲空间*/
 	btr_page_reorganize(root, mtr);	
 
 	page_cursor = btr_cur_get_page_cur(cursor);
 	
-	/* Insert node pointer to the root */
+	/* Insert node pointer to the root */ /*插入指向根的节点指针*/
 
 	page_cur_set_before_first(root, page_cursor);
 
@@ -975,23 +976,23 @@ btr_root_raise_and_insert(
 	/* The node pointer must be marked as the predefined minimum record,
 	as there is no lower alphabetical limit to records in the leftmost
 	node of a level: */
-
+    /*节点指针必须标记为预定义的最小记录，因为在一个级别的最左边的节点中没有记录的最低字母限制:*/
 	btr_set_min_rec_mark(node_ptr_rec, mtr);
 		
-	/* Free the memory heap */
+	/* Free the memory heap */ /*释放内存堆*/
 	mem_heap_free(heap);
 
 	/* We play safe and reset the free bits for the new page */
-
+    /* 我们保持安全，并为新页面重置自由位*/
 /*	printf("Root raise new page no %lu\n",
 					buf_frame_get_page_no(new_page)); */
 
 	ibuf_reset_free_bits(UT_LIST_GET_FIRST(tree->tree_indexes),
 								new_page);
-	/* Reposition the cursor to the child node */
+	/* Reposition the cursor to the child node */ /*将光标重新定位到子节点*/
 	page_cur_search(new_page, tuple, PAGE_CUR_LE, page_cursor);
 	
-	/* Split the child and insert tuple */
+	/* Split the child and insert tuple */ /*拆分子节点并插入元组*/
 	return(btr_page_split_and_insert(cursor, tuple, mtr));
 }	
 
@@ -1421,16 +1422,18 @@ is released within this function! NOTE that the operation of this
 function must always succeed, we cannot reverse it: therefore
 enough free disk space must be guaranteed to be available before
 this function is called. */
-
+/*将索引页分成两部分并插入元组。假设mtr持有索引树的x-latch。
+注意:树x锁存器是在这个功能中释放的!注意，此函数的操作必须始终成功，我们不能逆转它:
+因此，必须保证在调用此函数之前有足够的空闲磁盘空间可用。*/
 rec_t*
 btr_page_split_and_insert(
 /*======================*/
 				/* out: inserted record; NOTE: the tree
 				x-latch is released! NOTE: 2 free disk
-				pages must be available! */
+				pages must be available! */ /*插入记录;注意:树x锁闩被释放了!注意:必须有2个可用的磁盘页!*/
 	btr_cur_t*	cursor,	/* in: cursor at which to insert; when the
 				function returns, the cursor is positioned
-				on the predecessor of the inserted record */
+				on the predecessor of the inserted record */ /*要插入的光标;当函数返回时，游标将定位在插入记录的前身上*/
 	dtuple_t*	tuple,	/* in: tuple to insert */
 	mtr_t*		mtr)	/* in: mtr */
 {
@@ -1469,7 +1472,7 @@ func_start:
 	/* 1. Decide the split record; split_rec == NULL means that the
 	tuple to be inserted should be the first record on the upper
 	half-page */
-
+    /*1. 决定分割记录;split_rec == NULL表示要插入的元组应该是上半页上的第一个记录*/
 	if (n_iterations > 0) {
 		direction = FSP_UP;
 		hint_page_no = page_no + 1;
@@ -1488,7 +1491,7 @@ func_start:
 		split_rec = page_get_middle_rec(page);
 	}
 
-	/* 2. Allocate a new page to the tree */
+	/* 2. Allocate a new page to the tree */ /*2. 为树分配一个新页面*/
 	new_page = btr_page_alloc(tree, hint_page_no, direction,
 					btr_page_get_level(page, mtr), mtr);
 	btr_page_create(new_page, tree, mtr);
@@ -1496,7 +1499,7 @@ func_start:
 	/* 3. Calculate the first record on the upper half-page, and the
 	first record (move_limit) on original page which ends up on the
 	upper half */
-
+    /*3.计算上半页上的第一个记录，以及原始页面上最终位于上半页的第一个记录(move_limit)*/
 	if (split_rec != NULL) {
 		first_rec = split_rec;
 		move_limit = split_rec;
@@ -1508,7 +1511,7 @@ func_start:
 	}
 	
 	/* 4. Do first the modifications in the tree structure */
-
+    /* 4. 首先对树结构进行修改吗*/
 	btr_attach_half_pages(tree, page, first_rec, new_page, direction, mtr);
 
 	if (split_rec == NULL) {
@@ -1519,7 +1522,7 @@ func_start:
 	on the appropriate half-page, we may release the tree x-latch.
 	We can then move the records after releasing the tree latch,
 	thus reducing the tree latch contention. */
-
+     /*如果在叶片水平和插入将适合适当的半页，我们可以释放树x锁存器。然后，我们可以在释放树闩锁之后移动记录，从而减少树闩锁争用。*/
 	insert_will_fit = btr_page_insert_fits(cursor, split_rec, tuple);
 	
 	if (insert_will_fit && (btr_page_get_level(page, mtr) == 0)) {
@@ -1528,7 +1531,7 @@ func_start:
 							MTR_MEMO_X_LOCK);
 	}
 
-	/* 5. Move then the records to the new page */
+	/* 5. Move then the records to the new page */ /*5. 然后将记录移动到新页面*/
 	if (direction == FSP_DOWN) {
 /*		printf("Split left\n"); */
 
@@ -1549,7 +1552,7 @@ func_start:
 
 	/* 6. The split and the tree modification is now completed. Decide the
 	page where the tuple should be inserted */
-
+    /*6. 拆分和树的修改现在已经完成。决定该元组应该插入的页面*/
 	if (split_rec == NULL) {
 		insert_page = right_page;
 
@@ -1560,7 +1563,7 @@ func_start:
 		insert_page = left_page;
 	}
 
-	/* 7. Reposition the cursor for insert and try insertion */
+	/* 7. Reposition the cursor for insert and try insertion */ /*7. 重新定位用于插入的游标，并尝试插入*/
 	page_cursor = btr_cur_get_page_cur(cursor);
 
 	page_cur_search(insert_page, tuple, PAGE_CUR_LE, page_cursor);
@@ -1570,7 +1573,7 @@ func_start:
 	if (rec != NULL) {
 		/* Insert fit on the page: update the free bits for the
 		left and right pages in the same mtr */
-
+        /*在页面上插入fit:更新同一mtr中左页和右页的空闲位*/
 		ibuf_update_free_bits_for_two_pages_low(cursor->index,
 							left_page,
 							right_page, mtr);
@@ -1581,7 +1584,7 @@ func_start:
 	}
 	
 	/* 8. If insert did not fit, try page reorganization */
-
+    /*8. 如果插入不合适，请尝试页面重组*/
 	btr_page_reorganize(insert_page, mtr);
 
 	page_cur_search(insert_page, tuple, PAGE_CUR_LE, page_cursor);
@@ -1590,8 +1593,8 @@ func_start:
 	if (rec == NULL) {
 		/* The insert did not fit on the page: loop back to the
 		start of the function for a new split */
-		
-		/* We play safe and reset the free bits for new_page */
+		/*插入操作不适合页面:循环到函数的开始处进行新的拆分*/
+		/* We play safe and reset the free bits for new_page */ /*我们采取安全措施，重置new_page的空闲位*/
 		ibuf_reset_free_bits(cursor->index, new_page);
 
 		/* printf("Split second round %lu\n",
@@ -1605,7 +1608,7 @@ func_start:
 
 	/* Insert fit on the page: update the free bits for the
 	left and right pages in the same mtr */
-
+    /*在页面上插入fit:更新同一mtr中左页和右页的空闲位*/
 	ibuf_update_free_bits_for_two_pages_low(cursor->index, left_page,
 							right_page, mtr);
 	/* printf("Split and insert done %lu %lu\n",
@@ -1707,7 +1710,7 @@ btr_parse_set_min_rec_mark(
 
 /********************************************************************
 Sets a record as the predefined minimum record. */
-
+/*将一条记录设置为预定义的最小记录。*/
 void
 btr_set_min_rec_mark(
 /*=================*/

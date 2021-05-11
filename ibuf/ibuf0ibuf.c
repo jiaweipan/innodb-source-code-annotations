@@ -728,7 +728,8 @@ Sets the free bit of the page in the ibuf bitmap. This is done in a separate
 mini-transaction, hence this operation does not restrict further work to only
 ibuf bitmap operations, which would result if the latch to the bitmap page
 were kept. */
-
+/*在ibuf位图中设置页面的空闲位。这是在一个单独的小事务中完成的，
+因此该操作不会将进一步的工作限制为只进行ibuf位图操作，如果保留位图页的锁存，将导致ibuf位图操作。*/
 void
 ibuf_set_free_bits(
 /*===============*/
@@ -791,7 +792,8 @@ Resets the free bits of the page in the ibuf bitmap. This is done in a
 separate mini-transaction, hence this operation does not restrict further
 work to only ibuf bitmap operations, which would result if the latch to the
 bitmap page were kept. */
-
+/*重置ibuf位图中页面的空闲位。这是在一个单独的小事务中完成的，
+因此该操作不会将进一步的工作限制为只进行ibuf位图操作，如果保留位图页的锁存，将导致ibuf位图操作。*/
 void
 ibuf_reset_free_bits_with_type(
 /*===========================*/

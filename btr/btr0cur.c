@@ -98,14 +98,14 @@ btr_rec_get_externally_stored_len(
 /*==================== B-TREE SEARCH =========================*/
 	
 /************************************************************************
-Latches the leaf page or pages requested. */
+Latches the leaf page or pages requested. */ /*锁存一个或多个请求页。*/
 static
 void
 btr_cur_latch_leaves(
 /*=================*/
 	dict_tree_t*	tree,		/* in: index tree */
 	page_t*		page,		/* in: leaf page where the search
-					converged */
+					converged */ /*搜索聚合的叶页*/
 	ulint		space,		/* in: space id */
 	ulint		page_no,	/* in: page number of the leaf */
 	ulint		latch_mode,	/* in: BTR_SEARCH_LEAF, ... */
@@ -177,22 +177,25 @@ to node pointer page number fields on the upper levels of the tree!
 Note that if mode is PAGE_CUR_LE, which is used in inserts, then
 cursor->up_match and cursor->low_match both will have sensible values.
 If mode is PAGE_CUR_GE, then up_match will a have a sensible value. */
-
+/*搜索索引树并在给定的级别上定位树游标。注意:元组中的n_fields_cmp必须设置，这样它就不能与树的上层的节点指针页号字段进行比较!
+注意，如果mode是PAGE_CUR_LE(在插入中使用)，那么cursor->up_match和cursor->low_match都将具有合理的值。
+如果mode为PAGE_CUR_GE，则up_match将有一个合理的值。*/
 void
 btr_cur_search_to_nth_level(
 /*========================*/
 	dict_index_t*	index,	/* in: index */
-	ulint		level,	/* in: the tree level of search */
+	ulint		level,	/* in: the tree level of search */ /*树级搜索*/
 	dtuple_t*	tuple,	/* in: data tuple; NOTE: n_fields_cmp in
 				tuple must be set so that it cannot get
-				compared to the node ptr page number field! */
+				compared to the node ptr page number field! */ /*数据元组;注意:元组中的n_fields_cmp必须设置，以便不能与节点ptr页号字段进行比较!*/
 	ulint		mode,	/* in: PAGE_CUR_L, ...;
 				NOTE that if the search is made using a unique
 				prefix of a record, mode should be
 				PAGE_CUR_LE, not PAGE_CUR_GE, as the latter
 				may end up on the previous page relative to the
 				record! Inserts should always be made using
-				PAGE_CUR_LE to search the position! */
+				PAGE_CUR_LE to search the position! */ /*注意，如果搜索是使用一个唯一的记录前缀，模式应该是PAGE_CUR_LE，而不是PAGE_CUR_GE，
+				因为后者可能最终在相对于记录的前一页!插入应该总是使用PAGE_CUR_LE来搜索位置!*/
 	ulint		latch_mode, /* in: BTR_SEARCH_LEAF, ..., ORed with
 				BTR_INSERT and BTR_ESTIMATE;
 				cursor->left_page is used to store a pointer
@@ -202,7 +205,8 @@ btr_cur_search_to_nth_level(
 				is != 0, we maybe do not have a latch set
 				on the cursor page, we assume
 				the caller uses his search latch
-				to protect the record! */
+				to protect the record! */ /*BTR_SEARCH_LEAF,……,或与BTR_INSERT BTR_ESTIMATE;游标- > left_page用于存储一个指针指向左边的邻居页面,在BTR_SEARCH_PREV BTR_MODIFY_PREV;
+				注意,如果has_search_latch ! = 0,我们也许没有闩上设置光标页面中,我们假定调用者使用他的搜索锁保护记录!*/
 	btr_cur_t*	cursor, /* in/out: tree cursor; the cursor page is
 				   s- or x-latched, but see also above! */
 	ulint		has_search_latch,/* in: info on the latch mode the
@@ -234,7 +238,7 @@ btr_cur_search_to_nth_level(
 #endif
 	/* Currently, PAGE_CUR_LE is the only search mode used for searches
 	ending to upper levels */
-
+    /*目前，PAGE_CUR_LE是唯一用于搜索结束到上层的搜索模式*/
 	ut_ad(level == 0 || mode == PAGE_CUR_LE);
 	ut_ad(dict_tree_check_search_tuple(index->tree, tuple));
 	ut_ad(!(index->type & DICT_IBUF) || ibuf_inside());
@@ -273,7 +277,7 @@ btr_cur_search_to_nth_level(
 						has_search_latch, mtr)) {
 
 		/* Search using the hash index succeeded */
-
+        /* 使用散列索引进行搜索成功*/
 		ut_ad(cursor->up_match != ULINT_UNDEFINED
 					|| mode != PAGE_CUR_GE);
 		ut_ad(cursor->up_match != ULINT_UNDEFINED
@@ -290,9 +294,9 @@ btr_cur_search_to_nth_level(
 #endif
 	/* If the hash search did not succeed, do binary search down the
 	tree */
-
+    /*如果哈希搜索没有成功，就向下进行二叉搜索*/
 	if (has_search_latch) {
-		/* Release possible search latch to obey latching order */
+		/* Release possible search latch to obey latching order */ /*松开可能的搜索闩以遵守闩锁命令*/
 		rw_lock_s_unlock(&btr_search_latch);
 	}
 
@@ -337,7 +341,7 @@ btr_cur_search_to_nth_level(
 	}
 			
 	/* Loop and search until we arrive at the desired level */
-
+    /* 循环和搜索，直到我们到达所需的水平*/
 	for (;;) {
 		if ((height == 0) && (latch_mode <= BTR_MODIFY_LEAF)) {
 
@@ -347,7 +351,7 @@ btr_cur_search_to_nth_level(
 				
 				/* Try insert to the insert buffer if the
 				page is not in the buffer pool */
-
+                /*如果页不在缓冲池中，则尝试将其插入到插入缓冲区中*/
 				buf_mode = BUF_GET_IF_IN_POOL;
 			}
 		}
@@ -360,7 +364,7 @@ retry_page_get:
 		if (page == NULL) {
 			/* This must be a search to perform an insert;
 			try insert to the insert buffer */
-
+            /*这必须是执行插入的搜索;尝试插入到插入缓冲区*/
 			ut_ad(buf_mode == BUF_GET_IF_IN_POOL);
 			ut_ad(insert_planned);
 			ut_ad(cursor->thr);
@@ -368,7 +372,7 @@ retry_page_get:
 			if (ibuf_should_try(index) &&
 				ibuf_insert(tuple, index, space, page_no,
 							cursor->thr)) {
-				/* Insertion to the insert buffer succeeded */
+				/* Insertion to the insert buffer succeeded */ /*插入缓冲区成功*/
 				cursor->flag = BTR_CUR_INSERT_TO_IBUF;
 
 				return;
@@ -376,7 +380,7 @@ retry_page_get:
 
 			/* Insert to the insert buffer did not succeed:
 			retry page get */
-
+            /*插入到插入缓冲区未成功:重试页获取*/
 			buf_mode = BUF_GET;
 
 			goto retry_page_get;
@@ -392,7 +396,7 @@ retry_page_get:
 
 		if (height == ULINT_UNDEFINED) {
 			/* We are in the root node */
-
+            /* 我们在根节点*/
 			height = btr_page_get_level(page, mtr);
 			root_height = height;
 			cursor->tree_height = root_height + 1;
@@ -415,7 +419,7 @@ retry_page_get:
 			    && (latch_mode != BTR_CONT_MODIFY_TREE)) {
 
 				/* Release the tree s-latch */
-
+                /*松开树锁*/
 				mtr_release_s_latch_at_savepoint(
 						mtr, savepoint,
 						dict_tree_get_lock(tree));
@@ -432,11 +436,11 @@ retry_page_get:
 		}	
 
 		/* If this is the desired level, leave the loop */
-
+        /* 如果这是想要的级别，那么就离开循环*/
 		if (level == height) {
 
 			if (level > 0) {
-				/* x-latch the page */
+				/* x-latch the page */ /*x-latch页面*/
 				btr_page_get(space, page_no, RW_X_LATCH, mtr);
 			}
 
@@ -450,7 +454,7 @@ retry_page_get:
 
 		node_ptr = page_cur_get_rec(page_cursor);
 		
-		/* Go to the child node */
+		/* Go to the child node */ /*转到子节点*/
 		page_no = btr_node_ptr_get_child_page_no(node_ptr);
 	}
 
