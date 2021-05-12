@@ -999,7 +999,7 @@ btr_root_raise_and_insert(
 /*****************************************************************
 Decides if the page should be split at the convergence point of inserts
 converging to the left. */
-
+/*决定是否应在向左侧汇聚的插入的汇合点拆分页面。*/
 ibool
 btr_page_get_split_rec_to_left(
 /*===========================*/
@@ -1008,7 +1008,7 @@ btr_page_get_split_rec_to_left(
 	rec_t**		split_rec) /* out: if split recommended,
 				the first record on upper half page,
 				or NULL if tuple to be inserted should
-				be first */
+				be first */ /*如果建议拆分，上半页上的第一个记录，或者NULL，如果要插入的元组应该是第一个*/
 {
 	page_t*	page;
 	rec_t*	insert_point;
@@ -1044,7 +1044,7 @@ btr_page_get_split_rec_to_left(
 /*****************************************************************
 Decides if the page should be split at the convergence point of inserts
 converging to the right. */
-
+/*决定是否应该在插入向右收敛的收敛点拆分页面。*/
 ibool
 btr_page_get_split_rec_to_right(
 /*============================*/
@@ -1098,6 +1098,7 @@ btr_page_get_split_rec_to_right(
 Calculates a split record such that the tuple will certainly fit on
 its half-page when the split is performed. We assume in this function
 only that the cursor page has at least one user record. */
+/*计算分割记录，以便在执行分割时，元组一定适合其半页。在这个函数中，我们只假设游标页至少有一条用户记录。*/
 static
 rec_t*
 btr_page_get_sure_split_rec(
@@ -1127,7 +1128,7 @@ btr_page_get_sure_split_rec(
 	free_space  = page_get_free_space_of_empty();
 
 	/* free_space is now the free space of a created new page */
-
+    /* Free_space现在是创建的新页面的空闲空间*/
 	total_data   = page_get_data_size(page) + insert_size;
 	total_n_recs = page_get_n_recs(page) + 1;
 	ut_ad(total_n_recs >= 2);
@@ -1144,12 +1145,13 @@ btr_page_get_sure_split_rec(
 	if something was left over also for the right page,
 	otherwise the last included record will be the first on the right
 	half page */
-
+    /*我们开始包括记录左边的一半,当total_space的空间保留了他们超过一半,
+	如果包括记录符合左边页面,他们将在那里如果还剩下的页面,否则最后包括记录将成为第一个在右边一半页面*/
 	for (;;) {
-		/* Decide the next record to include */
+		/* Decide the next record to include */ /*决定收录下一个记录*/
 		if (rec == ins_rec) {
 			rec = NULL;	/* NULL denotes that tuple is
-					now included */
+					now included */ /*NULL表示现在包含了该元组*/
 		} else if (rec == NULL) {
 			rec = page_rec_get_next(ins_rec);
 		} else {
@@ -1173,7 +1175,7 @@ btr_page_get_sure_split_rec(
                     	    	/* The next record will be the first on
                     	    	the right half page if it is not the
                     	    	supremum record of page */
-
+								/*下一个记录将是右半页的第一个记录，如果它不是页的上记录*/
 				if (rec == ins_rec) {
 					next_rec = NULL;
 				} else if (rec == NULL) {
@@ -1194,7 +1196,7 @@ btr_page_get_sure_split_rec(
 
 /*****************************************************************
 Returns TRUE if the insert fits on the appropriate half-page with the
-chosen split_rec. */
+chosen split_rec. */ /*如果插入符合所选split_rec对应的半页，则返回TRUE。*/
 static
 ibool
 btr_page_insert_fits(
@@ -1221,14 +1223,14 @@ btr_page_insert_fits(
 	free_space  = page_get_free_space_of_empty();
 
 	/* free_space is now the free space of a created new page */
-
+    /* Free_space现在是创建的新页面的空闲空间*/
 	total_data   = page_get_data_size(page) + insert_size;
 	total_n_recs = page_get_n_recs(page) + 1;
 	
 	/* We determine which records (from rec to end_rec, not including
 	end_rec) will end up on the other half page from tuple when it is
 	inserted. */
-	
+	/*我们确定在插入tuple时，哪些记录(从rec到end_rec，不包括end_rec)将最终出现在它的另一半页面上。*/
 	if (split_rec == NULL) {
 		rec = page_rec_get_next(page_get_infimum_rec(page));
 		end_rec = page_rec_get_next(btr_cur_get_rec(cursor));
@@ -1247,14 +1249,14 @@ btr_page_insert_fits(
 
 		/* Ok, there will be enough available space on the
 		half page where the tuple is inserted */
-
+         /*好的，在插入元组的半页上会有足够的可用空间*/
 		return(TRUE);
 	}
 
 	while (rec != end_rec) {
 		/* In this loop we calculate the amount of reserved
 		space after rec is removed from page. */
-
+        /*在这个循环中，我们计算rec从页面中删除后的预留空间量。*/
 		total_data -= rec_get_size(rec);
 		total_n_recs--;
 
@@ -1263,7 +1265,7 @@ btr_page_insert_fits(
 
 			/* Ok, there will be enough available space on the
 			half page where the tuple is inserted */
-
+            /*好的，在插入元组的半页上会有足够的可用空间*/
 			return(TRUE);
 		}
 
