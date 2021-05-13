@@ -1624,7 +1624,7 @@ func_start:
 }
 
 /*****************************************************************
-Removes a page from the level list of pages. */
+Removes a page from the level list of pages. */ /*从页面的级别列表中移除页面。*/
 static
 void
 btr_level_list_remove(
@@ -1643,13 +1643,13 @@ btr_level_list_remove(
 	ut_ad(mtr_memo_contains(mtr, buf_block_align(page),
 			      				MTR_MEMO_PAGE_X_FIX));
 	/* Get the previous and next page numbers of page */
-
+    /* 得到前一页和后一页的页码*/
 	prev_page_no = btr_page_get_prev(page, mtr);
 	next_page_no = btr_page_get_next(page, mtr);
 	space = buf_frame_get_space_id(page);
 	
 	/* Update page links of the level */
-	
+	/* 更新该级别的页面链接*/
 	if (prev_page_no != FIL_NULL) {
 
 		prev_page = btr_page_get(space, prev_page_no, RW_X_LATCH, mtr);
@@ -1667,7 +1667,7 @@ btr_level_list_remove(
 	
 /********************************************************************
 Writes the redo log record for setting an index record as the predefined
-minimum record. */
+minimum record. */ /*写重做日志记录，以便将索引记录设置为预定义的最小记录。*/
 UNIV_INLINE
 void
 btr_set_min_rec_mark_log(
@@ -1677,14 +1677,14 @@ btr_set_min_rec_mark_log(
 {
 	mlog_write_initial_log_record(rec, MLOG_REC_MIN_MARK, mtr);
 
-	/* Write rec offset as a 2-byte ulint */
+	/* Write rec offset as a 2-byte ulint */ /*以2字节的ulint形式写rec偏移量*/
 	mlog_catenate_ulint(mtr, rec - buf_frame_align(rec), MLOG_2BYTES);
 }
 
 /********************************************************************
 Parses the redo log record for setting an index record as the predefined
 minimum record. */
-
+/*解析重做日志记录，将索引记录设置为预定义的最小记录。*/
 byte*
 btr_parse_set_min_rec_mark(
 /*=======================*/
@@ -1730,7 +1730,7 @@ btr_set_min_rec_mark(
 
 /*****************************************************************
 Deletes on the upper level the node pointer to a page. */
-
+/*从上一级删除指向页面的节点指针。*/
 void
 btr_node_ptr_delete(
 /*================*/
@@ -1746,7 +1746,7 @@ btr_node_ptr_delete(
 	ut_ad(mtr_memo_contains(mtr, buf_block_align(page),
 							MTR_MEMO_PAGE_X_FIX));
 	/* Delete node pointer on father page */
-
+    /*删除父页上的节点指针*/
 	node_ptr = btr_page_get_father_node_ptr(tree, page, mtr);
 
 	btr_cur_position(UT_LIST_GET_FIRST(tree->tree_indexes), node_ptr,
@@ -1762,7 +1762,7 @@ btr_node_ptr_delete(
 
 /*****************************************************************
 If page is the only on its level, this function moves its records to the
-father page, thus reducing the tree height. */
+father page, thus reducing the tree height. */ /*如果page是该级别上唯一的记录，则该函数将其记录移动到父页面，从而降低树的高度。*/
 static
 void
 btr_lift_page_up(
@@ -1789,20 +1789,20 @@ btr_lift_page_up(
 
 	btr_search_drop_page_hash_index(page);
 	
-	/* Make the father empty */
+	/* Make the father empty */ /*让父节点空虚*/
 	btr_page_empty(father_page, mtr);
 
-	/* Move records to the father */
+	/* Move records to the father */ /*将记录移动到父节点*/
  	page_copy_rec_list_end(father_page, page, page_get_infimum_rec(page),
 									mtr);
 	lock_update_copy_and_discard(father_page, page);
 
 	btr_page_set_level(father_page, page_level, mtr);
 
-	/* Free the file page */
+	/* Free the file page */ /*释放文件页面*/
 	btr_page_free(tree, page, mtr);		
 
-	/* We play safe and reset the free bits for the father */
+	/* We play safe and reset the free bits for the father */ /*我们谨慎行事，为父亲重置自由位*/
 	ibuf_reset_free_bits(UT_LIST_GET_FIRST(tree->tree_indexes),
 								father_page);
 	ut_ad(page_validate(father_page,
@@ -1814,13 +1814,16 @@ btr_lift_page_up(
 Tries to merge the page first to the left immediate brother if such a
 brother exists, and the node pointers to the current page and to the brother
 reside on the same page. If the left brother does not satisfy these
-conditions, looks at the right brother. If the page is the only one on that
+conditions, looks at the right brother. If the page is the only on-----e on that
 level lifts the records of the page to the father page, thus reducing the
 tree height. It is assumed that mtr holds an x-latch on the tree and on the
 page. If cursor is on the leaf level, mtr must also hold x-latches to the
 brothers, if they exist. NOTE: it is assumed that the caller has reserved
 enough free extents so that the compression will always succeed if done! */
-
+/*如果存在左直属页，则尝试先将该页合并到左直属页，并且指向当前页和指向该直属页的节点指针位于同一页上。
+如果左兄弟不满足这些条件，就看右兄弟。如果该页是该级别上唯一的页，则将该页的记录提升到父页，从而降低树的高度。
+假设mtr在树和页面上持有一个x闩锁。如果游标位于叶级，则mtr还必须包含兄弟的x-latches(如果兄弟存在的话)。
+注意:假设调用者保留了足够的空闲区段，这样压缩就总是成功!*/
 void
 btr_compress(
 /*=========*/
@@ -1868,7 +1871,7 @@ btr_compress(
 
 	/* Decide the page to which we try to merge and which will inherit
 	the locks */
-
+    /*确定试图合并到的页面以及将继承这些锁的页面*/
 	if (left_page_no != FIL_NULL) {
 
 		is_left = TRUE;
@@ -1882,6 +1885,7 @@ btr_compress(
 	} else {
 		/* The page is the only one on the level, lift the records
 		to the father */
+		/*该页是唯一的一层，将记录抬给父*/
 		btr_lift_page_up(tree, page, mtr);
 
 		return;
@@ -1906,7 +1910,7 @@ btr_compress(
 	if (data_size > max_ins_size) {
 
 		/* We have to reorganize merge_page */
-
+        /*我们必须重新组织merge_page*/
 		btr_page_reorganize(merge_page, mtr);
 
 		ut_ad(page_validate(merge_page, cursor->index));
@@ -1916,7 +1920,7 @@ btr_compress(
 
 	btr_search_drop_page_hash_index(page);
 
-	/* Remove the page from the level list */
+	/* Remove the page from the level list */ /*将该页从关卡列表中移除*/
 	btr_level_list_remove(tree, page, mtr);
 
 	if (is_left) {
@@ -1924,13 +1928,13 @@ btr_compress(
 	} else {
 		/* Replace the address of the old child node (= page) with the 
 		address of the merge page to the right */
-
+        /*将旧的子节点(= page)的地址替换为右侧的合并页的地址*/
 		btr_node_ptr_set_child_page_no(node_ptr, right_page_no, mtr);
 
 		btr_node_ptr_delete(tree, merge_page, mtr);
 	}
 	
-	/* Move records to the merge page */
+	/* Move records to the merge page */ /*将记录移动到合并页*/
 	if (is_left) {
 		orig_pred = page_rec_get_prev(
 					page_get_supremum_rec(merge_page));
@@ -1947,20 +1951,20 @@ btr_compress(
 		lock_update_merge_right(orig_succ, page);
 	}
 
-	/* We have added new records to merge_page: update its free bits */
+	/* We have added new records to merge_page: update its free bits */ /*我们已经向merge_page添加了新的记录:更新它的空闲位*/
 	ibuf_update_free_bits_if_full(cursor->index, merge_page,
 					UNIV_PAGE_SIZE, ULINT_UNDEFINED);
 					
 	ut_ad(page_validate(merge_page, cursor->index));
 
-	/* Free the file page */
+	/* Free the file page */ /*释放文件页面*/
 	btr_page_free(tree, page, mtr);		
 
 	ut_ad(btr_check_node_ptr(tree, merge_page, mtr));
 }	
 
 /*****************************************************************
-Discards a page that is the only page on its level. */
+Discards a page that is the only page on its level. */ /*丢弃该级别上唯一的页面。*/
 static
 void
 btr_discard_only_page_on_level(
@@ -1988,15 +1992,15 @@ btr_discard_only_page_on_level(
 
 	btr_page_set_level(father_page, page_level, mtr);
 
-	/* Free the file page */
+	/* Free the file page */ /*释放文件页面*/
 	btr_page_free(tree, page, mtr);		
 
 	if (buf_frame_get_page_no(father_page) == dict_tree_get_page(tree)) {
 		/* The father is the root page */
-
+        /*父页面是根页面*/
 		btr_page_empty(father_page, mtr);
 
-		/* We play safe and reset the free bits for the father */
+		/* We play safe and reset the free bits for the father */ /*我们谨慎行事，为父亲重置自由位*/
 		ibuf_reset_free_bits(UT_LIST_GET_FIRST(tree->tree_indexes),
 								father_page);
 	} else {
@@ -2010,7 +2014,7 @@ btr_discard_only_page_on_level(
 Discards a page from a B-tree. This is used to remove the last record from
 a B-tree page: the whole page must be removed at the same time. This cannot
 be used for the root page, which is allowed to be empty. */
-
+/*从b树中丢弃一个页面。这用于从B-tree页面中删除最后一条记录:必须同时删除整个页面。这不能用于允许为空的根页面。*/
 void
 btr_discard_page(
 /*=============*/
@@ -2038,7 +2042,7 @@ btr_discard_page(
 	space = dict_tree_get_space(tree);
 	
 	/* Decide the page which will inherit the locks */
-
+    /*决定将继承这些锁的页面*/
 	left_page_no = btr_page_get_prev(page, mtr);
 	right_page_no = btr_page_get_next(page, mtr);
 
@@ -2063,7 +2067,7 @@ btr_discard_page(
 
 		/* We have to mark the leftmost node pointer on the right
 		side page as the predefined minimum record */
-
+        /*我们必须将右侧页面上最左边的节点指针标记为预定义的最小记录*/
 		node_ptr = page_rec_get_next(page_get_infimum_rec(merge_page));
 
 		ut_ad(node_ptr != page_get_supremum_rec(merge_page));
@@ -2073,7 +2077,7 @@ btr_discard_page(
 	
 	btr_node_ptr_delete(tree, page, mtr);
 
-	/* Remove the page from the level list */
+	/* Remove the page from the level list */ /*将该页从关卡列表中移除*/
 	btr_level_list_remove(tree, page, mtr);
 
 	if (is_left) {
@@ -2083,7 +2087,7 @@ btr_discard_page(
 				    page_get_infimum_rec(merge_page)), page);
 	}
 
-	/* Free the file page */
+	/* Free the file page */ /*释放文件页面*/
 	btr_page_free(tree, page, mtr);		
 
 	ut_ad(btr_check_node_ptr(tree, merge_page, mtr));
@@ -2091,7 +2095,7 @@ btr_discard_page(
 
 /*****************************************************************
 Prints size info of a B-tree. */
-
+/*打印b -树的大小信息。*/
 void
 btr_print_size(
 /*===========*/
@@ -2129,7 +2133,7 @@ btr_print_size(
 }
 
 /****************************************************************
-Prints recursively index tree pages. */
+Prints recursively index tree pages. */ /*递归打印索引树页面。*/
 static
 void
 btr_print_recursive(
@@ -2184,7 +2188,7 @@ btr_print_recursive(
 
 /******************************************************************
 Prints directories and other info of all nodes in the tree. */
-
+/*打印目录和树中所有节点的其他信息。*/
 void
 btr_print_tree(
 /*===========*/
@@ -2211,7 +2215,7 @@ btr_print_tree(
 
 /****************************************************************
 Checks that the node pointer to a page is appropriate. */
-
+/*检查指向页面的节点指针是否合适。*/
 ibool
 btr_check_node_ptr(
 /*===============*/
@@ -2254,7 +2258,7 @@ btr_check_node_ptr(
 
 /****************************************************************
 Checks the size and number of fields in a record based on the definition of
-the index. */
+the index. */ /*根据索引的定义检查记录中字段的大小和数量。*/
 static
 ibool
 btr_index_rec_validate(
@@ -2305,7 +2309,7 @@ btr_index_rec_validate(
 
 /****************************************************************
 Checks the size and number of fields in records based on the definition of
-the index. */
+the index. */ /*根据索引的定义检查记录中的字段的大小和数量。*/
 static
 ibool
 btr_index_page_validate(
@@ -2340,7 +2344,7 @@ btr_index_page_validate(
 }
 
 /****************************************************************
-Validates index tree level. */
+Validates index tree level. */ /*验证索引树级别。*/
 static
 ibool
 btr_validate_level(
@@ -2612,7 +2616,7 @@ node_ptr_fails:
 
 /******************************************************************
 Checks the consistency of an index tree. */
-
+/*检查索引树的一致性。*/
 ibool
 btr_validate_tree(
 /*==============*/

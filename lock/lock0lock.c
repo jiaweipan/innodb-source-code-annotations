@@ -2658,7 +2658,7 @@ lock_update_discard(
 		lock_rec_inherit_to_gap(heir, rec);
 
 		/* Reset the locks on rec, releasing waiting transactions */
-
+        /*重置rec上的锁，释放等待的事务*/
 		lock_rec_reset_and_release_wait(rec);
 
 		if (rec == page_get_supremum_rec(page)) {
