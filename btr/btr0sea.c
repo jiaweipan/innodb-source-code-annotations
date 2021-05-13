@@ -164,6 +164,7 @@ btr_search_info_create(
 
 /*************************************************************************
 Updates the search info of an index about hash successes. */
+/*更新关于散列成功的索引的搜索信息。*/
 static
 void
 btr_search_info_update_hash(
@@ -404,7 +405,7 @@ btr_search_update_hash_ref(
 	
 /*************************************************************************
 Updates the search info. */
-
+/*更新搜索信息。*/
 void
 btr_search_info_update_slow(
 /*========================*/

@@ -1278,7 +1278,7 @@ btr_page_insert_fits(
 /***********************************************************
 Inserts a data tuple to a tree on a non-leaf level. It is assumed
 that mtr holds an x-latch on the tree. */
-
+/*在非叶级上将数据元组插入到树中。我们假设mtr在树上有一个x-闩锁。*/
 void
 btr_insert_on_non_leaf_level(
 /*=========================*/
@@ -1296,7 +1296,7 @@ btr_insert_on_non_leaf_level(
 	
 	/* In the following, choose just any index from the tree as the
 	first parameter for btr_cur_search_to_nth_level. */
-
+    /*在下面的列表中，选择树中的任意索引作为btr_cur_search_to_nth_level的第一个参数。*/
 	btr_cur_search_to_nth_level(UT_LIST_GET_FIRST(tree->tree_indexes),
 				    level, tuple, PAGE_CUR_LE,
 				    BTR_CONT_MODIFY_TREE,
@@ -1312,7 +1312,7 @@ btr_insert_on_non_leaf_level(
 
 /******************************************************************
 Attaches the halves of an index page on the appropriate level in an
-index tree. */
+index tree. */ /*将索引页的一半附加到索引树的适当级别上。*/
 static
 void
 btr_attach_half_pages(
@@ -1344,7 +1344,7 @@ btr_attach_half_pages(
 	ut_ad(mtr_memo_contains(mtr, buf_block_align(new_page),
 			      				MTR_MEMO_PAGE_X_FIX));
 
-	/* Based on split direction, decide upper and lower pages */
+	/* Based on split direction, decide upper and lower pages */ /*根据拆分方向，决定上下页*/
 	if (direction == FSP_DOWN) {
 
 		lower_page_no = buf_frame_get_page_no(new_page);
@@ -1352,12 +1352,12 @@ btr_attach_half_pages(
 		lower_page = new_page;
 		upper_page = page;
 
-		/* Look from the tree for the node pointer to page */
+		/* Look from the tree for the node pointer to page */ /*从树中查找指向页面的节点指针*/
 		node_ptr = btr_page_get_father_node_ptr(tree, page, mtr);
 
 		/* Replace the address of the old child node (= page) with the 
 		address of the new lower half */
-
+        /*用新的下半部分的地址替换旧的子节点(= page)的地址*/
 		btr_node_ptr_set_child_page_no(node_ptr, lower_page_no, mtr);
 	} else {
 		lower_page_no = buf_frame_get_page_no(page);
@@ -1366,34 +1366,34 @@ btr_attach_half_pages(
 		upper_page = new_page;
 	}
 				   
-	/* Create a memory heap where the data tuple is stored */
+	/* Create a memory heap where the data tuple is stored */ /*创建存储数据元组的内存堆*/
 	heap = mem_heap_create(100);
 
-	/* Get the level of the split pages */
+	/* Get the level of the split pages */ /*得到分割页面的级别*/
 	level = btr_page_get_level(page, mtr);
 
 	/* Build the node pointer (= node key and page address) for the upper
-	half */
+	half */ /*为上半部分构建节点指针(=节点键和页面地址)*/
 
 	node_ptr_upper = dict_tree_build_node_ptr(tree, split_rec,
 					     upper_page_no, heap, level);
 
 	/* Insert it next to the pointer to the lower half. Note that this
 	may generate recursion leading to a split on the higher level. */
-
+    /*将其插入到指向下半部分的指针旁边。注意，这可能会产生递归，导致更高级别上的分裂。*/
 	btr_insert_on_non_leaf_level(tree, level + 1, node_ptr_upper, mtr);
 		
 	/* Free the memory heap */
 	mem_heap_free(heap);
 
 	/* Get the previous and next pages of page */
-
+    /*获取页面的前几页和后几页*/
 	prev_page_no = btr_page_get_prev(page, mtr);
 	next_page_no = btr_page_get_next(page, mtr);
 	space = buf_frame_get_space_id(page);
 	
 	/* Update page links of the level */
-	
+	/* 更新该级别的页面链接*/
 	if (prev_page_no != FIL_NULL) {
 
 		prev_page = btr_page_get(space, prev_page_no, RW_X_LATCH, mtr);
@@ -1513,7 +1513,7 @@ func_start:
 	}
 	
 	/* 4. Do first the modifications in the tree structure */
-    /* 4. 首先对树结构进行修改吗*/
+    /* 4. 首先对树结构进行修改 */
 	btr_attach_half_pages(tree, page, first_rec, new_page, direction, mtr);
 
 	if (split_rec == NULL) {

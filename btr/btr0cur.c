@@ -764,7 +764,8 @@ It is assumed that mtr holds an x-latch on the page. The operation does
 not succeed if there is too little space on the page. If there is just
 one record on the page, the insert will always succeed; this is to
 prevent trying to split a page with just one record. */
-
+/*尝试对索引树中游标旁边的页面执行插入操作。假设mtr在页面上持有一个x锁存器。
+如果页面空间过小，操作不会成功。如果页面上只有一条记录，则插入总是成功的;这是为了防止试图用一个记录分割一个页面。*/
 ulint
 btr_cur_optimistic_insert(
 /*======================*/
@@ -772,9 +773,9 @@ btr_cur_optimistic_insert(
 				DB_FAIL, or error number */
 	ulint		flags,	/* in: undo logging and locking flags: if not
 				zero, the parameters index and thr should be
-				specified */
+				specified */ /*撤消日志记录和锁定标志:如果不为零，应该指定参数index和THR*/
 	btr_cur_t*	cursor,	/* in: cursor on page after which to insert;
-				cursor stays valid */
+				cursor stays valid */ /*要插入的页面上的光标;光标保持有效*/
 	dtuple_t*	entry,	/* in: entry to insert */
 	rec_t**		rec,	/* out: pointer to inserted record if
 				succeed */
@@ -945,7 +946,8 @@ Performs an insert on a page of an index tree. It is assumed that mtr
 holds an x-latch on the tree and on the cursor page. If the insert is
 made on the leaf level, to avoid deadlocks, mtr must also own x-latches
 to brothers of page, if those brothers exist. */
-
+/*在索引树的页面上执行插入操作。假设mtr在树和游标页上持有一个x-latch。
+如果插入是在叶级进行的，那么为了避免死锁，mtr还必须拥有对page的兄弟的x-latches，如果这些兄弟存在的话。*/
 ulint
 btr_cur_pessimistic_insert(
 /*=======================*/
@@ -989,7 +991,7 @@ btr_cur_pessimistic_insert(
 
 	/* Try first an optimistic insert; reset the cursor flag: we do not
 	assume anything of how it was positioned */
-
+    /*首先尝试乐观的插入;重置光标标志:我们不假设它是如何定位的*/
 	cursor->flag = BTR_CUR_BINARY;
 
 	err = btr_cur_optimistic_insert(flags, cursor, entry, rec, big_rec,
@@ -1001,7 +1003,7 @@ btr_cur_pessimistic_insert(
 
 	/* Retry with a pessimistic insert. Check locks and write to undo log,
 	if specified */
-
+    /*使用悲观插入重试。如果指定，检查锁并写入到撤消日志*/
 	err = btr_cur_ins_lock_and_undo(flags, cursor, entry, thr, &dummy_inh);
 
 	if (err != DB_SUCCESS) {
@@ -1013,7 +1015,7 @@ btr_cur_pessimistic_insert(
 		/* First reserve enough free space for the file segments
 		of the index tree, so that the insert will not fail because
 		of lack of space */
-
+        /*首先为索引树的文件段保留足够的空闲空间，这样插入就不会因为缺少空间而失败*/
 		n_extents = cursor->tree_height / 16 + 3;
 
 		success = fsp_reserve_free_extents(index->space,
@@ -1031,7 +1033,7 @@ btr_cur_pessimistic_insert(
 
 		/* The record is so big that we have to store some fields
 		externally on separate database pages */
-		
+		/*记录太大了，我们不得不在单独的数据库页面上存储一些字段*/
                 big_rec_vec = dtuple_convert_big_rec(index, entry, NULL, 0);
 
 		if (big_rec_vec == NULL) {
@@ -1043,7 +1045,7 @@ btr_cur_pessimistic_insert(
 	if (dict_tree_get_page(index->tree)
 					== buf_frame_get_page_no(page)) {
 
-		/* The page is the root page */
+		/* The page is the root page */ /*该页面是根页面*/
 		*rec = btr_root_raise_and_insert(cursor, entry, mtr);
 	} else {
 		*rec = btr_page_split_and_insert(cursor, entry, mtr);

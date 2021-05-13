@@ -21,6 +21,7 @@ btr_search_info_update_slow(
 
 /************************************************************************
 Returns search info for an index. */
+/*返回索引的搜索信息。*/
 UNIV_INLINE
 btr_search_t*
 btr_search_get_info(
@@ -34,13 +35,13 @@ btr_search_get_info(
 }
 
 /*************************************************************************
-Updates the search info. */
+Updates the search info. */ /*更新搜索信息。*/
 UNIV_INLINE
 void
 btr_search_info_update(
 /*===================*/
 	dict_index_t*	index,	/* in: index of the cursor */
-	btr_cur_t*	cursor)	/* in: cursor which was just positioned */
+	btr_cur_t*	cursor)	/* in: cursor which was just positioned */ /*光标刚刚定位*/
 {
 	btr_search_t*	info;
 
