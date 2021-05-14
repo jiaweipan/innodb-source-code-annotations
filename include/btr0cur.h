@@ -5,7 +5,7 @@ The index tree cursor
 
 Created 10/16/1994 Heikki Tuuri
 *******************************************************/
-
+/*索引树游标*/
 #ifndef btr0cur_h
 #define btr0cur_h
 
@@ -28,7 +28,7 @@ Created 10/16/1994 Heikki Tuuri
 #define BTR_CUR_HASH_ADAPT
 
 /*************************************************************
-Returns the page cursor component of a tree cursor. */
+Returns the page cursor component of a tree cursor. */ /*返回树游标的页面游标组件。*/
 UNIV_INLINE
 page_cur_t*
 btr_cur_get_page_cur(
@@ -36,7 +36,7 @@ btr_cur_get_page_cur(
 				/* out: pointer to page cursor component */
 	btr_cur_t*	cursor);	/* in: tree cursor */
 /*************************************************************
-Returns the record pointer of a tree cursor. */
+Returns the record pointer of a tree cursor. */ /*返回树游标的记录指针。*/
 UNIV_INLINE
 rec_t*
 btr_cur_get_rec(
@@ -44,14 +44,14 @@ btr_cur_get_rec(
 				/* out: pointer to record */
 	btr_cur_t*	cursor);	/* in: tree cursor */
 /*************************************************************
-Invalidates a tree cursor by setting record pointer to NULL. */
+Invalidates a tree cursor by setting record pointer to NULL. */ /*通过将记录指针设置为NULL使树游标失效。*/
 UNIV_INLINE
 void
 btr_cur_invalidate(
 /*===============*/
 	btr_cur_t*	cursor);	/* in: tree cursor */
 /*************************************************************
-Returns the page of a tree cursor. */
+Returns the page of a tree cursor. */ /*返回树状游标的页面。*/
 UNIV_INLINE
 page_t*
 btr_cur_get_page(
@@ -59,7 +59,7 @@ btr_cur_get_page(
 				/* out: pointer to page */
 	btr_cur_t*	cursor);	/* in: tree cursor */
 /*************************************************************
-Returns the tree of a cursor. */
+Returns the tree of a cursor. */ /*返回游标树。*/
 UNIV_INLINE
 dict_tree_t*
 btr_cur_get_tree(
@@ -67,7 +67,7 @@ btr_cur_get_tree(
 				/* out: tree */
 	btr_cur_t*	cursor);	/* in: tree cursor */
 /*************************************************************
-Positions a tree cursor at a given record. */
+Positions a tree cursor at a given record. */ /*将树状游标定位在给定的记录上。*/
 UNIV_INLINE
 void
 btr_cur_position(
@@ -82,7 +82,9 @@ to node pointer page number fields on the upper levels of the tree!
 Note that if mode is PAGE_CUR_LE, which is used in inserts, then
 cursor->up_match and cursor->low_match both will have sensible values.
 If mode is PAGE_CUR_GE, then up_match will a have a sensible value. */
-
+/*搜索索引树并在给定的级别上定位树游标。注意:元组中的n_fields_cmp必须设置，这样它就不能与树的上层的节点指针页号字段进行比较!
+注意，如果mode是PAGE_CUR_LE(在插入中使用)，那么cursor->up_match和cursor->low_match都将具有合理的值。
+如果mode为PAGE_CUR_GE，则up_match将有一个合理的值。*/
 void
 btr_cur_search_to_nth_level(
 /*========================*/
@@ -90,14 +92,14 @@ btr_cur_search_to_nth_level(
 	ulint		level,	/* in: the tree level of search */
 	dtuple_t*	tuple,	/* in: data tuple; NOTE: n_fields_cmp in
 				tuple must be set so that it cannot get
-				compared to the node ptr page number field! */
+				compared to the node ptr page number field! */ /*数据元组;注意:元组中的n_fields_cmp必须设置，以便不能与节点ptr页号字段进行比较!*/
 	ulint		mode,	/* in: PAGE_CUR_L, ...;
 				NOTE that if the search is made using a unique
 				prefix of a record, mode should be PAGE_CUR_LE,
 				not PAGE_CUR_GE, as the latter may end up on
 				the previous page of the record! Inserts
 				should always be made using PAGE_CUR_LE to
-				search the position! */
+				search the position! */ /*注意，如果搜索是使用一个唯一的记录前缀，模式应该是PAGE_CUR_LE，而不是PAGE_CUR_GE，因为后者可能会结束在记录的前一页!插入应该总是使用PAGE_CUR_LE来搜索位置!*/
 	ulint		latch_mode, /* in: BTR_SEARCH_LEAF, ..., ORed with
 				BTR_INSERT and BTR_ESTIMATE;
 				cursor->left_page is used to store a pointer
@@ -107,16 +109,16 @@ btr_cur_search_to_nth_level(
 				is != 0, we maybe do not have a latch set
 				on the cursor page, we assume
 				the caller uses his search latch
-				to protect the record! */
+				to protect the record! */ /*cursor->left_page用于存储一个指针指向左边的邻居页面,在BTR_SEARCH_PREV BTR_MODIFY_PREV;注意,如果has_search_latch ! = 0,我们也许没有闩上设置光标页面中,我们假定调用者使用他的搜索锁保护记录!*/
 	btr_cur_t*	cursor, /* in/out: tree cursor; the cursor page is
 				s- or x-latched, but see also above! */
 	ulint		has_search_latch,/* in: latch mode the caller
 				currently has on btr_search_latch:
-				RW_S_LATCH, or 0 */
+				RW_S_LATCH, or 0 */ /*调用者当前在btr_search_latch: RW_S_LATCH或0上的闩锁模式*/
 	mtr_t*		mtr);	/* in: mtr */
 /*********************************************************************
 Opens a cursor at either end of an index. */
-
+/*在索引的两端打开游标。*/
 void
 btr_cur_open_at_index_side(
 /*=======================*/
@@ -128,7 +130,7 @@ btr_cur_open_at_index_side(
 	mtr_t*		mtr);		/* in: mtr */
 /**************************************************************************
 Positions a cursor at a randomly chosen position within a B-tree. */
-
+/*将光标定位在b -树中随机选择的位置。*/
 void
 btr_cur_open_at_rnd_pos(
 /*====================*/
@@ -142,7 +144,8 @@ It is assumed that mtr holds an x-latch on the page. The operation does
 not succeed if there is too little space on the page. If there is just
 one record on the page, the insert will always succeed; this is to
 prevent trying to split a page with just one record. */
-
+/*尝试对索引树中游标旁边的页面执行插入操作。假设mtr在页面上持有一个x锁存器。
+如果页面空间过小，操作不会成功。如果页面上只有一条记录，则插入总是成功的;这是为了防止试图用一个记录分割一个页面。*/
 ulint
 btr_cur_optimistic_insert(
 /*======================*/
@@ -166,7 +169,8 @@ Performs an insert on a page of an index tree. It is assumed that mtr
 holds an x-latch on the tree and on the cursor page. If the insert is
 made on the leaf level, to avoid deadlocks, mtr must also own x-latches
 to brothers of page, if those brothers exist. */
-
+/*在索引树的页面上执行插入操作。假设mtr在树和游标页上持有一个x-latch。
+如果插入是在叶级进行的，那么为了避免死锁，mtr还必须拥有对page的兄弟的x-latches，如果这些兄弟存在的话。*/
 ulint
 btr_cur_pessimistic_insert(
 /*=======================*/
@@ -192,7 +196,7 @@ Updates a secondary index record when the update causes no size
 changes in its fields. The only case when this function is currently
 called is that in a char field characters change to others which
 are identified in the collation order. */
-
+/*当更新不会导致二级索引记录的字段大小发生变化时，更新二级索引记录。当前调用此函数的唯一情况是，在char字段中，字符改变为按排序顺序标识的其他字符。*/
 ulint
 btr_cur_update_sec_rec_in_place(
 /*============================*/
@@ -205,7 +209,7 @@ btr_cur_update_sec_rec_in_place(
 	mtr_t*		mtr);	/* in: mtr */
 /*****************************************************************
 Updates a record when the update causes no size changes in its fields. */
-
+/*当更新未导致记录的字段大小发生变化时，更新记录。*/
 ulint
 btr_cur_update_in_place(
 /*====================*/
@@ -224,7 +228,8 @@ Tries to update a record on a page in an index tree. It is assumed that mtr
 holds an x-latch on the page. The operation does not succeed if there is too
 little space on the page or if the update would result in too empty a page,
 so that tree compression is recommended. */
-
+/*尝试更新索引树中页上的记录。假设mtr在页面上持有一个x锁存器。
+如果页面上的空间太少，或者更新将导致页面太空，则操作不会成功，因此建议使用树压缩。*/
 ulint
 btr_cur_optimistic_update(
 /*======================*/
@@ -246,7 +251,8 @@ Performs an update of a record on a page of a tree. It is assumed
 that mtr holds an x-latch on the tree and on the cursor page. If the
 update is made on the leaf level, to avoid deadlocks, mtr must also
 own x-latches to brothers of page, if those brothers exist. */
-
+/*对树的页上的记录执行更新。假设mtr在树和游标页上持有一个x-latch。
+如果在叶级进行更新，为了避免死锁，mtr还必须拥有对page兄弟的x-latches，如果这些兄弟存在的话。*/
 ulint
 btr_cur_pessimistic_update(
 /*=======================*/
@@ -268,7 +274,8 @@ Marks a clustered index record deleted. Writes an undo log record to
 undo log on this delete marking. Writes in the trx id field the id
 of the deleting transaction, and in the roll ptr field pointer to the
 undo log record created. */
-
+/*标记已删除的聚集索引记录。在此删除标记上写入一条撤消日志记录以撤消日志。
+在trx id字段中写入删除事务的id，在roll ptr字段中写入指向创建的undo日志记录的指针。*/
 ulint
 btr_cur_del_mark_set_clust_rec(
 /*===========================*/
@@ -281,7 +288,7 @@ btr_cur_del_mark_set_clust_rec(
 	mtr_t*		mtr);	/* in: mtr */
 /***************************************************************
 Sets a secondary index record delete mark to TRUE or FALSE. */
-
+/*将二级索引记录删除标记设置为TRUE或FALSE。*/
 ulint
 btr_cur_del_mark_set_sec_rec(
 /*=========================*/
@@ -295,7 +302,7 @@ btr_cur_del_mark_set_sec_rec(
 /***************************************************************
 Sets a secondary index record delete mark to FALSE. This function is
 only used by the insert buffer insert merge mechanism. */
-
+/*将二级索引记录删除标记设置为FALSE。此函数仅用于插入缓冲区插入合并机制。*/
 void
 btr_cur_del_unmark_for_ibuf(
 /*========================*/
@@ -307,7 +314,9 @@ that mtr holds an x-latch on the tree and on the cursor page. To avoid
 deadlocks, mtr must also own x-latches to brothers of page, if those
 brothers exist. NOTE: it is assumed that the caller has reserved enough
 free extents so that the compression will always succeed if done! */
-
+/*试图在叶级上压缩树的一页。假设mtr在树和游标页上持有一个x-latch。
+为了避免死锁，mtr也必须拥有对page兄弟的x-latches，如果这些兄弟存在的话。
+注意:假设调用者保留了足够的空闲区段，这样压缩就总是成功!*/
 void
 btr_cur_compress(
 /*=============*/
@@ -320,7 +329,9 @@ that mtr holds an x-latch on the tree and on the cursor page. To avoid
 deadlocks, mtr must also own x-latches to brothers of page, if those
 brothers exist. NOTE: it is assumed that the caller has reserved enough
 free extents so that the compression will always succeed if done! */
-
+/*试图压缩树中的一页，如果它看起来有用。假设mtr在树和游标页上持有一个x-latch。
+为了避免死锁，mtr也必须拥有对page兄弟的x-latches，如果这些兄弟存在的话。
+注意:假设调用者保留了足够的空闲区段，这样压缩就总是成功!*/
 ibool
 btr_cur_compress_if_useful(
 /*=======================*/
@@ -333,7 +344,7 @@ btr_cur_compress_if_useful(
 Removes the record on which the tree cursor is positioned. It is assumed
 that the mtr has an x-latch on the page where the cursor is positioned,
 but no latch on the whole tree. */
-
+/*删除树光标所定位的记录。假设mtr在游标所在的页面上有一个x-latch，但是在整个树上没有latch。*/
 ibool
 btr_cur_optimistic_delete(
 /*======================*/
@@ -351,7 +362,8 @@ or if it is the only page on the level. It is assumed that mtr holds
 an x-latch on the tree and on the cursor page. To avoid deadlocks,
 mtr must also own x-latches to brothers of page, if those brothers
 exist. */
-
+/*删除树光标所定位的记录。如果页面的填充因子低于阈值，或者它是该级别上唯一的页面，则尝试压缩该页。
+假设mtr在树和游标页上持有一个x-latch。为了避免死锁，mtr也必须拥有对page兄弟的x-latches，如果这些兄弟存在的话。*/
 ibool
 btr_cur_pessimistic_delete(
 /*=======================*/
@@ -373,7 +385,7 @@ btr_cur_pessimistic_delete(
 	mtr_t*		mtr);	/* in: mtr */
 /***************************************************************
 Parses a redo log record of updating a record in-place. */
-
+/*解析原地更新记录的重做日志记录。*/
 byte*
 btr_cur_parse_update_in_place(
 /*==========================*/
@@ -383,7 +395,7 @@ btr_cur_parse_update_in_place(
 	page_t*	page);	/* in: page or NULL */
 /***************************************************************
 Parses a redo log record of updating a record, but not in-place. */
-
+/*解析更新记录的重做日志记录，但不是原地更新。*/
 byte*
 btr_cur_parse_opt_update(
 /*=====================*/
@@ -395,7 +407,7 @@ btr_cur_parse_opt_update(
 /********************************************************************
 Parses the redo log record for delete marking or unmarking of a clustered
 index record. */
-
+/*解析重做日志记录以删除标记或不标记聚集索引记录。*/
 byte*
 btr_cur_parse_del_mark_set_clust_rec(
 /*=================================*/
@@ -406,7 +418,7 @@ btr_cur_parse_del_mark_set_clust_rec(
 /********************************************************************
 Parses the redo log record for delete marking or unmarking of a secondary
 index record. */
-
+/*解析重做日志记录以删除标记或不标记二级索引记录。*/
 byte*
 btr_cur_parse_del_mark_set_sec_rec(
 /*===============================*/
@@ -416,7 +428,7 @@ btr_cur_parse_del_mark_set_sec_rec(
 	page_t*	page);	/* in: page or NULL */	
 /***********************************************************************
 Estimates the number of rows in a given index range. */
-
+/*估计给定索引范围内的行数。*/
 ulint
 btr_estimate_n_rows_in_range(
 /*=========================*/
@@ -430,7 +442,7 @@ btr_estimate_n_rows_in_range(
 Estimates the number of different key values in a given index, for
 each n-column prefix of the index where n <= dict_index_get_n_unique(index).
 The estimates are stored in the array index->stat_n_diff_key_vals. */
-
+/*对于n <= dict_index_get_n_unique(index)的索引的每个n列前缀，估计给定索引中不同键值的数量。估计值存储在数组索引>stat_n_diff_key_vals中。*/
 void
 btr_estimate_number_of_different_key_vals(
 /*======================================*/
@@ -440,7 +452,7 @@ Marks not updated extern fields as not-owned by this record. The ownership
 is transferred to the updated record which is inserted elsewhere in the
 index tree. In purge only the owner of externally stored field is allowed
 to free the field. */
-
+/*将未更新的外部字段标记为不属于此记录。所有权转移到插入到索引树其他地方的更新记录。在清除中，只有外部存储字段的所有者才允许释放该字段。*/
 void
 btr_cur_mark_extern_inherited_fields(
 /*=================================*/
@@ -451,7 +463,7 @@ btr_cur_mark_extern_inherited_fields(
 The complement of the previous function: in an update entry may inherit
 some externally stored fields from a record. We must mark them as inherited
 in entry, so that they are not freed in a rollback. */
-
+/*前一个函数的补充:在一个更新条目中，可以从一个记录继承一些外部存储的字段。我们必须在条目中将它们标记为继承的，这样它们就不会在回滚中被释放。*/
 void
 btr_cur_mark_dtuple_inherited_extern(
 /*=================================*/
@@ -465,7 +477,7 @@ btr_cur_mark_dtuple_inherited_extern(
 Marks all extern fields in a record as owned by the record. This function
 should be called if the delete mark of a record is removed: a not delete
 marked record always owns all its extern fields. */
-
+/*将记录中的所有外部字段标记为该记录所拥有。如果一个记录的删除标记被删除，这个函数应该被调用:一个没有删除标记的记录总是拥有它所有的外部字段。*/
 void
 btr_cur_unmark_extern_fields(
 /*=========================*/
@@ -473,7 +485,7 @@ btr_cur_unmark_extern_fields(
 	mtr_t*	mtr);	/* in: mtr */
 /***********************************************************************
 Marks all extern fields in a dtuple as owned by the record. */
-
+/*将dtuple中的所有extern字段标记为该记录所有。*/
 void
 btr_cur_unmark_dtuple_extern_fields(
 /*================================*/
@@ -485,7 +497,7 @@ btr_cur_unmark_dtuple_extern_fields(
 Stores the fields in big_rec_vec to the tablespace and puts pointers to
 them in rec. The fields are stored on pages allocated from leaf node
 file segment of the index tree. */
-
+/*将big_rec_vec中的字段存储到表空间中，并将指向它们的指针存储在rec中。字段存储在索引树的叶节点文件段分配的页面中。*/
 ulint
 btr_store_big_rec_extern_fields(
 /*============================*/
@@ -502,7 +514,7 @@ Frees the space in an externally stored field to the file space
 management if the field in data is owned the externally stored field,
 in a rollback we may have the additional condition that the field must
 not be inherited. */
-
+/*如果数据中的字段属于外部存储的字段，则释放外部存储字段中的空间给文件空间管理，在回滚中，我们可能会有一个附加条件，即该字段不能被继承。*/
 void
 btr_free_externally_stored_field(
 /*=============================*/
@@ -520,7 +532,7 @@ btr_free_externally_stored_field(
 					tree */
 /***************************************************************
 Frees the externally stored fields for a record. */
-
+/*释放外部存储的记录字段。*/
 void
 btr_rec_free_externally_stored_fields(
 /*==================================*/
@@ -535,7 +547,7 @@ btr_rec_free_externally_stored_fields(
 				tree */
 /***********************************************************************
 Copies an externally stored field of a record to mem heap. */
-
+/*将记录的外部存储字段复制到内存堆。*/
 byte*
 btr_rec_copy_externally_stored_field(
 /*=================================*/
@@ -549,7 +561,8 @@ Copies an externally stored field of a record to mem heap. Parameter
 data contains a pointer to 'internally' stored part of the field:
 possibly some data, and the reference to the externally stored part in
 the last 20 bytes of data. */
-
+/*将记录的外部存储字段复制到内存堆。参数data包含一个指向“内部”存储的字段部分的指针:
+可能是一些数据，以及在数据的最后20个字节中对外部存储部分的引用。*/
 byte*
 btr_copy_externally_stored_field(
 /*=============================*/
@@ -566,7 +579,8 @@ vector, and also those fields who are marked as extern storage in rec
 and not mentioned in updated fields. We use this function to remember
 which fields we must mark as extern storage in a record inserted for an
 update. */
-
+/*在更新向量中存储标记为extern storage的字段的位置，以及在rec中标记为extern storage而在updated fields中没有提到的字段的位置。
+我们使用这个函数来记住在为更新而插入的记录中哪些字段必须标记为外部存储。*/
 ulint
 btr_push_update_extern_fields(
 /*==========================*/
