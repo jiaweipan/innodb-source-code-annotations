@@ -5,11 +5,11 @@ The index tree cursor
 
 Created 10/16/1994 Heikki Tuuri
 *******************************************************/
-
+/*索引树游标*/
 #include "btr0btr.h"
 
 /*************************************************************
-Returns the page cursor component of a tree cursor. */
+Returns the page cursor component of a tree cursor. */ /*返回树游标的页面游标组件。*/
 UNIV_INLINE
 page_cur_t*
 btr_cur_get_page_cur(
@@ -21,7 +21,7 @@ btr_cur_get_page_cur(
 }
 
 /*************************************************************
-Returns the record pointer of a tree cursor. */
+Returns the record pointer of a tree cursor. */ /*返回树游标的记录指针。*/
 UNIV_INLINE
 rec_t*
 btr_cur_get_rec(
@@ -33,7 +33,7 @@ btr_cur_get_rec(
 }
 
 /*************************************************************
-Invalidates a tree cursor by setting record pointer to NULL. */
+Invalidates a tree cursor by setting record pointer to NULL. */ /*通过将记录指针设置为NULL使树游标失效。*/
 UNIV_INLINE
 void
 btr_cur_invalidate(
@@ -44,7 +44,7 @@ btr_cur_invalidate(
 }
 
 /*************************************************************
-Returns the page of a tree cursor. */
+Returns the page of a tree cursor. */ /*返回树状游标的页面。*/
 UNIV_INLINE
 page_t*
 btr_cur_get_page(
@@ -56,7 +56,7 @@ btr_cur_get_page(
 }
 
 /*************************************************************
-Returns the tree of a cursor. */
+Returns the tree of a cursor. */ /*返回游标树。*/
 UNIV_INLINE
 dict_tree_t*
 btr_cur_get_tree(
@@ -68,7 +68,7 @@ btr_cur_get_tree(
 }
 
 /*************************************************************
-Positions a tree cursor at a given record. */
+Positions a tree cursor at a given record. */ /*将树状游标定位在给定的记录上。*/
 UNIV_INLINE
 void
 btr_cur_position(
@@ -84,7 +84,7 @@ btr_cur_position(
 
 /*************************************************************************
 Checks if compressing an index page where a btr cursor is placed makes
-sense. */
+sense. */ /*检查压缩放置btr游标的索引页是否有意义。*/
 UNIV_INLINE
 ibool
 btr_cur_compress_recommendation(
@@ -109,7 +109,7 @@ btr_cur_compress_recommendation(
 		minimum value OR the level in the B-tree contains just
 		one page: we recommend compression if this is not the
 		root page. */
-		
+		/*页面填充因子低于预定义的最小值或b树中的级别只包含一个页面:如果这不是根页面，我们建议进行压缩。*/
 		if (dict_tree_get_page((cursor->index)->tree)
 		    == buf_frame_get_page_no(page)) {
 
@@ -127,6 +127,7 @@ btr_cur_compress_recommendation(
 /*************************************************************************
 Checks if the record on which the cursor is placed can be deleted without
 making tree compression necessary (or, recommended). */
+/*检查是否可以删除游标所在的记录，而无需进行树压缩(或推荐)。*/
 UNIV_INLINE
 ibool
 btr_cur_can_delete_without_compress(
@@ -156,7 +157,7 @@ btr_cur_can_delete_without_compress(
 		minimum value, OR the level in the B-tree contains just
 		one page, OR the page will become empty: we recommend
 		compression if this is not the root page. */
-		
+		/*页面填充因子将低于预定义的最小值，或者b -树中的级别只包含一个页面，或者页面将变为空:如果这不是根页面，我们建议压缩。*/
 		if (dict_tree_get_page((cursor->index)->tree)
 		    == buf_frame_get_page_no(page)) {
 

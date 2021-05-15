@@ -595,29 +595,29 @@ btr_push_update_extern_fields(
 
 /* In the pessimistic delete, if the page data size drops below this
 limit, merging it to a neighbor is tried */
-
+/*在悲观删除中，如果页面数据大小低于此限制，则尝试将其合并到邻居*/
 #define BTR_CUR_PAGE_COMPRESS_LIMIT	(UNIV_PAGE_SIZE / 2)
 
 /* A slot in the path array. We store here info on a search path down the
 tree. Each slot contains data on a single level of the tree. */
-
+/*路径阵列中的槽位。我们在树下的搜索路径上存储信息。每个插槽包含树的单个级别上的数据。*/
 typedef struct btr_path_struct	btr_path_t;
 struct btr_path_struct{
 	ulint	nth_rec;	/* index of the record
 				where the page cursor stopped on
 				this level (index in alphabetical
 				order); value ULINT_UNDEFINED
-				denotes array end */
-	ulint	n_recs;		/* number of records on the page */
+				denotes array end */ /*页面光标在该级别上停止的记录的索引(按字母顺序索引);ULINT_UNDEFINED表示数组结束*/
+	ulint	n_recs;		/* number of records on the page */ /*页面记录个数*/
 };
 
-#define BTR_PATH_ARRAY_N_SLOTS	250	/* size of path array (in slots) */
+#define BTR_PATH_ARRAY_N_SLOTS	250	/* size of path array (in slots) */ /*路径数组的大小(以槽为单位)*/
 
 /* The tree cursor: the definition appears here only for the compiler
 to know struct size! */
 /*树游标:这里的定义只是为了让编译器知道结构体的大小!*/
 struct btr_cur_struct {
-	dict_index_t*	index;		/* index where positioned */ /*指数在定位*/
+	dict_index_t*	index;		/* index where positioned */ /*索引在定位*/
 	page_cur_t	page_cur;	/* page cursor */ /*页面光标*/
 	page_t*		left_page;	/* this field is used to store a pointer
 					to the left neighbor page, in the cases
@@ -682,35 +682,35 @@ struct btr_cur_struct {
 					the tree */ /*在估计范围内的行数时，我们在这个数组中存储通过树的路径信息*/
 };
 
-/* Values for the flag documenting the used search method */
+/* Values for the flag documenting the used search method */ /*记录所使用的搜索方法的标志的值*/
 #define BTR_CUR_HASH		1	/* successful shortcut using the hash
-					index */
+					index */ /*使用散列索引的成功快捷方式*/
 #define BTR_CUR_HASH_FAIL	2	/* failure using hash, success using
 					binary search: the misleading hash
 					reference is stored in the field
 					hash_node, and might be necessary to
-					update */
-#define BTR_CUR_BINARY		3	/* success using the binary search */
+					update */ /*失败使用哈希，成功使用二进制搜索:误导性的哈希引用存储在字段hash_node中，可能需要更新*/
+#define BTR_CUR_BINARY		3	/* success using the binary search */ /*成功使用二分查找*/
 #define BTR_CUR_INSERT_TO_IBUF	4	/* performed the intended insert to
-					the insert buffer */
+					the insert buffer */ /*对插入缓冲区执行预期的插入*/
 
 /* If pessimistic delete fails because of lack of file space,
 there is still a good change of success a little later: try this many times,
-and sleep this many microseconds in between */
+and sleep this many microseconds in between */ /*如果悲观删除因为文件空间不足而失败，那么稍晚一点也会成功:尝试这多次，并在其间睡眠这几微秒*/
 #define BTR_CUR_RETRY_DELETE_N_TIMES	100
 #define BTR_CUR_RETRY_SLEEP_TIME	50000
 
-/* The reference in a field of which data is stored on a different page */
+/* The reference in a field of which data is stored on a different page */ /*数据存储在不同页面的字段中的引用*/
 /*--------------------------------------*/
-#define BTR_EXTERN_SPACE_ID		0	/* space id where stored */
-#define BTR_EXTERN_PAGE_NO		4	/* page no where stored */
+#define BTR_EXTERN_SPACE_ID		0	/* space id where stored */ /*存储空间id*/
+#define BTR_EXTERN_PAGE_NO		4	/* page no where stored */ /*存储页号*/
 #define BTR_EXTERN_OFFSET		8	/* offset of BLOB header
-						on that page */
+						on that page */ /*该页上BLOB头的偏移量*/
 #define BTR_EXTERN_LEN			12	/* 8 bytes containing the
 						length of the externally
 						stored part of the BLOB.
 						The 2 highest bits are
-						reserved to the flags below. */
+						reserved to the flags below. */ /*8个字节，包含BLOB外部存储部分的长度。最高的2位保留给下面的标志。*/
 /*--------------------------------------*/
 #define BTR_EXTERN_FIELD_REF_SIZE	20
 
@@ -720,7 +720,9 @@ stored field; only the owner field is allowed to free the field in purge!
 If the 2nd highest bit is 1 then it means that the externally stored field
 was inherited from an earlier version of the row. In rollback we are not
 allowed to free an inherited external field. */
-
+/*如果该字段不“拥有”外部存储的字段，则BTR_EXTERN_LEN的最高位(即最低地址的字节的最高位)被设置为1;
+在清除中，只有所有者字段允许释放字段!如果第2位是1，则意味着外部存储的字段继承自该行的早期版本。
+在回滚中，不允许释放继承的外部字段。*/
 #define BTR_EXTERN_OWNER_FLAG		128
 #define BTR_EXTERN_INHERITED_FLAG	64
 
