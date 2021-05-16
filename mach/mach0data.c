@@ -79,7 +79,7 @@ mach_parse_compressed(
 
 /*************************************************************
 Reads a dulint in a compressed form if the log record fully contains it. */
-
+/*如果日志记录完全包含一个压缩格式的dulint，则读取它。*/
 byte*
 mach_dulint_parse_compressed(
 /*=========================*/

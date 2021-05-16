@@ -378,7 +378,7 @@ row_upd_rec_in_place(
 /*************************************************************************
 Writes into the redo log the values of trx id and roll ptr and enough info
 to determine their positions within a clustered index record. */
-
+/*向重做日志中写入trx id和roll ptr的值，以及足够的信息来确定它们在聚集索引记录中的位置。*/
 byte*
 row_upd_write_sys_vals_to_log(
 /*==========================*/
@@ -406,7 +406,7 @@ row_upd_write_sys_vals_to_log(
 
 /*************************************************************************
 Parses the log data of system field values. */
-
+/*解析系统字段值的日志数据。*/
 byte*
 row_upd_parse_sys_vals(
 /*===================*/
@@ -439,7 +439,7 @@ row_upd_parse_sys_vals(
 
 /***************************************************************
 Writes to the redo log the new values of the fields occurring in the index. */
-
+/*将索引中出现的字段的新值写入重做日志。*/
 void
 row_upd_index_write_log(
 /*====================*/
@@ -505,7 +505,7 @@ row_upd_index_write_log(
 
 /*************************************************************************
 Parses the log data written by row_upd_index_write_log. */
-
+/*解析row_upd_index_write_log写入的日志数据。*/
 byte*
 row_upd_index_parse(
 /*================*/

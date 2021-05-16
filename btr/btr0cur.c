@@ -1,17 +1,18 @@
 /******************************************************
 The index tree cursor
-
+索引树游标
 All changes that row operations make to a B-tree or the records
 there must go through this module! Undo log records are written here
 of every modify or insert of a clustered index record.
-
+行操作对b -树或那里的记录所做的所有更改都必须通过这个模块!对于聚集索引记录的每次修改或插入，撤销日志记录都写在这里。
 			NOTE!!!
 To make sure we do not run out of disk space during a pessimistic
 insert or update, we have to reserve 2 x the height of the index tree
 many pages in the tablespace before we start the operation, because
 if leaf splitting has been started, it is difficult to undo, except
 by crashing the database and doing a roll-forward.
-
+以确保我们不耗尽磁盘空间在悲观的插入或更新,我们必须储备2 x索引树的高度很多页表空间在开始操作之前,
+因为如果叶已经开始分裂,很难撤销,除了崩溃数据库和前滚。
 (c) 1994-2001 Innobase Oy
 
 Created 10/16/1994 Heikki Tuuri
@@ -42,25 +43,25 @@ ulint	btr_cur_n_non_sea	= 0;
 
 /* In the optimistic insert, if the insert does not fit, but this much space
 can be released by page reorganize, then it is reorganized */
-
+/*在乐观插入中，如果插入不合适，但可以通过页面重组释放这么多空间，那么就重新组织页面*/
 #define BTR_CUR_PAGE_REORGANIZE_LIMIT	(UNIV_PAGE_SIZE / 32)
 
 /* When estimating number of different kay values in an index sample
-this many index pages */
+this many index pages */ /*当估计一个索引样本中不同kay值的数量时，要用到这么多索引页*/
 #define BTR_KEY_VAL_ESTIMATE_N_PAGES	8
 
-/* The structure of a BLOB part header */
+/* The structure of a BLOB part header */ /*BLOB部分报头的结构*/
 /*--------------------------------------*/
 #define BTR_BLOB_HDR_PART_LEN		0	/* BLOB part len on this
-						page */
+						page  此页上的BLOB部分len */
 #define BTR_BLOB_HDR_NEXT_PAGE_NO	4	/* next BLOB part page no,
-						FIL_NULL if none */
+						FIL_NULL if none 下一个BLOB部分页否，如果没有FIL_NULL */
 /*--------------------------------------*/
 #define BTR_BLOB_HDR_SIZE		8
 
 /***********************************************************************
 Adds path information to the cursor for the current page, for which
-the binary search has been performed. */
+the binary search has been performed. */ /*将已执行二分查找的当前页的路径信息添加到游标中。*/
 static
 void
 btr_cur_add_path_info(
@@ -71,7 +72,7 @@ btr_cur_add_path_info(
 	ulint		root_height);	/* in: root node height in tree */
 /***************************************************************
 Frees the externally stored fields for a record, if the field is mentioned
-in the update vector. */
+in the update vector. */ /*释放记录的外部存储字段，如果该字段在更新向量中被提到。*/
 static
 void
 btr_rec_free_updated_extern_fields(
@@ -86,7 +87,7 @@ btr_rec_free_updated_extern_fields(
 	mtr_t*		mtr);	/* in: mini-transaction handle which contains
 				an X-latch to record page and to the tree */
 /***************************************************************
-Gets the externally stored size of a record, in units of a database page. */
+Gets the externally stored size of a record, in units of a database page. */ /*获取记录外部存储的大小，以数据库页为单位。*/
 static
 ulint
 btr_rec_get_externally_stored_len(
@@ -127,7 +128,7 @@ btr_cur_latch_leaves(
 
 	} else if (latch_mode == BTR_MODIFY_TREE) {
 
-		/* x-latch also brothers from left to right */
+		/* x-latch also brothers from left to right */ /*X-latch也是从左到右的兄弟*/
 		left_page_no = btr_page_get_prev(page, mtr);
 
 		if (left_page_no != FIL_NULL) {
@@ -144,7 +145,7 @@ btr_cur_latch_leaves(
 
 	} else if (latch_mode == BTR_SEARCH_PREV) {
 
-		/* s-latch also left brother */
+		/* s-latch also left brother */ /*s-闩也左兄弟*/
 		left_page_no = btr_page_get_prev(page, mtr);
 
 		if (left_page_no != FIL_NULL) {
@@ -156,7 +157,7 @@ btr_cur_latch_leaves(
 
 	} else if (latch_mode == BTR_MODIFY_PREV) {
 
-		/* x-latch also left brother */
+		/* x-latch also left brother */ /*X-闩也左兄弟*/
 		left_page_no = btr_page_get_prev(page, mtr);
 
 		if (left_page_no != FIL_NULL) {
@@ -484,7 +485,7 @@ retry_page_get:
 
 /*********************************************************************
 Opens a cursor at either end of an index. */
-
+/*在索引的两端打开游标。*/
 void
 btr_cur_open_at_index_side(
 /*=======================*/
@@ -578,7 +579,7 @@ btr_cur_open_at_index_side(
 	
 /**************************************************************************
 Positions a cursor at a randomly chosen position within a B-tree. */
-
+/*将光标定位在b -树中随机选择的位置。*/
 void
 btr_cur_open_at_rnd_pos(
 /*====================*/
@@ -654,7 +655,8 @@ btr_cur_open_at_rnd_pos(
 Inserts a record if there is enough space, or if enough space can
 be freed by reorganizing. Differs from _optimistic_insert because
 no heuristics is applied to whether it pays to use CPU time for
-reorganizing the page or not. */
+reorganizing the page or not. */ /*如果有足够的空间，或者可以通过重组释放足够的空间，则插入一条记录。
+与_optimistic_insert不同，因为没有应用启发式方法来确定使用CPU时间重新组织页面是否值得。*/
 static
 rec_t*
 btr_cur_insert_if_possible(
@@ -682,12 +684,12 @@ btr_cur_insert_if_possible(
 							MTR_MEMO_PAGE_X_FIX));
 	page_cursor = btr_cur_get_page_cur(cursor);
 	
-	/* Now, try the insert */
+	/* Now, try the insert */ /*现在，尝试插入*/
 	rec = page_cur_tuple_insert(page_cursor, tuple, mtr);	
 
 	if (!rec) {
 		/* If record did not fit, reorganize */
-
+        /* 如果记录不符合，重新整理*/
 		btr_page_reorganize(page, mtr);
 
 		*reorg = TRUE;
@@ -701,7 +703,7 @@ btr_cur_insert_if_possible(
 }
 
 /*****************************************************************
-For an insert, checks the locks and does the undo logging if desired. */
+For an insert, checks the locks and does the undo logging if desired. */ /*对于插入，检查锁并执行撤消日志记录(如果需要)。*/
 UNIV_INLINE
 ulint
 btr_cur_ins_lock_and_undo(
@@ -725,7 +727,7 @@ btr_cur_ins_lock_and_undo(
 
 	/* Check if we have to wait for a lock: enqueue an explicit lock
 	request if yes */
-
+    /*检查我们是否必须等待一个锁:如果是，将一个显式的锁请求排队*/
 	rec = btr_cur_get_rec(cursor);
 	index = cursor->index;
 	
@@ -747,7 +749,7 @@ btr_cur_ins_lock_and_undo(
 		}
 
 		/* Now we can fill in the roll ptr field in entry */
-
+         /*现在我们可以在输入中填写roll ptr字段*/
 		if (!(flags & BTR_KEEP_SYS_FLAG)) {
 
 			row_upd_index_entry_sys_field(entry, index,
@@ -824,7 +826,7 @@ calculate_sizes_again:
 
 		/* The record is so big that we have to store some fields
 		externally on separate database pages */
-		
+		/*记录太大了，我们不得不在单独的数据库页面上存储一些字段*/
                 big_rec_vec = dtuple_convert_big_rec(index, entry, NULL, 0);
 
 		if (big_rec_vec == NULL) {
@@ -838,7 +840,7 @@ calculate_sizes_again:
 	/* If there have been many consecutive inserts, and we are on the leaf
 	level, check if we have to split the page to reserve enough free space
 	for future updates of records. */
-
+    /*如果有许多连续的插入，并且我们处于叶级，请检查是否必须拆分页面，以便为将来更新记录保留足够的空闲空间。*/
 	type = index->type;
 	
 	if ((type & DICT_CLUSTERED)
@@ -866,7 +868,7 @@ calculate_sizes_again:
 		return(DB_FAIL);
 	}
 
-        /* Check locks and write to the undo log, if specified */
+        /* Check locks and write to the undo log, if specified *//*如果指定，检查锁并写入撤消日志*/
         err = btr_cur_ins_lock_and_undo(flags, cursor, entry, thr, &inherit);
 
 	if (err != DB_SUCCESS) {
@@ -882,7 +884,7 @@ calculate_sizes_again:
 	reorg = FALSE;
 
 	/* Now, try the insert */
-
+    /*现在，尝试插入*/
 	*rec = page_cur_insert_rec_low(page_cursor, entry, data_size,
 								NULL, mtr);	
 	if (!(*rec)) {
@@ -931,7 +933,7 @@ calculate_sizes_again:
 					rec_size + PAGE_DIR_SLOT_SIZE, type);
 */	
 	if (!(type & (DICT_CLUSTERED | DICT_UNIQUE))) {
-		/* We have added a record to page: update its free bits */
+		/* We have added a record to page: update its free bits *//*我们已经添加了一个记录到页面:更新它的自由位*/
 		ibuf_update_free_bits_if_full(cursor->index, page, max_size,
 					rec_size + PAGE_DIR_SLOT_SIZE);
 	}
@@ -1074,9 +1076,9 @@ btr_cur_pessimistic_insert(
 
 /*==================== B-TREE UPDATE =========================*/
 /* Only clustered index records are modified using these functions */
-
+/*只有聚集索引记录可以使用这些函数进行修改*/
 /*****************************************************************
-For an update, checks the locks and does the undo logging. */
+For an update, checks the locks and does the undo logging. */ /*对于更新，检查锁并执行撤销日志记录。*/
 UNIV_INLINE
 ulint
 btr_cur_upd_lock_and_undo(
@@ -1098,6 +1100,7 @@ btr_cur_upd_lock_and_undo(
 	ut_ad(cursor && update && thr && roll_ptr);
 
 	/* Only clustered index records are updated using this function */
+	/* 只有聚集索引记录才使用此函数进行更新*/
 	ut_ad((cursor->index)->type & DICT_CLUSTERED);
 
 	rec = btr_cur_get_rec(cursor);
@@ -1105,7 +1108,7 @@ btr_cur_upd_lock_and_undo(
 	
 	/* Check if we have to wait for a lock: enqueue an explicit lock
 	request if yes */
-
+    /*检查我们是否必须等待一个锁:如果是，将一个显式的锁请求排队*/
 	err = DB_SUCCESS;
 
 	if (!(flags & BTR_NO_LOCKING_FLAG)) {
@@ -1118,7 +1121,7 @@ btr_cur_upd_lock_and_undo(
 	}
 
 	/* Append the info about the update in the undo log */
-
+    /*在撤销日志中附加有关更新的信息*/
 	err = trx_undo_report_row_operation(flags, TRX_UNDO_MODIFY_OP, thr,
 						index, NULL, update,
 						cmpl_info, rec, roll_ptr);
@@ -1126,7 +1129,7 @@ btr_cur_upd_lock_and_undo(
 }
 
 /***************************************************************
-Writes a redo log record of updating a record in-place. */
+Writes a redo log record of updating a record in-place. */ /*写一个更新记录的重做日志记录。*/
 UNIV_INLINE
 void
 btr_cur_update_in_place_log(
@@ -1159,7 +1162,7 @@ btr_cur_update_in_place_log(
 
 /***************************************************************
 Parses a redo log record of updating a record in-place. */
-
+/*解析原地更新记录的重做日志记录。*/
 byte*
 btr_cur_parse_update_in_place(
 /*==========================*/

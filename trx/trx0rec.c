@@ -1010,7 +1010,7 @@ Writes information to an undo log about an insert, update, or a delete marking
 of a clustered index record. This information is used in a rollback of the
 transaction and in consistent reads that must look to the history of this
 transaction. */
-
+/*将关于聚集索引记录的插入、更新或删除标记的信息写入撤销日志。该信息用于事务的回滚和一致性读取，这些读取必须查看该事务的历史记录。*/
 ulint
 trx_undo_report_row_operation(
 /*==========================*/
