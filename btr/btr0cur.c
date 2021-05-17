@@ -1374,7 +1374,7 @@ btr_cur_optimistic_update(
 	ulint		flags,	/* in: undo logging and locking flags */
 	btr_cur_t*	cursor,	/* in: cursor on the record to update;
 				cursor stays valid and positioned on the
-				same record */
+				same record */ /**/
 	upd_t*		update,	/* in: update vector; this must also
 				contain trx id and roll ptr fields */
 	ulint		cmpl_info,/* in: compiler info on secondary index
@@ -1397,7 +1397,7 @@ btr_cur_optimistic_update(
 	ibool		reorganized	= FALSE;
 	ulint		i;
 
-	/* Only clustered index records are updated using this function */
+	/* Only clustered index records are updated using this function */ /*只有聚集索引记录才使用此函数进行更新*/
 	ut_ad((cursor->index)->type & DICT_CLUSTERED);
 	
 	page = btr_cur_get_page(cursor);
@@ -1410,7 +1410,7 @@ btr_cur_optimistic_update(
 
 		/* The simplest and most common case: the update does not
 		change the size of any field */
-
+        /*最简单和最常见的情况是:更新不会改变任何字段的大小*/
 		return(btr_cur_update_in_place(flags, cursor, update,
 							cmpl_info, thr, mtr));
 	}
@@ -1420,7 +1420,7 @@ btr_cur_optimistic_update(
 
 			/* Externally stored fields are treated in pessimistic
 			update */
-
+            /*在悲观更新中处理外部存储的字段*/
 			return(DB_OVERFLOW);
 		}
 	}
@@ -1428,7 +1428,7 @@ btr_cur_optimistic_update(
 	if (rec_contains_externally_stored_field(btr_cur_get_rec(cursor))) {
 		/* Externally stored fields are treated in pessimistic
 		update */
-
+        /*在悲观更新中处理外部存储的字段*/
 		return(DB_OVERFLOW);
 	}
 	
@@ -1457,7 +1457,7 @@ btr_cur_optimistic_update(
 					< BTR_CUR_PAGE_COMPRESS_LIMIT) {
 
 		/* The page would become too empty */
-
+        /* 页面会变得太空*/
 		mem_heap_free(heap);
 
 		return(DB_UNDERFLOW);
@@ -1470,13 +1470,13 @@ btr_cur_optimistic_update(
 		/* There was not enough space, or it did not pay to
 		reorganize: for simplicity, we decide what to do assuming a
 		reorganization is needed, though it might not be necessary */
-
+        /*没有足够的空间，或者重组不划算:为了简单起见，我们决定在需要重组的情况下做什么，尽管重组可能不是必需的*/
 		mem_heap_free(heap);		
 
 		return(DB_OVERFLOW);
 	}
 
-	/* Do lock checking and undo logging */
+	/* Do lock checking and undo logging */ /*是否进行锁检查和撤消日志记录*/
 	err = btr_cur_upd_lock_and_undo(flags, cursor, update, cmpl_info, thr,
 								&roll_ptr);
 	if (err != DB_SUCCESS) {
@@ -1489,7 +1489,7 @@ btr_cur_optimistic_update(
         /* Ok, we may do the replacement. Store on the page infimum the
 	explicit locks on rec, before deleting rec (see the comment in
 	.._pessimistic_update). */
-
+    /*好吧，我们可以换。在删除rec之前，在页面上存储rec上的显式锁(参见.. _悲观_update中的注释)。*/
 	lock_rec_store_on_page_infimum(rec);
 
 	btr_search_update_hash_on_delete(cursor);
@@ -1514,12 +1514,12 @@ btr_cur_optimistic_update(
 	if (!rec_get_deleted_flag(rec)) {
 		/* The new inserted record owns its possible externally
 		stored fields */
-
+        /*新插入的记录拥有其可能的外部存储字段*/
 		btr_cur_unmark_extern_fields(rec, mtr);
 	}
 
 	/* Restore the old explicit lock state on the record */
-
+    /*恢复记录上的旧显式锁状态*/
 	lock_rec_restore_from_page_infimum(rec, page);
 
         page_cur_move_to_next(page_cursor);
@@ -1535,6 +1535,8 @@ updated record, the supremum record must inherit exactly the locks on the
 updated record. In the split it may have inherited locks from the successor
 of the updated record, which is not correct. This function restores the
 right locks for the new supremum. */
+/*如果在拆分中，一个新的上下限记录被创建为更新记录的前身，则上下限记录必须完全继承更新记录上的锁。
+在拆分中，它可能从更新记录的后继对象继承了锁，这是不正确的。这个函数为新的上界恢复正确的锁。*/
 static
 void
 btr_cur_pess_upd_restore_supremum(
@@ -1551,7 +1553,7 @@ btr_cur_pess_upd_restore_supremum(
 
 	if (page_rec_get_next(page_get_infimum_rec(page)) != rec) {
 		/* Updated record is not the first user record on its page */ 
-	
+	    /* 更新记录不是其页面上的第一个用户记录*/
 		return;
 	}
 
@@ -1561,7 +1563,7 @@ btr_cur_pess_upd_restore_supremum(
 	ut_ad(prev_page_no != FIL_NULL);
 	prev_page = buf_page_get_with_no_latch(space, prev_page_no, mtr);
 
-	/* We must already have an x-latch to prev_page! */
+	/* We must already have an x-latch to prev_page! */ /*我们一定已经有了prev_page的x锁存器!*/
 	ut_ad(mtr_memo_contains(mtr, buf_block_align(prev_page),
 		      				MTR_MEMO_PAGE_X_FIX));
 
@@ -1571,7 +1573,7 @@ btr_cur_pess_upd_restore_supremum(
 		   
 /***************************************************************
 Replaces and copies the data in the new column values stored in the
-update vector to the clustered index entry given. */
+update vector to the clustered index entry given. */ /*将更新向量中存储的新列值中的数据替换并复制到给定的聚集索引项中。*/
 static
 void
 btr_cur_copy_new_col_vals(
@@ -1616,7 +1618,8 @@ Performs an update of a record on a page of a tree. It is assumed
 that mtr holds an x-latch on the tree and on the cursor page. If the
 update is made on the leaf level, to avoid deadlocks, mtr must also
 own x-latches to brothers of page, if those brothers exist. */
-
+/*对树的页上的记录执行更新。假设mtr在树和游标页上持有一个x-latch。
+如果在叶级进行更新，为了避免死锁，mtr还必须拥有对page兄弟的x-latches，如果这些兄弟存在的话。*/
 ulint
 btr_cur_pessimistic_update(
 /*=======================*/
@@ -1676,7 +1679,7 @@ btr_cur_pessimistic_update(
 		return(optim_err);
 	}
 
-	/* Do lock checking and undo logging */
+	/* Do lock checking and undo logging */ /*是否进行锁检查和撤消日志记录*/
 	err = btr_cur_upd_lock_and_undo(flags, cursor, update, cmpl_info,
 							thr, &roll_ptr);
 	if (err != DB_SUCCESS) {
@@ -1688,7 +1691,7 @@ btr_cur_pessimistic_update(
 		/* First reserve enough free space for the file segments
 		of the index tree, so that the update will not fail because
 		of lack of space */
-
+        /*首先为索引树的文件段保留足够的空闲空间，这样更新就不会因为空间不足而失败*/
 		n_extents = cursor->tree_height / 16 + 3;
 
 		if (flags & BTR_NO_UNDO_LOG_FLAG) {
@@ -1731,7 +1734,9 @@ btr_cur_pessimistic_update(
 	btr_root_raise_and_insert. Therefore we cannot in the lock system
 	delete the lock structs set on the root page even if the root
 	page carries just node pointers. */
-
+    /*在删除rec之前，将显式锁的状态存储在rec上。在我们可以将锁移回实际记录之前，page infimum作为锁的虚拟载体，同时也考虑到锁的释放。
+	有一种特殊情况:如果在根页上进行插入操作，而插入操作导致调用btr_root_raise_and_insert。
+	因此，我们不能在锁系统中删除设置在根页面上的锁结构，即使根页面只携带节点指针。*/
 	lock_rec_store_on_page_infimum(rec);
 
 	btr_search_update_hash_on_delete(cursor);
@@ -1743,7 +1748,8 @@ btr_cur_pessimistic_update(
 		inherited values. They can be inherited if we have
 		updated the primary key to another value, and then
 		update it back again. */
-
+        /*我们正在一个事务回滚中撤销行更新:我们必须释放可能在更新中获得新值的外部存储的字段，如果它们不是继承的值。
+		如果我们将主键更新为另一个值，然后再次更新它，则可以继承它们。*/
 		ut_a(big_rec_vec == NULL);
 		
 		btr_rec_free_updated_extern_fields(index, rec, update,
@@ -1752,7 +1758,7 @@ btr_cur_pessimistic_update(
 
 	/* We have to set appropriate extern storage bits in the new
 	record to be inserted: we have to remember which fields were such */
-
+    /*我们必须在要插入的新记录中设置适当的外部存储位:我们必须记住哪些字段是这样的*/
 	ext_vect = mem_heap_alloc(heap, sizeof(ulint) * rec_get_n_fields(rec));
 	n_ext_vect = btr_push_update_extern_fields(ext_vect, rec, update);
 	
@@ -1785,7 +1791,7 @@ btr_cur_pessimistic_update(
 		if (!rec_get_deleted_flag(rec)) {
 			/* The new inserted record owns its possible externally
 			stored fields */
-
+            /*新插入的记录拥有其可能的外部存储字段*/
 			btr_cur_unmark_extern_fields(rec, mtr);
 		}
 
@@ -1800,7 +1806,7 @@ btr_cur_pessimistic_update(
 	if (page_cur_is_before_first(page_cursor)) {
 		/* The record to be updated was positioned as the first user
 		record on its page */
-
+        /*要更新的记录被定位为其页面上的第一个用户记录*/
 		was_first = TRUE;
 	} else {
 		was_first = FALSE;
@@ -1808,7 +1814,7 @@ btr_cur_pessimistic_update(
 
 	/* The first parameter means that no lock checking and undo logging
 	is made in the insert */
-
+    /*第一个参数意味着在插入中不进行锁检查和撤消日志记录*/
 	err = btr_cur_pessimistic_insert(BTR_NO_UNDO_LOG_FLAG
 					| BTR_NO_LOCKING_FLAG
 					| BTR_KEEP_SYS_FLAG,
@@ -1823,7 +1829,7 @@ btr_cur_pessimistic_update(
 	if (!rec_get_deleted_flag(rec)) {
 		/* The new inserted record owns its possible externally
 		stored fields */
-
+        /*新插入的记录拥有其可能的外部存储字段*/
 		btr_cur_unmark_extern_fields(rec, mtr);
 	}
 
@@ -1833,7 +1839,8 @@ btr_cur_pessimistic_update(
 	preceding supremum record created in a page split. While the old
 	record was nonexistent, the supremum might have inherited its locks
 	from a wrong record. */
-
+    /*如果有必要，还可以为在分页中创建的一个新的、之前的最高记录恢复正确的锁状态。
+	当旧记录不存在时，上界可能从一个错误的记录继承了它的锁。*/
 	if (!was_first) {
 		btr_cur_pess_upd_restore_supremum(rec, mtr);
 	}
@@ -1856,7 +1863,7 @@ return_after_reservations:
 
 /********************************************************************
 Writes the redo log record for delete marking or unmarking of an index
-record. */
+record. */ /*写重做日志记录，用于删除、标记或不标记索引记录。*/
 UNIV_INLINE
 void
 btr_cur_del_mark_set_clust_rec_log(
@@ -1892,7 +1899,8 @@ btr_cur_del_mark_set_clust_rec_log(
 /********************************************************************
 Parses the redo log record for delete marking or unmarking of a clustered
 index record. */
-
+/*解析重做日志记录以删除标记或不标记聚集索引记录。
+*/
 byte*
 btr_cur_parse_del_mark_set_clust_rec(
 /*=================================*/
@@ -1945,7 +1953,7 @@ btr_cur_parse_del_mark_set_clust_rec(
 		/* We do not need to reserve btr_search_latch, as the page
 		is only being recovered, and there cannot be a hash index to
 		it. */
-
+        /*我们不需要保留btr_search_latch，因为页面只被恢复，并且不能有它的散列索引。*/
 		rec_set_deleted_flag(rec, val);
 	}
 	
@@ -1957,7 +1965,8 @@ Marks a clustered index record deleted. Writes an undo log record to
 undo log on this delete marking. Writes in the trx id field the id
 of the deleting transaction, and in the roll ptr field pointer to the
 undo log record created. */
-
+/*标记已删除的聚集索引记录。在此删除标记上写入一条撤消日志记录以撤消日志。
+在trx id字段中写入删除事务的id，在roll ptr字段中写入指向创建的undo日志记录的指针。*/
 ulint
 btr_cur_del_mark_set_clust_rec(
 /*===========================*/
@@ -2023,7 +2032,7 @@ btr_cur_del_mark_set_clust_rec(
 
 /********************************************************************
 Writes the redo log record for a delete mark setting of a secondary
-index record. */
+index record. */ /*为二级索引记录的删除标记设置写重做日志记录。*/
 UNIV_INLINE
 void
 btr_cur_del_mark_set_sec_rec_log(
@@ -2051,7 +2060,7 @@ btr_cur_del_mark_set_sec_rec_log(
 /********************************************************************
 Parses the redo log record for delete marking or unmarking of a secondary
 index record. */
-
+/*解析重做日志记录以删除标记或不标记二级索引记录。*/
 byte*
 btr_cur_parse_del_mark_set_sec_rec(
 /*===============================*/
@@ -2081,7 +2090,7 @@ btr_cur_parse_del_mark_set_sec_rec(
 		/* We do not need to reserve btr_search_latch, as the page
 		is only being recovered, and there cannot be a hash index to
 		it. */
-
+        /*我们不需要保留btr_search_latch，因为页面只被恢复，并且不能有它的散列索引。*/
 		rec_set_deleted_flag(rec, val);
 	}
 	
@@ -2090,7 +2099,7 @@ btr_cur_parse_del_mark_set_sec_rec(
 	
 /***************************************************************
 Sets a secondary index record delete mark to TRUE or FALSE. */
-
+/*将二级索引记录删除标记设置为TRUE或FALSE。*/
 ulint
 btr_cur_del_mark_set_sec_rec(
 /*=========================*/
@@ -2135,7 +2144,7 @@ btr_cur_del_mark_set_sec_rec(
 /***************************************************************
 Sets a secondary index record delete mark to FALSE. This function is only
 used by the insert buffer insert merge mechanism. */
-
+/*将二级索引记录删除标记设置为FALSE。此函数仅用于插入缓冲区插入合并机制。*/
 void
 btr_cur_del_unmark_for_ibuf(
 /*========================*/
@@ -2144,7 +2153,7 @@ btr_cur_del_unmark_for_ibuf(
 {
 	/* We do not need to reserve btr_search_latch, as the page has just
 	been read to the buffer pool and there cannot be a hash index to it. */
-
+    /*我们不需要保留btr_search_latch，因为页面刚刚被读到缓冲池中，并且它不能有哈希索引。*/
 	rec_set_deleted_flag(rec, FALSE);
 
 	btr_cur_del_mark_set_sec_rec_log(rec, FALSE, mtr);
@@ -2158,7 +2167,8 @@ that mtr holds an x-latch on the tree and on the cursor page. To avoid
 deadlocks, mtr must also own x-latches to brothers of page, if those
 brothers exist. NOTE: it is assumed that the caller has reserved enough
 free extents so that the compression will always succeed if done! */
-
+/*试图在叶级上压缩树的一页。假设mtr在树和游标页上持有一个x-latch。
+为了避免死锁，mtr也必须拥有对page兄弟的x-latches，如果这些兄弟存在的话。注意:假设调用者保留了足够的空闲区段，这样压缩就总是成功!*/
 void
 btr_cur_compress(
 /*=============*/
@@ -2183,7 +2193,8 @@ that mtr holds an x-latch on the tree and on the cursor page. To avoid
 deadlocks, mtr must also own x-latches to brothers of page, if those
 brothers exist. NOTE: it is assumed that the caller has reserved enough
 free extents so that the compression will always succeed if done! */
-
+/*试图压缩树中的一页，如果它看起来有用。假设mtr在树和游标页上持有一个x-latch。
+为了避免死锁，mtr也必须拥有对page兄弟的x-latches，如果这些兄弟存在的话。注意:假设调用者保留了足够的空闲区段，这样压缩就总是成功!*/
 ibool
 btr_cur_compress_if_useful(
 /*=======================*/
@@ -2214,7 +2225,7 @@ btr_cur_compress_if_useful(
 Removes the record on which the tree cursor is positioned on a leaf page.
 It is assumed that the mtr has an x-latch on the page where the cursor is
 positioned, but no latch on the whole tree. */
-
+/*移除叶页上定位树光标的记录。假设mtr在游标所在的页面上有一个x-latch，但是在整个树上没有latch。*/
 ibool
 btr_cur_optimistic_delete(
 /*======================*/
@@ -2232,7 +2243,7 @@ btr_cur_optimistic_delete(
 	ut_ad(mtr_memo_contains(mtr, buf_block_align(btr_cur_get_page(cursor)),
 							MTR_MEMO_PAGE_X_FIX));
 	/* This is intended only for leaf page deletions */
-
+    /* 这只用于删除叶页*/
 	page = btr_cur_get_page(cursor);
 	
 	ut_ad(btr_page_get_level(page, mtr) == 0);
@@ -2267,7 +2278,8 @@ or if it is the only page on the level. It is assumed that mtr holds
 an x-latch on the tree and on the cursor page. To avoid deadlocks,
 mtr must also own x-latches to brothers of page, if those brothers
 exist. */
-
+/*删除树光标所定位的记录。如果页面的填充因子低于阈值，或者它是该级别上唯一的页面，则尝试压缩该页。
+假设mtr在树和游标页上持有一个x-latch。为了避免死锁，mtr也必须拥有对page兄弟的x-latches，如果这些兄弟存在的话。*/
 ibool
 btr_cur_pessimistic_delete(
 /*=======================*/
@@ -2308,7 +2320,7 @@ btr_cur_pessimistic_delete(
 		/* First reserve enough free space for the file segments
 		of the index tree, so that the node pointer updates will
 		not fail because of lack of space */
-
+        /*首先为索引树的文件段预留足够的空闲空间，这样节点指针更新就不会因为空间不足而失败*/
 		n_extents = cursor->tree_height / 32 + 1;
 
 		success = fsp_reserve_free_extents(cursor->index->space,
@@ -2329,7 +2341,7 @@ btr_cur_pessimistic_delete(
 
 		/* If there is only one record, drop the whole page in
 		btr_discard_page, if this is not the root page */
-	
+	    /*如果只有一条记录，那么在btr_discard_page中删除整个页面，如果这不是根页面*/
 		btr_discard_page(cursor, mtr);
 
 		*err = DB_SUCCESS;
@@ -2350,14 +2362,14 @@ btr_cur_pessimistic_delete(
 			/* If we delete the leftmost node pointer on a
 			non-leaf level, we must mark the new leftmost node
 			pointer as the predefined minimum record */
-
+            /*如果在非叶级上删除最左节点指针，则必须将新的最左节点指针标记为预定义的最小记录*/
 	    		btr_set_min_rec_mark(page_rec_get_next(rec), mtr);
 		} else {
 			/* Otherwise, if we delete the leftmost node pointer
 			on a page, we have to change the father node pointer
 			so that it is equal to the new leftmost node pointer
 			on the page */
-
+           /*否则，如果删除页面上的最左节点指针，则必须更改父节点指针，使其等于页面上新的最左节点指针*/
 			btr_node_ptr_delete(tree, page, mtr);
 
 			heap = mem_heap_create(256);

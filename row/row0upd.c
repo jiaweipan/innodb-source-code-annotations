@@ -292,7 +292,7 @@ row_upd_index_entry_sys_field(
 /***************************************************************
 Returns TRUE if row update changes size of some field in index
 or if some field to be updated is stored externally in rec or update. */
-
+/*如果行更新改变了index中某些字段的大小，或者要更新的字段被存储在rec或update中，则返回TRUE。*/
 ibool
 row_upd_changes_field_size(
 /*=======================*/
@@ -795,7 +795,7 @@ row_upd_index_replace_new_col_vals(
 /***************************************************************
 Replaces the new column values stored in the update vector to the
 clustered index entry given. */
-
+/*将更新向量中存储的新列值替换为给定的聚集索引项。*/
 void
 row_upd_clust_index_replace_new_col_vals(
 /*=====================================*/

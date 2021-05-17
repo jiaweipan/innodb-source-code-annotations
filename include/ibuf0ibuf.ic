@@ -160,7 +160,7 @@ ibuf_index_page_calc_free_from_bits(
 }
 
 /*************************************************************************
-Translates the free space on a page to a value in the ibuf bitmap.*/
+Translates the free space on a page to a value in the ibuf bitmap.*/ /*将页面上的空闲空间转换为ibuf位图中的值。*/
 UNIV_INLINE
 ulint
 ibuf_index_page_calc_free(

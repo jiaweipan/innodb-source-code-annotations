@@ -826,7 +826,7 @@ ibuf_reset_free_bits(
 Updates the free bits for a page to reflect the present state. Does this
 in the mtr given, which means that the latching order rules virtually prevent
 any further operations for this OS thread until mtr is committed. */
-
+/*更新页面的空闲位以反映当前状态。在给定的mtr中这样做，这意味着在mtr被提交之前，锁存顺序规则实际上阻止了对这个OS线程的任何进一步操作。*/
 void
 ibuf_update_free_bits_low(
 /*======================*/

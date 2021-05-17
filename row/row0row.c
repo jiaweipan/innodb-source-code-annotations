@@ -282,7 +282,7 @@ row_build_to_tuple(
 /***********************************************************************
 Converts an index record to a typed data tuple. NOTE that externally
 stored (often big) fields are NOT copied to heap. */
-
+/*将索引记录转换为类型化数据元组。注意，外部存储的(通常是大的)字段不会被复制到堆。*/
 dtuple_t*
 row_rec_to_index_entry(
 /*===================*/
