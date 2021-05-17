@@ -96,7 +96,7 @@ upd_field_set_field_no(
 
 /*************************************************************************
 Updates the trx id and roll ptr field in a clustered index record when
-a row is updated or marked deleted. */
+a row is updated or marked deleted. */ /*当一行被更新或标记为删除时，更新聚集索引记录中的trx id和roll ptr字段。*/
 UNIV_INLINE
 void
 row_upd_rec_sys_fields(

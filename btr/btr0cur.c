@@ -1223,7 +1223,7 @@ btr_cur_parse_update_in_place(
 	
 	/* We do not need to reserve btr_search_latch, as the page is only
 	being recovered, and there cannot be a hash index to it. */
-
+    /*我们不需要保留btr_search_latch，因为页面只被恢复，并且不能有它的散列索引。*/
 	if (!(flags & BTR_KEEP_SYS_FLAG)) {
 		row_upd_rec_sys_fields_in_recovery(rec, pos, trx_id, roll_ptr);
 	}
@@ -1240,7 +1240,7 @@ Updates a secondary index record when the update causes no size
 changes in its fields. The only case when this function is currently
 called is that in a char field characters change to others which
 are identified in the collation order. */
-
+/*当更新不会导致二级索引记录的字段大小发生变化时，更新二级索引记录。当前调用此函数的唯一情况是，在char字段中，字符改变为按排序顺序标识的其他字符。*/
 ulint
 btr_cur_update_sec_rec_in_place(
 /*============================*/
@@ -1259,7 +1259,7 @@ btr_cur_update_sec_rec_in_place(
 	dulint		roll_ptr	= ut_dulint_zero;
 	trx_t*		trx		= thr_get_trx(thr);
 
-	/* Only secondary index records are updated using this function */
+	/* Only secondary index records are updated using this function */ /*只有二级索引记录使用此功能更新*/
 	ut_ad(0 == (index->type & DICT_CLUSTERED));
 
 	rec = btr_cur_get_rec(cursor);
@@ -1271,7 +1271,7 @@ btr_cur_update_sec_rec_in_place(
 		return(err);
 	}
 
-	/* Remove possible hash index pointer to this record */
+	/* Remove possible hash index pointer to this record */ /*删除指向此记录的哈希索引指针*/
 	btr_search_update_hash_on_delete(cursor);
 
 	row_upd_rec_in_place(rec, update);
@@ -1280,7 +1280,7 @@ btr_cur_update_sec_rec_in_place(
 
 	/* Note that roll_ptr is really just a dummy value since
 	a secondary index record does not contain any sys columns */
-
+    /*请注意，roll_ptr实际上只是一个虚值，因为次要索引记录不包含任何sys列*/
 	btr_cur_update_in_place_log(BTR_KEEP_SYS_FLAG, rec, clust_index,
 						update, trx, roll_ptr, mtr);
 	return(DB_SUCCESS);
@@ -1288,7 +1288,7 @@ btr_cur_update_sec_rec_in_place(
 
 /*****************************************************************
 Updates a record when the update causes no size changes in its fields. */
-
+/*当更新未导致记录的字段大小发生变化时，更新记录。*/
 ulint
 btr_cur_update_in_place(
 /*====================*/
@@ -1311,14 +1311,14 @@ btr_cur_update_in_place(
 	trx_t*		trx;
 	ibool		was_delete_marked;
 
-	/* Only clustered index records are updated using this function */
+	/* Only clustered index records are updated using this function */ /*只有聚集索引记录才使用此函数进行更新*/
 	ut_ad(cursor->index->type & DICT_CLUSTERED);
 
 	rec = btr_cur_get_rec(cursor);
 	index = cursor->index;
 	trx = thr_get_trx(thr);
 	
-	/* Do lock checking and undo logging */
+	/* Do lock checking and undo logging */ /*是否进行锁检查和撤消日志记录*/
 	err = btr_cur_upd_lock_and_undo(flags, cursor, update, cmpl_info,
 							thr, &roll_ptr);
 	if (err != DB_SUCCESS) {
@@ -1338,7 +1338,7 @@ btr_cur_update_in_place(
 
 	/* FIXME: in a mixed tree, all records may not have enough ordering
 	fields for btr search: */
-
+    /*FIXME:在混合树中，所有记录可能没有足够的排序字段用于btr搜索:**/
 	was_delete_marked = rec_get_deleted_flag(rec);
 	
 	row_upd_rec_in_place(rec, update);
@@ -1352,7 +1352,7 @@ btr_cur_update_in_place(
 	if (was_delete_marked && !rec_get_deleted_flag(rec)) {
 		/* The new updated record owns its possible externally
 		stored fields */
-
+        /*新更新的记录拥有它可能的外部存储字段*/
 		btr_cur_unmark_extern_fields(rec, mtr);
 	}
 
@@ -1364,7 +1364,7 @@ Tries to update a record on a page in an index tree. It is assumed that mtr
 holds an x-latch on the page. The operation does not succeed if there is too
 little space on the page or if the update would result in too empty a page,
 so that tree compression is recommended. */
-
+/*尝试更新索引树中页上的记录。假设mtr在页面上持有一个x锁存器。如果页面上的空间太少，或者更新将导致页面太空，则操作不会成功，因此建议使用树压缩。*/
 ulint
 btr_cur_optimistic_update(
 /*======================*/
@@ -2839,7 +2839,7 @@ btr_cur_mark_dtuple_inherited_extern(
 Marks all extern fields in a record as owned by the record. This function
 should be called if the delete mark of a record is removed: a not delete
 marked record always owns all its extern fields. */
-
+/*将记录中的所有外部字段标记为该记录所拥有。如果一个记录的删除标记被删除，这个函数应该被调用:一个没有删除标记的记录总是拥有它所有的外部字段。*/
 void
 btr_cur_unmark_extern_fields(
 /*=========================*/

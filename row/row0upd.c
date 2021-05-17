@@ -235,7 +235,7 @@ upd_node_create(
 /*************************************************************************
 Updates the trx id and roll ptr field in a clustered index record in database
 recovery. */
-
+/*更新数据库恢复中聚集索引记录中的trx id和roll ptr字段。*/
 void
 row_upd_rec_sys_fields_in_recovery(
 /*===============================*/
@@ -349,7 +349,7 @@ row_upd_changes_field_size(
 Replaces the new column values stored in the update vector to the record
 given. No field size changes are allowed. This function is used only for
 a clustered index */
-
+/*将存储在更新向量中的新列值替换为给定记录。不允许更改字段大小。此函数仅用于聚集索引*/
 void
 row_upd_rec_in_place(
 /*=================*/
