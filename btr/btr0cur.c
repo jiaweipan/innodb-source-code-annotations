@@ -2410,7 +2410,7 @@ return_after_reservations:
 
 /***********************************************************************
 Adds path information to the cursor for the current page, for which
-the binary search has been performed. */
+the binary search has been performed. */ /*将已执行二分查找的当前页的路径信息添加到游标中。*/
 static
 void
 btr_cur_add_path_info(
@@ -2450,7 +2450,7 @@ btr_cur_add_path_info(
 
 /***********************************************************************
 Estimates the number of rows in a given index range. */
-
+/*估计给定索引范围内的行数。*/
 ulint
 btr_estimate_n_rows_in_range(
 /*=========================*/
@@ -2507,7 +2507,7 @@ btr_estimate_n_rows_in_range(
 	mtr_commit(&mtr);
 
 	/* We have the path information for the range in path1 and path2 */
-
+    /* 我们在path1和path2中有范围的路径信息*/
 	n_rows = 1;
 	diverged = FALSE;
 	divergence_level = 1000000;
@@ -2525,7 +2525,7 @@ btr_estimate_n_rows_in_range(
 		                /* In trees whose height is > 1 our algorithm
 		                tends to underestimate: multiply the estimate
 		                by 2: */
-
+                        /*对于高度为> 1的树，我们的算法倾向于低估:将估计数乘以2:*/
 		                n_rows = n_rows * 2;
 		        }
 			return(n_rows);
@@ -2556,7 +2556,7 @@ btr_estimate_n_rows_in_range(
 Estimates the number of different key values in a given index, for
 each n-column prefix of the index where n <= dict_index_get_n_unique(index).
 The estimates are stored in the array index->stat_n_diff_key_vals. */
-
+/*对于n <= dict_index_get_n_unique(index)的索引的每个n列前缀，估计给定索引中不同键值的数量。估计值存储在数组索引>stat_n_diff_key_vals中。*/
 void
 btr_estimate_number_of_different_key_vals(
 /*======================================*/
@@ -2585,7 +2585,7 @@ btr_estimate_number_of_different_key_vals(
 	}
 
 	/* We sample some pages in the index to get an estimate */
-	
+	/* 我们对索引中的一些页面进行抽样以得到一个估计*/
 	for (i = 0; i < BTR_KEY_VAL_ESTIMATE_N_PAGES; i++) {
 		mtr_start(&mtr);
 
@@ -2595,7 +2595,7 @@ btr_estimate_number_of_different_key_vals(
 		for each prefix of the key on this index page: we subtract
 		one because otherwise our algorithm would give a wrong
 		estimate for an index where there is just one key value */
-
+        /*对索引页面上的每个键的前缀减去1，计算不同键值的数量:我们减去1，因为否则我们的算法会对只有一个键值的索引给出错误的估计*/
 		page = btr_cur_get_page(&cursor);
 
 		rec = page_get_infimum_rec(page);
@@ -2633,11 +2633,11 @@ btr_estimate_number_of_different_key_vals(
 	/* If we saw k borders between different key values on
 	BTR_KEY_VAL_ESTIMATE_N_PAGES leaf pages, we can estimate how many
 	there will be in index->stat_n_leaf_pages */
-	
+	/*如果我们看到BTR_KEY_VAL_ESTIMATE_N_PAGES叶页面上不同键值之间有k个边界，我们可以估计index->stat_n_leaf_pages中有多少个边界*/
 	/* We must take into account that our sample actually represents
 	also the pages used for external storage of fields (those pages are
 	included in index->stat_n_leaf_pages) */ 
-
+    /*我们必须考虑到，我们的示例实际上也表示用于字段外部存储的页面(这些页面包含在index->stat_n_leaf_pages中)*/
 	for (j = 0; j <= n_cols; j++) {
 		index->stat_n_diff_key_vals[j] =
 				(n_diff[j] * index->stat_n_leaf_pages
@@ -2654,7 +2654,8 @@ btr_estimate_number_of_different_key_vals(
 		we pick. But still there may be BTR_KEY_VAL_ESTIMATE_N_PAGES
 		different key values, or even more. Let us try to approximate
 		that: */
-
+        /*如果树很小，小于<10 * BTR_KEY_VAL_ESTIMATE_N_PAGES + total_external_size，那么上面的估计是可以的。
+		对于较大的树，在我们选择的几页中，键值之间通常看不到任何边界。但是仍然可能存在BTR_KEY_VAL_ESTIMATE_N_PAGES不同的键值，甚至更多。让我们来近似一下:*/
 		add_on = index->stat_n_leaf_pages /
 		   (10 * (BTR_KEY_VAL_ESTIMATE_N_PAGES + total_external_size));
 
