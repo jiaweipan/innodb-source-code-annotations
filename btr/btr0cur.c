@@ -2670,9 +2670,9 @@ btr_estimate_number_of_different_key_vals(
 }
 
 /*================== EXTERNAL STORAGE OF BIG FIELDS ===================*/
-
+/*大字段的外部存储*/
 /***************************************************************
-Gets the externally stored size of a record, in units of a database page. */
+Gets the externally stored size of a record, in units of a database page. */ /*获取记录外部存储的大小，以数据库页为单位。*/
 static
 ulint
 btr_rec_get_externally_stored_len(
@@ -2714,7 +2714,7 @@ btr_rec_get_externally_stored_len(
 }
 
 /***********************************************************************
-Sets the ownership bit of an externally stored field in a record. */
+Sets the ownership bit of an externally stored field in a record. */ /*设置记录中外部存储字段的所有权位。*/
 static
 void
 btr_cur_set_ownership_of_extern_field(
@@ -2751,7 +2751,8 @@ Marks not updated extern fields as not-owned by this record. The ownership
 is transferred to the updated record which is inserted elsewhere in the
 index tree. In purge only the owner of externally stored field is allowed
 to free the field. */
-
+/*将未更新的外部字段标记为不属于此记录。所有权转移到插入到索引树其他地方的更新记录。
+在清除中，只有外部存储字段的所有者才允许释放该字段。*/
 void
 btr_cur_mark_extern_inherited_fields(
 /*=================================*/
@@ -2794,7 +2795,7 @@ btr_cur_mark_extern_inherited_fields(
 The complement of the previous function: in an update entry may inherit
 some externally stored fields from a record. We must mark them as inherited
 in entry, so that they are not freed in a rollback. */
-
+/*前一个函数的补充:在一个更新条目中，可以从一个记录继承一些外部存储的字段。我们必须在条目中将它们标记为继承的，这样它们就不会在回滚中被释放。*/
 void
 btr_cur_mark_dtuple_inherited_extern(
 /*=================================*/
@@ -2875,7 +2876,7 @@ btr_cur_unmark_extern_fields(
 
 /***********************************************************************
 Marks all extern fields in a dtuple as owned by the record. */
-
+/*将dtuple中的所有extern字段标记为该记录所有。*/
 void
 btr_cur_unmark_dtuple_extern_fields(
 /*================================*/
@@ -2912,7 +2913,8 @@ vector, and also those fields who are marked as extern storage in rec
 and not mentioned in updated fields. We use this function to remember
 which fields we must mark as extern storage in a record inserted for an
 update. */
-
+/*在更新向量中存储标记为extern storage的字段的位置，以及在rec中标记为extern storage而在updated fields中没有提到的字段的位置。
+我们使用这个函数来记住在为更新而插入的记录中哪些字段必须标记为外部存储。*/
 ulint
 btr_push_update_extern_fields(
 /*==========================*/
@@ -2972,7 +2974,7 @@ btr_push_update_extern_fields(
 }
 
 /***********************************************************************
-Returns the length of a BLOB part stored on the header page. */
+Returns the length of a BLOB part stored on the header page. */ /*返回存储在标题页上的BLOB部分的长度。*/
 static
 ulint
 btr_blob_get_part_len(
@@ -2984,7 +2986,7 @@ btr_blob_get_part_len(
 }
 
 /***********************************************************************
-Returns the page number where the next BLOB part is stored. */
+Returns the page number where the next BLOB part is stored. */ /*返回存储下一个BLOB部分的页码。*/
 static
 ulint
 btr_blob_get_next_page_no(
@@ -3000,7 +3002,7 @@ btr_blob_get_next_page_no(
 Stores the fields in big_rec_vec to the tablespace and puts pointers to
 them in rec. The fields are stored on pages allocated from leaf node
 file segment of the index tree. */
-
+/*将big_rec_vec中的字段存储到表空间中，并将指向它们的指针存储在rec中。字段存储在索引树的叶节点文件段分配的页面中。*/
 ulint
 btr_store_big_rec_extern_fields(
 /*============================*/
@@ -3037,7 +3039,7 @@ btr_store_big_rec_extern_fields(
 	
 	/* We have to create a file segment to the tablespace
 	for each field and put the pointer to the field in rec */
-
+    /*我们必须为每个字段在表空间中创建一个文件段，并将指向该字段的指针放在rec中*/
 	for (i = 0; i < big_rec_vec->n_fields; i++) {
 
 		data = rec_get_nth_field(rec, big_rec_vec->fields[i].field_no,
@@ -3139,7 +3141,7 @@ btr_store_big_rec_extern_fields(
 
 				/* Set the bit denoting that this field
 				in rec is stored externally */
-
+                /*设置表示该字段在recc中存储在外部的位*/
 				rec_set_nth_field_extern_bit(rec,
 					big_rec_vec->fields[i].field_no,
 					TRUE, &mtr);
@@ -3159,7 +3161,7 @@ Frees the space in an externally stored field to the file space
 management if the field in data is owned the externally stored field,
 in a rollback we may have the additional condition that the field must
 not be inherited. */
-
+/*如果数据中的字段属于外部存储的字段，则释放外部存储字段中的空间给文件空间管理，在回滚中，我们可能会有一个附加条件，即该字段不能被继承。*/
 void
 btr_free_externally_stored_field(
 /*=============================*/
@@ -3215,7 +3217,7 @@ btr_free_externally_stored_field(
 
 		/* If extern len is 0, then there is no external storage data
 		at all */
-
+        /*如果extern len为0，则根本没有外部存储数据*/
 		if (extern_len == 0) {
 
 			mtr_commit(&mtr);
@@ -3227,7 +3229,7 @@ btr_free_externally_stored_field(
 						& BTR_EXTERN_OWNER_FLAG) {
 			/* This field does not own the externally
 			stored field: do not free! */
-
+            /*这个字段不拥有外部存储的字段:不要释放!*/
 			mtr_commit(&mtr);
 
 			return;
@@ -3237,7 +3239,7 @@ btr_free_externally_stored_field(
 			&& mach_read_from_1(data + local_len + BTR_EXTERN_LEN)
 						& BTR_EXTERN_INHERITED_FLAG) {
 			/* Rollback and inherited field: do not free! */
-
+            /*回滚和继承字段:不要释放!*/
 			mtr_commit(&mtr);
 
 			return;
@@ -3257,7 +3259,7 @@ btr_free_externally_stored_field(
 		/* We must supply the page level (= 0) as an argument
 		because we did not store it on the page (we save the space
 		overhead from an index page header. */
-
+        /*我们必须提供页级(= 0)作为参数，因为我们没有将它存储在页中(我们节省了索引页头的空间开销。*/
 		btr_page_free_low(index->tree, page, 0, &mtr);
 
 		mlog_write_ulint(data + local_len + BTR_EXTERN_PAGE_NO,
@@ -3280,7 +3282,7 @@ btr_free_externally_stored_field(
 
 /***************************************************************
 Frees the externally stored fields for a record. */
-
+/*释放外部存储的记录字段。*/
 void
 btr_rec_free_externally_stored_fields(
 /*==================================*/
@@ -3307,7 +3309,7 @@ btr_rec_free_externally_stored_fields(
 	}
 	
 	/* Free possible externally stored fields in the record */
-
+    /*释放记录中可能的外部存储字段*/
 	n_fields = rec_get_n_fields(rec);
 
 	for (i = 0; i < n_fields; i++) {
@@ -3322,7 +3324,7 @@ btr_rec_free_externally_stored_fields(
 
 /***************************************************************
 Frees the externally stored fields for a record, if the field is mentioned
-in the update vector. */
+in the update vector. */ /*释放记录的外部存储字段，如果该字段在更新向量中被提到。*/
 static
 void
 btr_rec_free_updated_extern_fields(
@@ -3351,7 +3353,7 @@ btr_rec_free_updated_extern_fields(
 	}
 	
 	/* Free possible externally stored fields in the record */
-
+    /* 释放记录中可能的外部存储字段*/
 	n_fields = upd_get_n_fields(update);
 
 	for (i = 0; i < n_fields; i++) {
@@ -3371,7 +3373,8 @@ Copies an externally stored field of a record to mem heap. Parameter
 data contains a pointer to 'internally' stored part of the field:
 possibly some data, and the reference to the externally stored part in
 the last 20 bytes of data. */
-
+/*将记录的外部存储字段复制到内存堆。参数data包含一个指向“内部”存储的字段部分的指针:
+可能是一些数据，以及在数据的最后20个字节中对外部存储部分的引用。*/
 byte*
 btr_copy_externally_stored_field(
 /*=============================*/
@@ -3379,7 +3382,7 @@ btr_copy_externally_stored_field(
 	ulint*		len,	/* out: length of the whole field */
 	byte*		data,	/* in: 'internally' stored part of the
 				field containing also the reference to
-				the external part */
+				the external part */ /**/
 	ulint		local_len,/* in: length of data */
 	mem_heap_t*	heap)	/* in: mem heap */
 {
@@ -3406,7 +3409,7 @@ btr_copy_externally_stored_field(
 
 	/* Currently a BLOB cannot be bigger that 4 GB; we
 	leave the 4 upper bytes in the length field unused */
-	
+	/*目前BLOB不能大于4 GB;我们保留长度字段中的4个上字节未使用*/
 	extern_len = mach_read_from_4(data + local_len + BTR_EXTERN_LEN + 4);
 
 	buf = mem_heap_alloc(heap, local_len + extern_len);
@@ -3439,7 +3442,7 @@ btr_copy_externally_stored_field(
 
 		/* On other BLOB pages except the first the BLOB header
 		always is at the page data start: */
-
+        /*在其他BLOB页上，除了第一个，BLOB头总是在页数据的开始:*/
 		offset = FIL_PAGE_DATA;
 
 		mtr_commit(&mtr);
@@ -3458,7 +3461,7 @@ btr_copy_externally_stored_field(
 
 /***********************************************************************
 Copies an externally stored field of a record to mem heap. */
-
+/*将记录的外部存储字段复制到内存堆。*/
 byte*
 btr_rec_copy_externally_stored_field(
 /*=================================*/
@@ -3481,7 +3484,9 @@ btr_rec_copy_externally_stored_field(
 	locally to get the local record length above the 128 byte
 	limit so that field offsets are stored in two bytes, and
 	the extern bit is available in those two bytes. */
-
+    /*外部存储的字段可以包含来自该字段的一些初始数据，在最后20个字节中，它包含空间id、页码和存储其余字段数据的偏移量，
+	以及除了本地存储的数据之外的数据长度。我们可能需要在本地存储一些数据，以使本地记录的长度超过128字节的限制，
+	这样字段偏移量就存储在两个字节中，而extern位在这两个字节中是可用的。*/
 	data = rec_get_nth_field(rec, no, &local_len);
 
 	return(btr_copy_externally_stored_field(len, data, local_len, heap));
