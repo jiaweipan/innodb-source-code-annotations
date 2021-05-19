@@ -5,7 +5,7 @@ The index tree persistent cursor
 
 Created 2/23/1996 Heikki Tuuri
 *******************************************************/
-
+/*索引树持久游标*/
 #include "btr0pcur.h"
 
 #ifdef UNIV_NONINL
@@ -17,7 +17,7 @@ Created 2/23/1996 Heikki Tuuri
 
 /******************************************************************
 Allocates memory for a persistent cursor object and initializes the cursor. */
-
+/*为持久游标对象分配内存并初始化游标。*/
 btr_pcur_t*
 btr_pcur_create_for_mysql(void)
 /*============================*/
@@ -35,7 +35,7 @@ btr_pcur_create_for_mysql(void)
 
 /******************************************************************
 Frees the memory for a persistent cursor object. */
-
+/*释放持久游标对象的内存。*/
 void
 btr_pcur_free_for_mysql(
 /*====================*/
@@ -66,7 +66,8 @@ cursor data structure, or just setting a flag if the cursor id before the
 first in an EMPTY tree, or after the last in an EMPTY tree. NOTE that the
 page where the cursor is positioned must not be empty if the index tree is
 not totally empty! */
-
+/*光标的位置存储在一个初始段记录的光标定位,之前或之后,并将它复制到光标数据结构,
+或者只是设置一个标志如果光标id在第一个空树之前,或之后的最后一个空树。注意，如果索引树不是完全为空，则游标所在的页面一定不能为空!*/
 void
 btr_pcur_store_position(
 /*====================*/
@@ -139,7 +140,7 @@ btr_pcur_store_position(
 
 /******************************************************************
 Copies the stored position of a pcur to another pcur. */
-
+/*将一个发生事件的存储位置复制到另一个发生事件。*/
 void
 btr_pcur_copy_stored_position(
 /*==========================*/
@@ -177,7 +178,10 @@ infimum;
 GREATER than the user record which was the predecessor of the supremum.
 (4) cursor was positioned before the first or after the last in an empty tree:
 restores to before first or after the last in the tree. */
-
+/*恢复持久游标缓冲区的存储位置，修复该页并获得指定的锁存。如果光标位置保存(1)时,光标定位在一个用户记录:此功能恢复的位置到最后小于等于存储记录;
+(2)游标定位在一个页面下确界记录:恢复过去记录不到位置的用户记录页面下确界的接班人;
+(3)光标被定位到页面上界:恢复到第一个记录大于该上界的前任用户记录。
+(4)游标被定位在一个空树中的第一个之前或最后一个之后:恢复到树中的第一个之前或最后一个之后。*/
 ibool
 btr_pcur_restore_position(
 /*======================*/
@@ -250,13 +254,13 @@ btr_pcur_restore_position(
 	}
 
 	/* If optimistic restoration did not succeed, open the cursor anew */
-
+    /*如果乐观恢复没有成功，重新打开游标*/
 	heap = mem_heap_create(256);
 	
 	tree = btr_cur_get_tree(btr_pcur_get_btr_cur(cursor));
 	tuple = dict_tree_build_data_tuple(tree, cursor->old_rec, heap);
 
-	/* Save the old search mode of the cursor */
+	/* Save the old search mode of the cursor */ /*保存光标的旧搜索模式*/
 	old_mode = cursor->search_mode;
 	
 	if (cursor->rel_pos == BTR_PCUR_ON) {
@@ -273,7 +277,7 @@ btr_pcur_restore_position(
 
 	cursor->old_stored = BTR_PCUR_OLD_STORED;
 	
-	/* Restore the old search mode */
+	/* Restore the old search mode */ /*恢复旧的搜索模式*/
 	cursor->search_mode = old_mode;
 
 	if (cursor->rel_pos == BTR_PCUR_ON
@@ -282,7 +286,7 @@ btr_pcur_restore_position(
 
 	        /* We have to store the NEW value for the modify clock, since
 	        the cursor can now be on a different page! */
-
+            /*我们必须为修改时钟存储NEW值，因为现在光标可以在不同的页面上!*/
 	        cursor->modify_clock = buf_frame_get_modify_clock(
 				    buf_frame_align(btr_pcur_get_rec(cursor)));
 		mem_heap_free(heap);
@@ -301,7 +305,8 @@ releases the page latch and bufferfix reserved by the cursor.
 NOTE! In the case of BTR_LEAF_MODIFY, there should not exist changes
 made by the current mini-transaction to the data protected by the
 cursor latch, as then the latch must not be released until mtr_commit. */
-
+/*如果游标的锁存模式为BTR_LEAF_SEARCH或BTR_LEAF_MODIFY，则释放该游标保留的页面锁存和缓冲修复。
+在BTR_LEAF_MODIFY的情况下，当前的小事务不应该对游标锁存保护的数据进行更改，因为在mtr_commit之前，锁存不能被释放。*/
 void
 btr_pcur_release_leaf(
 /*==================*/
@@ -327,7 +332,8 @@ Moves the persistent cursor to the first record on the next page. Releases the
 latch on the current page, and bufferunfixes it. Note that there must not be
 modifications on the current page, as then the x-latch can be released only in
 mtr_commit. */
-
+/*将持久光标移动到下一页上的第一个记录。释放当前页面上的锁存，bufferunch修复它。
+注意，不能对当前页面进行修改，因为x-latch只能在mtr_commit中被释放。*/
 void
 btr_pcur_move_to_next_page(
 /*=======================*/
@@ -369,7 +375,9 @@ alphabetical position of the cursor is guaranteed to be sensible on
 return, but it may happen that the cursor is not positioned on the last
 record of any page, because the structure of the tree may have changed
 during the time when the cursor had no latches. */
-
+/*如果持久光标位于该页的第一个记录上，则将其向后移动。提交mtr。
+注意，为了防止可能的死锁，该操作首先存储游标的位置，提交mtr，获取必要的锁存，并在返回之前再次恢复游标的位置。
+游标的字母位置保证在返回时是合理的，但是游标可能没有定位在任何页面的最后一条记录上，因为在游标没有锁存期间，树的结构可能发生了变化。*/
 void
 btr_pcur_move_backward_from_page(
 /*=============================*/
@@ -430,7 +438,7 @@ btr_pcur_move_backward_from_page(
 		/* The repositioned cursor did not end on an infimum record on
 		a page. Cursor repositioning acquired a latch also on the
 		previous page, but we do not need the latch: release it. */
-	
+	    /*重新定位的光标没有结束于页上的下一条记录。游标重新定位在前一个页面上也获得了一个闩锁，但是我们不需要闩锁:释放它。*/
 		prev_page = btr_pcur_get_btr_cur(cursor)->left_page;
 
 		btr_leaf_page_release(prev_page, latch_mode, mtr);
@@ -444,7 +452,7 @@ btr_pcur_move_backward_from_page(
 /*************************************************************
 Moves the persistent cursor to the previous record in the tree. If no records
 are left, the cursor stays 'before first in tree'. */
-
+/*将持久游标移动到树中的前一条记录。如果没有记录留下，游标将停留在“树的第一个之前”。*/
 ibool
 btr_pcur_move_to_prev(
 /*==================*/
@@ -483,7 +491,9 @@ PAGE_CUR_LE, on the last user record. If no such user record exists, then
 in the first case sets the cursor after last in tree, and in the latter case
 before first in tree. The latching mode must be BTR_SEARCH_LEAF or
 BTR_MODIFY_LEAF. */
-
+/*如果mode为PAGE_CUR_G或PAGE_CUR_GE，则在满足搜索条件的第一个用户记录(在PAGE_CUR_L或PAGE_CUR_LE的情况下)上打开持久游标。
+如果不存在这样的用户记录，那么在第一种情况下将光标设置在树中的last之后，在后一种情况下将光标设置在树中的first之前。
+锁定模式必须为BTR_SEARCH_LEAF或BTR_MODIFY_LEAF。*/
 void
 btr_pcur_open_on_user_rec(
 /*======================*/

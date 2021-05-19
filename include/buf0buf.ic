@@ -461,7 +461,7 @@ buf_frame_modify_clock_inc(
 
 /************************************************************************
 Returns the value of the modify clock. The caller must have an s-lock 
-or x-lock on the block. */
+or x-lock on the block. */ /*返回已修改时钟的值。调用者必须在区块上有s-lock或x-lock。*/
 UNIV_INLINE
 dulint
 buf_frame_get_modify_clock(

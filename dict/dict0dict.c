@@ -2531,7 +2531,7 @@ dict_tree_build_node_ptr(
 /**************************************************************************
 Copies an initial segment of a physical record, long enough to specify an
 index entry uniquely. */
-
+/*复制物理记录的初始段，长度足以唯一地指定索引项。*/
 rec_t*
 dict_tree_copy_rec_order_prefix(
 /*============================*/
@@ -2562,7 +2562,7 @@ dict_tree_copy_rec_order_prefix(
 
 /**************************************************************************
 Builds a typed data tuple out of a physical record. */
-
+/*从物理记录构建类型化数据元组。*/
 dtuple_t*
 dict_tree_build_data_tuple(
 /*=======================*/

@@ -5,10 +5,10 @@ The index tree persistent cursor
 
 Created 2/23/1996 Heikki Tuuri
 *******************************************************/
-
+/*索引树持久游标*/
 
 /*************************************************************
-Gets the rel_pos field for a cursor whose position has been stored. */
+Gets the rel_pos field for a cursor whose position has been stored. */ /*获取已存储位置的游标的rel_pos字段。*/
 UNIV_INLINE
 ulint
 btr_pcur_get_rel_pos(
@@ -26,7 +26,7 @@ btr_pcur_get_rel_pos(
 }
 
 /*************************************************************
-Sets the mtr field for a pcur. */
+Sets the mtr field for a pcur. */ /*设置pcur的mtr字段。*/
 UNIV_INLINE
 void
 btr_pcur_set_mtr(
@@ -40,7 +40,7 @@ btr_pcur_set_mtr(
 }
 
 /*************************************************************
-Gets the mtr field for a pcur. */
+Gets the mtr field for a pcur. */ /*获取pcur的mtr字段。*/
 UNIV_INLINE
 mtr_t*
 btr_pcur_get_mtr(
@@ -54,7 +54,7 @@ btr_pcur_get_mtr(
 }
 
 /*************************************************************
-Returns the btr cursor component of a persistent cursor. */
+Returns the btr cursor component of a persistent cursor. */ /*返回持久游标的btr游标组件。*/
 UNIV_INLINE
 btr_cur_t*
 btr_pcur_get_btr_cur(
@@ -66,7 +66,7 @@ btr_pcur_get_btr_cur(
 }
 
 /*************************************************************
-Returns the page cursor component of a persistent cursor. */
+Returns the page cursor component of a persistent cursor. */ /*返回持久游标的页面游标组件。*/
 UNIV_INLINE
 page_cur_t*
 btr_pcur_get_page_cur(
@@ -78,7 +78,7 @@ btr_pcur_get_page_cur(
 }
 
 /*************************************************************
-Returns the page of a persistent cursor. */
+Returns the page of a persistent cursor. */ /*返回持久游标的页。*/
 UNIV_INLINE
 page_t*
 btr_pcur_get_page(
@@ -92,7 +92,7 @@ btr_pcur_get_page(
 }
 
 /*************************************************************
-Returns the record of a persistent cursor. */
+Returns the record of a persistent cursor. */ /*返回持久游标的记录。*/
 UNIV_INLINE
 rec_t*
 btr_pcur_get_rec(
@@ -107,7 +107,7 @@ btr_pcur_get_rec(
 }
 
 /******************************************************************
-Gets the up_match value for a pcur after a search. */
+Gets the up_match value for a pcur after a search. */ /*获取搜索后的pcur的up_match值。*/
 UNIV_INLINE
 ulint
 btr_pcur_get_up_match(
@@ -130,7 +130,7 @@ btr_pcur_get_up_match(
 }
 
 /******************************************************************
-Gets the low_match value for a pcur after a search. */
+Gets the low_match value for a pcur after a search. */ /*获取搜索后的pcur的low_match值。*/
 UNIV_INLINE
 ulint
 btr_pcur_get_low_match(
@@ -153,7 +153,7 @@ btr_pcur_get_low_match(
 
 /*************************************************************
 Checks if the persistent cursor is after the last user record on 
-a page. */
+a page. */ /*检查持久光标是否位于页面上的最后一条用户记录之后。*/
 UNIV_INLINE
 ibool
 btr_pcur_is_after_last_on_page(
@@ -170,7 +170,7 @@ btr_pcur_is_after_last_on_page(
 
 /*************************************************************
 Checks if the persistent cursor is before the first user record on 
-a page. */
+a page. */ /*检查持久光标是否在页上的第一个用户记录之前。*/
 UNIV_INLINE
 ibool
 btr_pcur_is_before_first_on_page(
@@ -186,7 +186,7 @@ btr_pcur_is_before_first_on_page(
 }
 
 /*************************************************************
-Checks if the persistent cursor is on a user record. */
+Checks if the persistent cursor is on a user record. */ /*检查持久光标是否在用户记录上。*/
 UNIV_INLINE
 ibool
 btr_pcur_is_on_user_rec(
@@ -208,7 +208,7 @@ btr_pcur_is_on_user_rec(
 
 /*************************************************************
 Checks if the persistent cursor is before the first user record in
-the index tree. */
+the index tree. */ /*检查持久游标是否在索引树中的第一个用户记录之前。*/
 UNIV_INLINE
 ibool
 btr_pcur_is_before_first_in_tree(
@@ -229,7 +229,7 @@ btr_pcur_is_before_first_in_tree(
 
 /*************************************************************
 Checks if the persistent cursor is after the last user record in
-the index tree. */
+the index tree. */ /*检查持久游标是否位于索引树中的最后一条用户记录之后。*/
 UNIV_INLINE
 ibool
 btr_pcur_is_after_last_in_tree(
@@ -249,7 +249,7 @@ btr_pcur_is_after_last_in_tree(
 }
 
 /*************************************************************
-Moves the persistent cursor to the next record on the same page. */
+Moves the persistent cursor to the next record on the same page. */ /*将持久光标移到同一页上的下一个记录。*/
 UNIV_INLINE
 void
 btr_pcur_move_to_next_on_page(
@@ -267,7 +267,7 @@ btr_pcur_move_to_next_on_page(
 }
 
 /*************************************************************
-Moves the persistent cursor to the previous record on the same page. */
+Moves the persistent cursor to the previous record on the same page. */ /*将持久光标移动到同一页上的前一条记录。*/
 UNIV_INLINE
 void
 btr_pcur_move_to_prev_on_page(
@@ -286,7 +286,7 @@ btr_pcur_move_to_prev_on_page(
 
 /*************************************************************
 Moves the persistent cursor to the next user record in the tree. If no user
-records are left, the cursor ends up 'after last in tree'. */
+records are left, the cursor ends up 'after last in tree'. */ /*将持久光标移动到树中的下一条用户记录。如果没有用户记录留下，游标将在“最后一个树”中结束。*/
 UNIV_INLINE
 ibool
 btr_pcur_move_to_next_user_rec(
@@ -323,7 +323,7 @@ loop:
 
 /*************************************************************
 Moves the persistent cursor to the next record in the tree. If no records are
-left, the cursor stays 'after last in tree'. */
+left, the cursor stays 'after last in tree'. */ /*将持久游标移动到树中的下一条记录。如果没有记录留下，游标将停留在“最后一个树”之后。*/
 UNIV_INLINE
 ibool
 btr_pcur_move_to_next(
@@ -361,7 +361,10 @@ Commits the pcur mtr and sets the pcur latch mode to BTR_NO_LATCHES,
 that is, the cursor becomes detached. If there have been modifications
 to the page where pcur is positioned, this can be used instead of
 btr_pcur_release_leaf. Function btr_pcur_store_position should be used
-before calling this, if restoration of cursor is wanted later. */
+before calling this, if restoration of cursor is wanted later. */ 
+/*提交pcur mtr并将pcur闩锁模式设置为BTR_NO_LATCHES，也就是说，游标被分离。
+如果对pcur所在的页面进行了修改，则可以使用它代替btr_pcur_release_leaf。
+如果稍后需要恢复游标，在调用此函数之前应该使用函数btr_pcur_store_position。*/
 UNIV_INLINE
 void
 btr_pcur_commit(
@@ -378,7 +381,7 @@ btr_pcur_commit(
 }	
 
 /******************************************************************
-Differs from btr_pcur_commit in that we can specify the mtr to commit. */
+Differs from btr_pcur_commit in that we can specify the mtr to commit. */ /*与btr_pcur_commit的不同之处在于，我们可以指定mtr来提交。*/
 UNIV_INLINE
 void
 btr_pcur_commit_specify_mtr(
@@ -396,7 +399,7 @@ btr_pcur_commit_specify_mtr(
 }	
 
 /******************************************************************
-Sets the pcur latch mode to BTR_NO_LATCHES. */
+Sets the pcur latch mode to BTR_NO_LATCHES. */ /*设置pcur锁存模式为BTR_NO_LATCHES。*/
 UNIV_INLINE
 void
 btr_pcur_detach(
@@ -411,7 +414,7 @@ btr_pcur_detach(
 }
 
 /******************************************************************
-Tests if a cursor is detached: that is the latch mode is BTR_NO_LATCHES. */
+Tests if a cursor is detached: that is the latch mode is BTR_NO_LATCHES. */ /*测试游标是否分离:即闩锁模式为BTR_NO_LATCHES。*/
 UNIV_INLINE
 ibool
 btr_pcur_is_detached(
@@ -428,7 +431,7 @@ btr_pcur_is_detached(
 }
 
 /******************************************************************
-Sets the old_rec_buf field to NULL. */
+Sets the old_rec_buf field to NULL. */ /*将old_rec_buf字段设置为NULL。*/
 UNIV_INLINE
 void
 btr_pcur_init(
@@ -442,7 +445,7 @@ btr_pcur_init(
 
 /******************************************************************
 Initializes and opens a persistent cursor to an index tree. It should be
-closed with btr_pcur_close. */
+closed with btr_pcur_close. */ /*初始化并打开指向索引树的持久游标。它应该用btr_pcur_close关闭。*/
 UNIV_INLINE
 void
 btr_pcur_open(
@@ -479,7 +482,7 @@ btr_pcur_open(
 
 /******************************************************************
 Opens an persistent cursor to an index tree without initializing the
-cursor. */
+cursor. */ /*在不初始化游标的情况下将持久游标打开到索引树。*/
 UNIV_INLINE
 void
 btr_pcur_open_with_no_init(
@@ -520,7 +523,7 @@ btr_pcur_open_with_no_init(
 }
 
 /*********************************************************************
-Opens a persistent cursor at either end of an index. */
+Opens a persistent cursor at either end of an index. */ /*在索引的两端打开持久游标。*/
 UNIV_INLINE
 void
 btr_pcur_open_at_index_side(
@@ -553,7 +556,7 @@ btr_pcur_open_at_index_side(
 }
 
 /**************************************************************************
-Positions a cursor at a randomly chosen position within a B-tree. */
+Positions a cursor at a randomly chosen position within a B-tree. */ /*将光标定位在b -树中随机选择的位置。*/
 UNIV_INLINE
 void
 btr_pcur_open_at_rnd_pos(
@@ -578,7 +581,7 @@ btr_pcur_open_at_rnd_pos(
 	
 /******************************************************************
 Frees the possible memory heap of a persistent cursor and sets the latch
-mode of the persistent cursor to BTR_NO_LATCHES. */
+mode of the persistent cursor to BTR_NO_LATCHES. */ /*释放持久游标可能存在的内存堆，并将持久游标的锁存模式设置为BTR_NO_LATCHES。*/
 UNIV_INLINE
 void
 btr_pcur_close(

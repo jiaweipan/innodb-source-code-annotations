@@ -143,7 +143,7 @@ RW_X_LATCH are allowed as LA! */
 /************************************************************************
 This is the general function used to get optimistic access to a database
 page. */
-
+/*这是用于优化访问数据库页面的通用函数。*/
 ibool
 buf_page_optimistic_get_func(
 /*=========================*/
