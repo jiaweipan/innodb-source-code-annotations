@@ -5,7 +5,7 @@ The index tree adaptive search
 
 Created 2/17/1996 Heikki Tuuri
 *************************************************************************/
-
+/*索引树自适应搜索*/
 #include "btr0sea.h"
 #ifdef UNIV_NONINL
 #include "btr0sea.ic"

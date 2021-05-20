@@ -5,14 +5,14 @@ The index tree adaptive search
 
 Created 2/17/1996 Heikki Tuuri
 *************************************************************************/
-
+/*索引树自适应搜索*/
 #include "dict0mem.h"
 #include "btr0cur.h"
 #include "buf0buf.h"
 
 /*************************************************************************
 Updates the search info. */
-
+/*更新搜索信息。*/
 void
 btr_search_info_update_slow(
 /*========================*/
