@@ -344,7 +344,8 @@ struct dict_table_struct{
 				NOTE that this flag is not stored to the data
 				dictionary on disk, and the database will
 				forget about value TRUE if it has to reload
-				the table definition from disk */
+				the table definition from disk */ /*这个字段用于指定在模拟表太大,应该访问磁盘,磁盘访问模拟通过将线程睡眠一段时间;
+				注意,这个标志是不存储磁盘上的数据字典,和数据库会忘记真正的价值重新加载从磁盘表定义*/
 	/*----------------------*/
 	ib_longlong	stat_n_rows;
 				/* approximate number of rows in the table;

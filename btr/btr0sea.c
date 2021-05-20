@@ -22,39 +22,41 @@ ulint	btr_search_n_hash_fail	= 0;
 
 byte	btr_sea_pad1[64];	/* padding to prevent other memory update
 				hotspots from residing on the same memory
-				cache line as btr_search_latch */
+				cache line as btr_search_latch */ /*填充防止其他内存更新热点驻留在相同的内存缓存线作为btr_search_latch*/
 
 /* The latch protecting the adaptive search system: this latch protects the
 (1) positions of records on those pages where a hash index has been built.
 NOTE: It does not protect values of non-ordering fields within a record from
 being updated in-place! We can use fact (1) to perform unique searches to
 indexes. */
-
+/*保护自适应搜索系统的锁存器:这个锁存器保护(1)那些已经建立了哈希索引的页面上的记录位置。
+注意:它不保护记录中非排序字段的值不被就地更新!我们可以使用事实(1)对索引执行惟一搜索。*/
 rw_lock_t*	btr_search_latch_temp; /* We will allocate the latch from
 					dynamic memory to get it to the
 					same DRAM page as other hotspot
-					semaphores */
+					semaphores */ /*我们将从动态内存中分配闩锁，使其与其他热点信号量相同的DRAM页面*/
 
 byte	btr_sea_pad2[64];	/* padding to prevent other memory update
 				hotspots from residing on the same memory
-				cache line */
+				cache line */ /*填充以防止其他内存更新热点驻留在同一内存高速缓存线上*/
 
 btr_search_sys_t*	btr_search_sys;
 
 /* If the number of records on the page divided by this parameter
 would have been successfully accessed using a hash index, the index
 is then built on the page, assuming the global limit has been reached */
-
+/*如果使用散列索引成功访问了页面上记录的数量除以这个参数，那么就会在页面上构建索引，假设已经达到全局限制*/
 #define BTR_SEARCH_PAGE_BUILD_LIMIT	16
 
 /* The global limit for consecutive potentially successful hash searches,
 before hash index building is started */
-
+/*开始建立哈希索引之前，连续可能成功的哈希搜索的全局限制*/
 #define BTR_SEARCH_BUILD_LIMIT		100
 
 /************************************************************************
 Builds a hash index on a page with the given parameters. If the page already
 has a hash index with different parameters, the old hash index is removed. */
+/*使用给定的参数在页面上构建散列索引。如果页面已经有一个具有不同参数的散列索引，则旧的散列索引将被删除。*/
 static
 void
 btr_search_build_page_hash_index(
@@ -75,6 +77,10 @@ system. If not, allocates a free frames for the heap. This check makes it
 probable that, when have reserved the btr search system latch and we need to
 allocate a new node to the hash table, it will succeed. However, the check
 will not guarantee success. */
+/*这个函数应该在保留任何btr搜索互斥之前调用，如果预期的操作可能会向搜索系统哈希表添加节点。
+由于锁存顺序，一旦我们保留了btr搜索系统锁存，我们就不能从缓冲池中分配一个空闲帧。
+检查btr搜索系统中是否有一个为哈希表堆分配的空闲缓冲帧。如果不是，为堆分配一个自由帧。
+这个检查使它可能，当已经保留了btr搜索系统锁存，我们需要分配一个新节点到哈希表，它将成功。然而，检查并不能保证成功。*/
 static
 void
 btr_search_check_free_space_in_heap(void)
@@ -94,7 +100,7 @@ btr_search_check_free_space_in_heap(void)
 	/* Note that we peek the value of heap->free_block without reserving
 	the latch: this is ok, because we will not guarantee that there will
 	be enough free space in the hash table. */
-
+    /*注意，我们在不保留闩锁的情况下偷看了heap->free_block的值:这是可以的，因为我们不能保证哈希表中有足够的空闲空间。*/
 	if (heap->free_block == NULL) {
 		frame = buf_frame_alloc();
 
@@ -112,7 +118,7 @@ btr_search_check_free_space_in_heap(void)
 
 /*********************************************************************
 Creates and initializes the adaptive search system at a database start. */
-
+/*在数据库启动时创建并初始化自适应搜索系统。*/
 void
 btr_search_sys_create(
 /*==================*/
@@ -120,7 +126,7 @@ btr_search_sys_create(
 {
 	/* We allocate the search latch from dynamic memory:
 	see above at the global variable definition */
-	
+	/*我们从动态内存中分配搜索锁存:参见上面的全局变量定义*/
 	btr_search_latch_temp = mem_alloc(sizeof(rw_lock_t));
 	
 	rw_lock_create(&btr_search_latch);
@@ -134,7 +140,7 @@ btr_search_sys_create(
 
 /*********************************************************************
 Creates and initializes a search info struct. */
-
+/*创建并初始化一个搜索信息结构。*/
 btr_search_t*
 btr_search_info_create(
 /*===================*/
@@ -184,7 +190,7 @@ btr_search_info_update_hash(
 	if (index->type & DICT_IBUF) {
 		/* So many deletes are performed on an insert buffer tree
 		that we do not consider a hash index useful on it: */
-
+        /*由于在插入缓冲区树上执行了如此多的删除操作，所以我们认为哈希索引对它没有用:*/
 		return;
 	}
 
@@ -197,7 +203,7 @@ btr_search_info_update_hash(
 
 	/* Test if the search would have succeeded using the recommended
 	hash prefix */
-
+    /*测试使用推荐的散列前缀搜索是否成功*/
 	if ((info->n_fields >= n_unique) && (cursor->up_match >= n_unique)) {
 			
 		info->n_hash_potential++;
@@ -231,7 +237,7 @@ set_new_recomm:
 	/* We have to set a new recommendation; skip the hash analysis
 	for a while to avoid unnecessary CPU time usage when there is no
 	chance for success */
-	
+	/*我们必须制定新的建议;跳过哈希分析一段时间，以避免在没有成功机会时使用不必要的CPU时间*/
 	info->hash_analysis = 0;
 	
 	if ((cursor->up_match >= n_unique)
@@ -287,7 +293,7 @@ set_new_recomm:
 }
 	
 /*************************************************************************
-Updates the block search info on hash successes. */
+Updates the block search info on hash successes. */ /*更新散列成功的块搜索信息。*/
 static
 ibool
 btr_search_update_block_hash_info(
@@ -319,7 +325,7 @@ btr_search_update_block_hash_info(
 
 			/* The search would presumably have succeeded using
 			the hash index */
-		    
+		    /*使用散列索引搜索可能已经成功*/
 			info->last_hash_succ = TRUE;
 		}
 
@@ -347,7 +353,7 @@ btr_search_update_block_hash_info(
 		    || (block->side != block->curr_side)) {
 
 	    		/* Build a new hash index on the page */
-
+                 /*在页面上构建一个新的散列索引*/
 	    		return(TRUE);
 		}
 	}
@@ -363,6 +369,9 @@ what happens at page boundaries, and therefore there can be misleading
 hash nodes. Also, collisions in the fold value can lead to misleading
 references. This function lazily fixes these imperfections in the hash
 index. */
+/*当在搜索中使用散列节点引用失败时，更新该散列节点引用，而使用所使用的散列参数本可以成功地进行搜索。
+之所以会出现这种情况，是因为在为页面构建哈希索引时，我们没有检查页面边界发生了什么，因此可能会出现误导性的哈希节点。
+此外，fold值中的冲突可能会导致误导性的引用。这个函数惰性地修复了散列索引中的这些缺陷。*/
 static
 void
 btr_search_update_hash_ref(
@@ -431,7 +440,7 @@ btr_search_info_update_slow(
 		
 	if (cursor->flag == BTR_CUR_HASH_FAIL) {
 		/* Update the hash node reference, if appropriate */
-
+        /*如果合适，更新散列节点引用*/
 		btr_search_n_hash_fail++;
 
 		rw_lock_x_lock(&btr_search_latch);
@@ -453,6 +462,7 @@ btr_search_info_update_slow(
 Checks if a guessed position for a tree cursor is right. Note that if
 mode is PAGE_CUR_LE, which is used in inserts, and the function returns
 TRUE, then cursor->up_match and cursor->low_match both have sensible values. */
+/*检查树光标的猜测位置是否正确。注意，如果mode是PAGE_CUR_LE(在插入中使用)，并且函数返回TRUE，那么cursor->up_match和cursor->low_match都有合理的值。*/
 static
 ibool
 btr_search_check_guess(
@@ -608,7 +618,8 @@ btr_search_guess_on_hash(
 					is 0, we will have a latch set on
 					the cursor page, otherwise we assume
 					the caller uses his search latch
-					to protect the record! */ /*注意，只有当has_search_latch为0时，我们才会在游标页上设置一个闩锁，否则我们假设调用者使用他的搜索闩锁来保护记录!*/
+					to protect the record! */ /*注意，只有当has_search_latch为0时，我们才会在游标页上设置一个闩锁，
+					否则我们假设调用者使用他的搜索闩锁来保护记录!*/
 	btr_cur_t*	cursor, 	/* out: tree cursor */
 	ulint		has_search_latch,/* in: latch mode the caller
 					currently has on btr_search_latch:
@@ -712,7 +723,7 @@ btr_search_guess_on_hash(
 	btr_cur_position(index, rec, cursor);
 
 	/* Check the validity of the guess within the page */
-
+    /*检查页面内猜测的有效性*/
 	if (0 != ut_dulint_cmp(tree_id, btr_page_get_index_id(page))) {
 
 		success = FALSE;
@@ -771,7 +782,7 @@ btr_search_guess_on_hash(
 
 	/* Increment the page get statistics though we did not really
 	fix the page: for user info only */
-
+    /*增加页面得到统计数据，虽然我们没有真正修复页面:仅为用户信息*/
 	buf_pool->n_page_gets++;
 
 	return(TRUE);	
@@ -843,7 +854,7 @@ btr_search_drop_page_hash_index(
 
 	/* Calculate and cache fold values into an array for fast deletion
 	from the hash index */
-
+    /*计算折叠值并将其缓存到一个数组中，以便从散列索引中快速删除*/
 	folds = mem_alloc(n_recs * sizeof(ulint));
 
 	n_cached = 0;
@@ -860,7 +871,7 @@ btr_search_drop_page_hash_index(
 	while (rec != sup) {
 		/* FIXME: in a mixed tree, not all records may have enough
 		ordering fields: */
-		
+		/*FIXME:在混合树中，不是所有的记录都有足够的排序字段:*/
 		fold = rec_fold(rec, n_fields, n_bytes, tree_id);
 
 		if ((fold == prev_fold) && (prev_fold != 0)) {
@@ -870,7 +881,7 @@ btr_search_drop_page_hash_index(
 
 		/* Remove all hash nodes pointing to this page from the
 		hash chain */
-
+        /*从哈希链中删除指向该页的所有哈希节点*/
 		folds[n_cached] = fold;
 		n_cached++;
 next_rec:
@@ -894,7 +905,7 @@ next_rec:
 /************************************************************************
 Drops a page hash index when a page is freed from a fseg to the file system.
 Drops possible hash index if the page happens to be in the buffer pool. */
-
+/*当页从fseg释放到文件系统时删除页哈希索引。如果页面恰好在缓冲池中，则删除可能的哈希索引。*/
 void
 btr_search_drop_page_hash_when_freed(
 /*=================================*/
@@ -918,7 +929,7 @@ btr_search_drop_page_hash_when_freed(
 	then the caller has already drooped the hash index for the page,
 	and we never get here. Therefore we can acquire the s-latch to
 	the page without fearing a deadlock. */
-	
+	/*我们假设，如果调用者在该页上有一个闩锁，那么调用者已经降低了该页的哈希索引，我们永远不会到达这里。因此，我们可以获得页面的s锁闩，而不必担心出现死锁。*/
 	page = buf_page_get(space, page_no, RW_S_LATCH, &mtr);
 
 	buf_page_dbg_add_level(page, SYNC_TREE_NODE_FROM_HASH);
@@ -930,7 +941,8 @@ btr_search_drop_page_hash_when_freed(
 
 /************************************************************************
 Builds a hash index on a page with the given parameters. If the page already
-has a hash index with different parameters, the old hash index is removed. */
+has a hash index with different parameters, the old hash index is removed. */ 
+/*使用给定的参数在页面上构建散列索引。如果页面已经有一个具有不同参数的散列索引，则旧的散列索引将被删除。*/
 static
 void
 btr_search_build_page_hash_index(
@@ -984,7 +996,7 @@ btr_search_build_page_hash_index(
 
 	/* Calculate and cache fold values and corresponding records into
 	an array for fast insertion to the hash index */
-
+    /*计算并将折叠值和相应记录缓存到一个数组中，以便快速插入到散列索引中*/
 	folds = mem_alloc(n_recs * sizeof(ulint));
 	recs = mem_alloc(n_recs * sizeof(rec_t*));
 
@@ -999,7 +1011,7 @@ btr_search_build_page_hash_index(
 
 	/* FIXME: in a mixed tree, all records may not have enough ordering
 	fields: */
-	
+	/*FIXME:在混合树中，所有记录可能没有足够的排序字段:*/
 	fold = rec_fold(rec, n_fields, n_bytes, tree_id);
 
 	if (side == BTR_SEARCH_LEFT_SIDE) {
@@ -1084,7 +1096,8 @@ Moves or deletes hash entries for moved records. If new_page is already hashed,
 then the hash index for page, if any, is dropped. If new_page is not hashed,
 and page is hashed, then a new hash index is built to new_page with the same
 parameters as page (this often happens when a page is split). */
-
+/*移动或删除移动记录的散列项。如果new_page已经散列，则删除page的散列索引(如果有的话)。
+如果new_page没有进行散列，而page进行了散列，则会为new_page构建一个新的散列索引，其参数与page相同(这通常发生在分页时)。*/
 void
 btr_search_move_or_delete_hash_entries(
 /*===================================*/
@@ -1142,7 +1155,7 @@ btr_search_move_or_delete_hash_entries(
 
 /************************************************************************
 Updates the page hash index when a single record is deleted from a page. */
-
+/*当从页面中删除单个记录时，更新页面散列索引。*/
 void
 btr_search_update_hash_on_delete(
 /*=============================*/
@@ -1183,7 +1196,7 @@ btr_search_update_hash_on_delete(
 
 /************************************************************************
 Updates the page hash index when a single record is inserted on a page. */
-
+/*在页面上插入单个记录时更新页面散列索引。*/
 void
 btr_search_update_hash_node_on_insert(
 /*==================================*/
@@ -1229,7 +1242,7 @@ btr_search_update_hash_node_on_insert(
 
 /************************************************************************
 Updates the page hash index when a single record is inserted on a page. */
-
+/*在页面上插入单个记录时更新页面散列索引。*/
 void
 btr_search_update_hash_on_insert(
 /*=============================*/
@@ -1363,7 +1376,7 @@ function_exit:
 
 /************************************************************************
 Prints info of the search system. */
-
+/*打印搜索系统的信息。*/
 void
 btr_search_print_info(void)
 /*=======================*/
@@ -1379,7 +1392,7 @@ btr_search_print_info(void)
 
 /************************************************************************
 Prints info of searches on an index. */
-
+/*打印索引上的搜索信息。*/
 void
 btr_search_index_print_info(
 /*========================*/
@@ -1404,7 +1417,7 @@ btr_search_index_print_info(
 
 /************************************************************************
 Prints info of searches on a table. */
-
+/*打印表上的搜索信息。*/
 void
 btr_search_table_print_info(
 /*========================*/
@@ -1432,7 +1445,7 @@ btr_search_table_print_info(
 
 /************************************************************************
 Validates the search system. */
-
+/*验证搜索系统。*/
 ibool
 btr_search_validate(void)
 /*=====================*/
