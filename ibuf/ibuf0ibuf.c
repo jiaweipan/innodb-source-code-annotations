@@ -1,6 +1,6 @@
 /******************************************************
 Insert buffer
-
+插入缓冲
 (c) 1997 Innobase Oy
 
 Created 7/19/1997 Heikki Tuuri

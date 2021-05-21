@@ -1,6 +1,6 @@
 /******************************************************
 Insert buffer
-
+插入缓冲
 (c) 1997 Innobase Oy
 
 Created 7/19/1997 Heikki Tuuri
@@ -14,10 +14,11 @@ extern ulint	ibuf_flush_count;
 /* If this number is n, an index page must contain at least the page size
 per n bytes of free space for ibuf to try to buffer inserts to this page.
 If there is this much of free space, the corresponding bits are set in the
-ibuf bitmap. */
+ibuf bitmap. */ /*如果这个数字是n，索引页必须至少包含每n字节的可用空间的页大小，以便ibuf尝试缓冲对该页的插入。
+如果有这么多空闲空间，则在ibuf位图中设置相应的位。*/
 #define IBUF_PAGE_SIZE_PER_FREE_SPACE	32
 
-/* Insert buffer data struct for a single tablespace */
+/* Insert buffer data struct for a single tablespace */ /*为单个表空间插入缓冲区数据结构*/
 struct ibuf_data_struct{
 	ulint		space;	/* space id */
 	ulint		seg_size;/* allocated pages if the file segment
@@ -40,7 +41,7 @@ struct ibuf_data_struct{
 };
 
 /* If the ibuf meter exceeds this value, then the suitable inserts are made to
-the insert buffer instead of directly to the disk page */
+the insert buffer instead of directly to the disk page */ /*如果ibuf计数器超过这个值，那么将对插入缓冲区进行适当的插入，而不是直接插入磁盘页*/
 #define IBUF_THRESHOLD	50	
 
 struct ibuf_struct{
@@ -51,10 +52,10 @@ struct ibuf_struct{
 	ulint		meter;		/* heuristic meter which measures
 					desirability of doing inserts to the
 					insert buffer instead of directly to
-					the disk page */
+					the disk page */ /*启发式度量，用于度量对插入缓冲区而不是直接对磁盘页执行插入操作的可取性*/
 	UT_LIST_BASE_NODE_T(ibuf_data_t) data_list;
 					/* list of ibuf data structs for
-					each tablespace */
+					each tablespace */ /*每个表空间的ibuf数据结构的列表*/
 };
 
 /****************************************************************************
@@ -62,7 +63,8 @@ Sets the free bit of the page in the ibuf bitmap. This is done in a separate
 mini-transaction, hence this operation does not restrict further work to only
 ibuf bitmap operations, which would result if the latch to the bitmap page
 were kept. */
-
+/*在ibuf位图中设置页面的空闲位。这是在一个单独的小事务中完成的，
+因此该操作不会将进一步的工作限制为只进行ibuf位图操作，如果保留位图页的锁存，将导致ibuf位图操作。*/
 void
 ibuf_set_free_bits(
 /*===============*/
@@ -76,7 +78,7 @@ ibuf_set_free_bits(
 
 /**************************************************************************
 A basic partial test if an insert to the insert buffer could be possible and
-recommended. */
+recommended. */ /*一个基本的部分测试，如果插入缓冲区是可能的，并建议。*/
 UNIV_INLINE
 ibool
 ibuf_should_try(
@@ -99,7 +101,7 @@ ibuf_should_try(
 }
 
 /***************************************************************************
-Checks if a page address is an ibuf bitmap page address. */
+Checks if a page address is an ibuf bitmap page address. */ /*检查页面地址是否为ibuf位图页面地址。*/
 UNIV_INLINE
 ibool
 ibuf_bitmap_page(
@@ -116,7 +118,7 @@ ibuf_bitmap_page(
 }
 
 /*************************************************************************
-Translates the free space on a page to a value in the ibuf bitmap.*/
+Translates the free space on a page to a value in the ibuf bitmap.*/ /*将页面上的空闲空间转换为ibuf位图中的值。*/
 UNIV_INLINE
 ulint
 ibuf_index_page_calc_free_bits(
@@ -141,7 +143,7 @@ ibuf_index_page_calc_free_bits(
 }
 
 /*************************************************************************
-Translates the ibuf free bits to the free space on a page in bytes. */
+Translates the ibuf free bits to the free space on a page in bytes. */ /*将ibuf空闲位转换为页上的空闲空间(以字节为单位)。*/
 UNIV_INLINE
 ulint
 ibuf_index_page_calc_free_from_bits(
@@ -177,6 +179,8 @@ Updates the free bits of the page in the ibuf bitmap if there is not enough
 free on the page any more. This is done in a separate mini-transaction, hence
 this operation does not restrict further work to only ibuf bitmap operations,
 which would result if the latch to the bitmap page were kept. */
+/*如果页面上没有足够的空闲空间，则更新ibuf位图中页面的空闲位。
+这是在一个单独的小事务中完成的，因此该操作不会将进一步的工作限制为只进行ibuf位图操作，如果保留位图页的锁存，将导致ibuf位图操作。*/
 UNIV_INLINE
 void
 ibuf_update_free_bits_if_full(
@@ -216,7 +220,7 @@ ibuf_update_free_bits_if_full(
 		the purpose of this is to prevent those pages to which we
 		cannot make inserts using the insert buffer from slipping
 		out of the buffer pool */
-
+        /*我们将该页移到缓冲池LRU列表的前面:这样做的目的是防止那些不能使用插入缓冲区进行插入的页从缓冲池中滑出*/
 		buf_page_make_young(page);
 	}
 
