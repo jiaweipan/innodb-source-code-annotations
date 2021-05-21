@@ -491,7 +491,7 @@ fil_init(
 
 /********************************************************************
 Writes the flushed lsn to the header of each file space. */
-
+/*将刷新的lsn写入每个文件空间的头。*/
 void
 fil_ibuf_init_at_db_start(void)
 /*===========================*/

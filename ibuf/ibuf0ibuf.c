@@ -30,21 +30,23 @@ Created 7/19/1997 Heikki Tuuri
 #include "que0que.h"
 
 /*	PREVENTING DEADLOCKS IN THE INSERT BUFFER SYSTEM
-
+    防止插入缓冲区系统中的死锁
 If an OS thread performs any operation that brings in disk pages from
 non-system tablespaces into the buffer pool, or creates such a page there,
 then the operation may have as a side effect an insert buffer index tree
 compression. Thus, the tree latch of the insert buffer tree may be acquired
 in the x-mode, and also the file space latch of the system tablespace may
 be acquired in the x-mode.
-
+如果一个OS线程执行任何将非系统表空间中的磁盘页引入缓冲池的操作，或者在那里创建这样一个页，那么该操作可能会产生一个副作用，
+即插入缓冲区索引树压缩。因此，插入缓冲区树的树锁存器可以在x模式中获得，系统表空间的文件空间锁存器也可以在x模式中获得。
 Also, an insert to an index in a non-system tablespace can have the same
 effect. How do we know this cannot lead to a deadlock of OS threads? There
 is a problem with the i\o-handler threads: they break the latching order
 because they own x-latches to pages which are on a lower level than the
 insert buffer tree latch, its page latches, and the tablespace latch an
 insert buffer operation can reserve.
-
+此外，在非系统表空间中插入索引也可能产生相同的效果。我们如何知道这不会导致OS线程死锁?
+i\o-handler线程有一个问题:它们破坏了闩锁顺序，因为它们拥有页的x-闩锁，这比插入缓冲区树闩锁、它的页闩锁和插入缓冲区操作可以保留的表空间闩锁低一级。
 The solution is the following: We put into each tablespace an insert buffer
 of its own. Let all the tree and page latches connected with the insert buffer
 be later in the latching order than the fsp latch and fsp page latches.
@@ -56,14 +58,18 @@ pages and the first inode page, which contains the inode of the ibuf tree: let
 us call all these ibuf pages. If the OS does not support asynchronous i/o,
 then there is no special i/o thread, but to prevent deadlocks, we do not let a
 read-ahead access both non-ibuf and ibuf pages.
-
+解决方案如下:我们在每个表空间中放入自己的插入缓冲区。让所有与插入缓冲区连接的树锁存器和页锁存器在锁存顺序上比fsp锁存器和fsp页锁存器晚。
+插入缓冲区页必须确保在访问这些页区域时永远不会调用插入缓冲区，因为这将导致递归违反锁存顺序。
+我们让一个特殊的i/o处理线程负责对插入缓冲区页面和ibuf位图页面，以及fsp位图页面和包含ibuf树的inode的第一个inode页面的i/o操作:让我们调用所有这些ibuf页面。
+如果操作系统不支持异步i/o，那么就没有特殊的i/o线程，但是为了防止死锁，我们不允许预读访问非ibuf和ibuf页面。
 Then an i/o-handler for the insert buffer never needs to access the insert
 buffer tree and thus obeys the latching order. On the other hand, other
 i/o-handlers for other tablespaces may require access to the insert buffer,
 but because all kinds of latches they need to access there are later in the
 latching order, no violation of the latching order occurs in this case,
 either.
-
+然后，插入缓冲区的i/o处理程序永远不需要访问插入缓冲区树，因此遵守闩锁顺序。
+另一方面，其他表空间的其他i/o处理程序可能需要访问插入缓冲区，但因为它们需要访问的所有类型的闩锁都在稍后的闩锁顺序中，所以在这种情况下也不会违反闩锁顺序。
 A problem is how to grow and contract an insert buffer tree. As it is later
 in the latching order than the fsp management, we have to reserve the fsp
 latch first, before adding or removing pages from the insert buffer tree.
@@ -82,13 +88,21 @@ modifications to the fsp pages. Now we are free to reserve the ibuf latch,
 and check if there is an excess of pages in the free list. We can then, in a
 separate mini-transaction, take them out of the free list and free them to
 the fsp system.
-
+一个问题是如何生长和收缩插入缓冲区树。因为它的锁存顺序比fsp管理晚，所以我们必须先保留fsp锁存，然后再从插入缓冲区树中添加或删除页面。
+我们让插入缓冲区树拥有自己的文件空间管理:一个链接到树根的空闲页面列表。
+为了防止在向树中添加页面时递归使用插入缓冲区，必须首先将这些页面加载到内存中，获取它们上的闩锁，然后再将它们添加到插入缓冲区树的空闲列表中。
+更困难的是从空闲列表中删除页面。如果ibuf树的空闲列表中有超过的页面，那么如果某个线程保留了fsp闩锁，以便分配更多的文件空间，则可能需要这些页面。
+因此，我们执行以下操作:如果一个线程保留了fsp闩锁，我们检查闩锁的writer count字段。
+如果该字段的值为1，则意味着线程在进入fsp系统之前没有闩锁，并且线程的mtr不包含对fsp页面的修改。
+现在我们可以自由地保留ibuf锁存器，并检查空闲列表中是否有多余的页面。然后，我们可以在单独的迷你交易中，将它们从自由列表中取出，释放到fsp系统中。
 To avoid deadlocks in the ibuf system, we divide file pages into three levels:
-
-(1) non-ibuf pages,
+为了避免ibuf系统中的死锁，我们将文件页面划分为三个级别:
+(1) non-ibuf pages, 
 (2) ibuf tree pages and the pages in the ibuf tree free list, and
 (3) ibuf bitmap pages.
-
+(1) non-ibuf页面,
+(2) ibuf树中的页面和ibuf树中的页面的空闲列表，以及
+(3) ibuf位图页面。
 No OS thread is allowed to access higher level pages if it has latches to
 lower level pages; even if the thread owns a B-tree latch it must not access
 the B-tree non-leaf pages if it has latches on lower level pages. Read-ahead
@@ -96,70 +110,77 @@ is only allowed for level 1 and 2 pages. Dedicated i/o-handler threads handle
 exclusively level 1 i/o. A dedicated i/o handler thread handles exclusively
 level 2 i/o. However, if an OS thread does the i/o handling for itself, i.e.,
 it uses synchronous aio or the OS does not support aio, it can access any
-pages, as long as it obeys the access order rules. */
+pages, as long as it obeys the access order rules.
+如果OS线程对较低级别的页面有锁存，则不允许它访问较高级别的页面;
+即使线程拥有b树锁存器，如果它在较低级别页面上有锁存器，它也不能访问b树非叶页面。
+预读只允许对1级和2级页面进行预读。专用的i/o处理程序线程专门处理1级i/o。
+一个专用的i/o处理器线程专门处理2级i/o。但是，如果一个OS线程自己做i/o处理，
+也就是说，它使用同步aio或OS不支持aio，它可以访问任何页面，只要它遵守访问顺序规则。 */
 
-/* Buffer pool size per the maximum insert buffer size */
+/* Buffer pool size per the maximum insert buffer size */ /*每个最大插入缓冲区大小对应的缓冲池大小*/
 #define IBUF_POOL_SIZE_PER_MAX_SIZE	2
 
-/* The insert buffer control structure */
+/* The insert buffer control structure */ /*插入缓冲区控制结构*/
 ibuf_t*	ibuf	= NULL;
 
 ulint	ibuf_rnd = 986058871;
 
 ulint	ibuf_flush_count	= 0;
 
-/* Dimensions for the ibuf_count array */
+/* Dimensions for the ibuf_count array */ /*ibuf_count数组的尺寸*/
 #define IBUF_COUNT_N_SPACES	10
 #define IBUF_COUNT_N_PAGES	10000
 
-/* Buffered entry counts for file pages, used in debugging */
+/* Buffered entry counts for file pages, used in debugging */ /*用于调试的文件页的缓冲条目计数*/
 ulint*	ibuf_counts[IBUF_COUNT_N_SPACES];
 
 ibool	ibuf_counts_inited	= FALSE;
 
-/* The start address for an insert buffer bitmap page bitmap */
+/* The start address for an insert buffer bitmap page bitmap */ /*插入缓冲区位图页位图的起始地址*/
 #define IBUF_BITMAP		PAGE_DATA
 
-/* Offsets in bits for the bits describing a single page in the bitmap */
+/* Offsets in bits for the bits describing a single page in the bitmap */ /*位图中描述单个页面的位的位偏移量*/
 #define	IBUF_BITMAP_FREE	0
 #define IBUF_BITMAP_BUFFERED	2
 #define IBUF_BITMAP_IBUF	3	/* TRUE if page is a part of the ibuf
 					tree, excluding the root page, or is
-					in the free list of the ibuf */
+					in the free list of the ibuf *//*如果page是ibuf树的一部分(不包括根页)，或者是在ibuf的空闲列表中，则为TRUE*/
 
-/* Number of bits describing a single page */
+/* Number of bits describing a single page *//*描述单页的位数*/
 #define IBUF_BITS_PER_PAGE	4
 
-/* The mutex used to block pessimistic inserts to ibuf trees */
+/* The mutex used to block pessimistic inserts to ibuf trees */ /*用于阻塞对ibuf树的悲观插入的互斥*/
 mutex_t	ibuf_pessimistic_insert_mutex;
 
-/* The mutex protecting the insert buffer structs */
+/* The mutex protecting the insert buffer structs */ /*保护插入缓冲区结构的互斥锁*/
 mutex_t	ibuf_mutex;
 
-/* The mutex protecting the insert buffer bitmaps */
+/* The mutex protecting the insert buffer bitmaps */ /*保护插入缓冲区位图的互斥锁*/
 mutex_t	ibuf_bitmap_mutex;
 
-/* The area in pages from which contract looks for page numbers for merge */
+/* The area in pages from which contract looks for page numbers for merge */ /*页中契约从中查找要合并的页码的区域*/
 #define	IBUF_MERGE_AREA			8
 
 /* Inside the merge area, pages which have at most 1 per this number less
 buffered entries compared to maximum volume that can buffered for a single
 page are merged along with the page whose buffer became full */
+/*在合并区域内，如果每个分页中最多有1个比单个分页所能缓冲的最大容量少的分页，则会与其缓冲区已满的分页合并*/
 #define IBUF_MERGE_THRESHOLD		4
 
 /* In ibuf_contract at most this number of pages is read to memory in one
 batch, in order to merge the entries for them in the insert buffer */
+/*在ibuf_contract中，最多一次将这个页数读到内存中，以便在插入缓冲区中合并它们的条目*/
 #define	IBUF_MAX_N_PAGES_MERGED		IBUF_MERGE_AREA
 
 /* If the combined size of the ibuf trees exceeds ibuf->max_size by this
 many pages, we start to contract it in connection to inserts there, using
-non-synchronous contract */
+non-synchronous contract *//*如果ibuf树的总大小超过了ibuf->max_size这么多页，我们就开始使用非同步契约将其收缩到插入时*/
 #define IBUF_CONTRACT_ON_INSERT_NON_SYNC	0
 
-/* Same as above, but use synchronous contract */
+/* Same as above, but use synchronous contract */ /*与上面相同，但使用同步契约*/
 #define IBUF_CONTRACT_ON_INSERT_SYNC		5
 
-/* Same as above, but no insert is done, only contract is called */
+/* Same as above, but no insert is done, only contract is called */ /*与上面一样，但是没有插入操作，只有契约调用*/
 #define IBUF_CONTRACT_DO_NOT_INSERT		10
 
 /* TODO: how to cope with drop table if there are records in the insert
@@ -167,9 +188,10 @@ buffer for the indexes of the table? Is there actually any problem,
 because ibuf merge is done to a page when it is read in, and it is
 still physically like the index page even if the index would have been
 dropped! So, there seems to be no problem. */
-
+/*如何处理删除表，如果有记录在插入缓冲区的索引表?是否有任何问题，因为ibuf合并是在页被读入时完成的，
+它在物理上仍然像索引页，即使索引已经被删除!所以，似乎没有问题。*/
 /**********************************************************************
-Validates the ibuf data structures when the caller owns ibuf_mutex. */
+Validates the ibuf data structures when the caller owns ibuf_mutex. */ /*当调用者拥有ibuf_mutex时验证ibuf数据结构。*/
 static
 ibool
 ibuf_validate_low(void);
@@ -178,7 +200,7 @@ ibuf_validate_low(void);
 
 /**********************************************************************
 Sets the flag in the current OS thread local storage denoting that it is
-inside an insert buffer routine. */
+inside an insert buffer routine. */ /*在当前OS线程本地存储中设置标志，表示它在插入缓冲区例程中。*/
 UNIV_INLINE
 void
 ibuf_enter(void)
@@ -195,7 +217,7 @@ ibuf_enter(void)
 
 /**********************************************************************
 Sets the flag in the current OS thread local storage denoting that it is
-exiting an insert buffer routine. */
+exiting an insert buffer routine. */ /*在当前OS线程本地存储中设置标志，表示它正在退出插入缓冲区例程。*/
 UNIV_INLINE
 void
 ibuf_exit(void)
@@ -213,7 +235,7 @@ ibuf_exit(void)
 /**********************************************************************
 Returns TRUE if the current OS thread is performing an insert buffer
 routine. */
-
+/*如果当前OS线程正在执行插入缓冲区例程，则返回TRUE。*/
 ibool
 ibuf_inside(void)
 /*=============*/
@@ -224,7 +246,7 @@ ibuf_inside(void)
 }
 
 /**********************************************************************
-Gets the ibuf header page and x-latches it. */
+Gets the ibuf header page and x-latches it. */ /*获取ibuf报头页并x-latch它。*/
 static
 page_t*
 ibuf_header_page_get(
@@ -245,7 +267,7 @@ ibuf_header_page_get(
 }
 
 /**********************************************************************
-Gets the root page and x-latches it. */
+Gets the root page and x-latches it. */ /*获取根页面并x-latch它。*/
 static
 page_t*
 ibuf_tree_root_get(
@@ -270,7 +292,7 @@ ibuf_tree_root_get(
 	
 /**********************************************************************
 Gets the ibuf count for a given page. */
-
+/*获取给定页面的ibuf计数。*/
 ulint
 ibuf_count_get(
 /*===========*/
@@ -291,7 +313,7 @@ ibuf_count_get(
 }
 
 /**********************************************************************
-Sets the ibuf count for a given page. */
+Sets the ibuf count for a given page. */ /*设置给定页面的ibuf计数。*/
 static
 void
 ibuf_count_set(
@@ -310,7 +332,7 @@ ibuf_count_set(
 /**********************************************************************
 Creates the insert buffer data structure at a database startup and
 initializes the data structures for the insert buffer of each tablespace. */
-
+/*在数据库启动时创建插入缓冲区数据结构，并初始化每个表空间的插入缓冲区的数据结构。*/
 void
 ibuf_init_at_db_start(void)
 /*=======================*/
@@ -320,7 +342,7 @@ ibuf_init_at_db_start(void)
 	/* Note that also a pessimistic delete can sometimes make a B-tree
 	grow in size, as the references on the upper levels of the tree can
 	change */
-	
+	/*请注意，悲观删除有时也会使b -树的大小增加，因为树上层的引用可能会改变*/
 	ibuf->max_size = buf_pool_get_curr_size() / UNIV_PAGE_SIZE
 						/ IBUF_POOL_SIZE_PER_MAX_SIZE;
 	ibuf->meter = IBUF_THRESHOLD + 1;
@@ -362,7 +384,7 @@ ibuf_init_at_db_start(void)
 
 /**********************************************************************
 Updates the size information in an ibuf data, assuming the segment size has
-not changed. */
+not changed. */ /*更新ibuf数据中的大小信息，假设段大小没有改变。*/
 static
 void
 ibuf_data_sizes_update(
@@ -406,7 +428,8 @@ Creates the insert buffer data struct for a single tablespace. Reads the
 root page of the insert buffer tree in the tablespace. This function can
 be called only after the dictionary system has been initialized, as this
 creates also the insert buffer table and index for this tablespace. */
-
+/*为单个表空间创建插入缓冲区数据结构。读取表空间中插入缓冲区树的根页。
+这个函数只有在字典系统初始化之后才能被调用，因为这也会为这个表空间创建插入的缓冲区表和索引。*/
 ibuf_data_t*
 ibuf_data_init_for_space(
 /*=====================*/
@@ -505,7 +528,7 @@ ibuf_data_init_for_space(
 
 /*************************************************************************
 Initializes an ibuf bitmap page. */
-
+/*初始化一个ibuf位图页面。*/
 void
 ibuf_bitmap_page_init(
 /*==================*/
@@ -532,7 +555,7 @@ ibuf_bitmap_page_init(
 
 /*************************************************************************
 Parses a redo log record of an ibuf bitmap page init. */
-
+/*解析ibuf位图页面init的重做日志记录。*/
 byte*
 ibuf_parse_bitmap_init(
 /*===================*/
@@ -552,7 +575,7 @@ ibuf_parse_bitmap_init(
 }
 
 /************************************************************************
-Gets the desired bits for a given page from a bitmap page. */
+Gets the desired bits for a given page from a bitmap page. */ /*从位图页获取给定页所需的位。*/
 UNIV_INLINE
 ulint
 ibuf_bitmap_page_get_bits(
@@ -595,7 +618,7 @@ ibuf_bitmap_page_get_bits(
 }
 
 /************************************************************************
-Sets the desired bit for a given page in a bitmap page. */
+Sets the desired bit for a given page in a bitmap page. */ /*在位图页面中设置给定页面所需的位。*/
 static
 void
 ibuf_bitmap_page_set_bits(
@@ -644,7 +667,7 @@ ibuf_bitmap_page_set_bits(
 }
 
 /************************************************************************
-Calculates the bitmap page number for a given page number. */
+Calculates the bitmap page number for a given page number. */ /*计算给定页码的位图页码。*/
 UNIV_INLINE
 ulint
 ibuf_bitmap_page_no_calc(
@@ -660,7 +683,7 @@ ibuf_bitmap_page_no_calc(
 
 /************************************************************************
 Gets the ibuf bitmap page where the bits describing a given file page are
-stored. */
+stored. */ /*获取描述给定文件页的位所在的ibuf位图页存储。*/
 static
 page_t*
 ibuf_bitmap_get_map_page(
@@ -686,7 +709,8 @@ ibuf_bitmap_get_map_page(
 Sets the free bits of the page in the ibuf bitmap. This is done in a separate
 mini-transaction, hence this operation does not restrict further work to only
 ibuf bitmap operations, which would result if the latch to the bitmap pag
-were kept. */
+were kept. */ /*在ibuf位图中设置页面的空闲位。这是在一个单独的小事务中完成的，
+因此该操作不会将进一步的工作限制为只进行ibuf位图操作，如果保留位图分页的锁存，将导致ibuf位图操作。*/
 UNIV_INLINE
 void
 ibuf_set_free_bits_low(
@@ -810,7 +834,8 @@ Resets the free bits of the page in the ibuf bitmap. This is done in a
 separate mini-transaction, hence this operation does not restrict further
 work to solely ibuf bitmap operations, which would result if the latch to
 the bitmap page were kept. */
-
+/*重置ibuf位图中页面的空闲位。这是在一个单独的小事务中完成的，因此该操作不会将进一步的工作限制为仅仅是ibuf位图操作，
+如果保留对位图页的锁存，将导致ibuf位图操作。*/
 void
 ibuf_reset_free_bits(
 /*=================*/
@@ -853,7 +878,7 @@ ibuf_update_free_bits_low(
 Updates the free bits for the two pages to reflect the present state. Does
 this in the mtr given, which means that the latching order rules virtually
 prevent any further operations until mtr is committed. */
-
+/*更新两个页面的空闲位以反映当前状态。在给定的mtr中这样做，这意味着在mtr提交之前，锁存订单规则实际上阻止了任何进一步的操作。*/
 void
 ibuf_update_free_bits_for_two_pages_low(
 /*====================================*/
@@ -867,7 +892,7 @@ ibuf_update_free_bits_for_two_pages_low(
 	/* As we have to x-latch two random bitmap pages, we have to acquire
 	the bitmap mutex to prevent a deadlock with a similar operation
 	performed by another OS thread. */
-
+    /*因为我们必须对两个随机的位图页进行x锁存，所以我们必须获得位图互斥锁，以防止另一个操作线程执行类似操作时发生死锁。*/
 	mutex_enter(&ibuf_bitmap_mutex);
 	
 	state = ibuf_index_page_calc_free(page1);
@@ -882,7 +907,7 @@ ibuf_update_free_bits_for_two_pages_low(
 }
 
 /**************************************************************************
-Returns TRUE if the page is one of the fixed address ibuf pages. */
+Returns TRUE if the page is one of the fixed address ibuf pages. */ /*如果该页面是固定地址ibuf页面之一，则返回TRUE。*/
 UNIV_INLINE
 ibool
 ibuf_fixed_addr_page(
@@ -900,7 +925,7 @@ ibuf_fixed_addr_page(
 
 /***************************************************************************
 Checks if a page is a level 2 or 3 page in the ibuf hierarchy of pages. */
-
+/*检查页面的ibuf层次结构中的页面是2级还是3级。*/
 ibool
 ibuf_page(
 /*======*/
@@ -915,7 +940,7 @@ ibuf_page(
 	if (recv_no_ibuf_operations) {
 		/* Recovery is running: no ibuf operations should be
 		performed */
-
+        /*正在恢复:不需要进行ibuf操作*/
 		return(FALSE);
 	}
 
@@ -939,7 +964,7 @@ ibuf_page(
 
 /***************************************************************************
 Checks if a page is a level 2 or 3 page in the ibuf hierarchy of pages. */
-
+/*检查页面的ibuf层次结构中的页面是2级还是3级。*/
 ibool
 ibuf_page_low(
 /*==========*/
@@ -974,7 +999,7 @@ ibuf_page_low(
 }
 
 /************************************************************************
-Returns the page number field of an ibuf record. */
+Returns the page number field of an ibuf record. */ /*返回ibuf记录的页码字段。*/
 static
 ulint
 ibuf_rec_get_page_no(

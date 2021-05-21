@@ -132,7 +132,7 @@ thr_local_set_slot_no(
 /***********************************************************************
 Returns pointer to the 'in_ibuf' field within the current thread local
 storage. */
-
+/*返回指向当前线程本地存储中的'in_ibuf'字段的指针。*/
 ibool*
 thr_local_get_in_ibuf_field(void)
 /*=============================*/
