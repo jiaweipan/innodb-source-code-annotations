@@ -1,6 +1,6 @@
 /******************************************************
 The database buffer pool global types for the directory
-
+目录的数据库缓冲池全局类型
 (c) 1995 Innobase Oy
 
 Created 11/17/1995 Heikki Tuuri
