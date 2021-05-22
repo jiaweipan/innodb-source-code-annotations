@@ -1172,7 +1172,9 @@ sets a non-recursive exclusive lock on the buffer frame. The io-handler must
 take care that the flag is cleared and the lock released later. This is one
 of the functions which perform the state transition NOT_USED => FILE_PAGE to
 a block (the other is buf_page_create). */ 
-
+/*初始化buffer buf_pool的读页面的函数。如果页面已经在buf_pool中，则不执行任何操作。
+设置io_fix标志为BUF_IO_READ，并设置缓冲区帧上的非递归排他锁。io处理程序必须注意清除标志并稍后释放锁。
+这是执行状态转换NOT_USED => FILE_PAGE到一个块的函数之一(另一个是buf_page_create)。*/
 buf_block_t*
 buf_page_init_for_read(
 /*===================*/

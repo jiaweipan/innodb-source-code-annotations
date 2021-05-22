@@ -1022,13 +1022,13 @@ ibuf_rec_get_page_no(
 
 /************************************************************************
 Returns the space taken by a stored non-clustered index entry if converted to
-an index record. */
+an index record. */ /*返回存储的非聚集索引项(如果转换为索引记录)所占用的空间。*/
 static
 ulint
 ibuf_rec_get_volume(
 /*================*/
 			/* out: size of index record in bytes + an upper
-			limit of the space taken in the page directory */
+			limit of the space taken in the page directory */ /*索引记录的大小(以字节为单位)+页目录中占用的空间的上限*/
 	rec_t*	ibuf_rec)/* in: ibuf record */
 {
 	dtype_t	dtype;
@@ -1067,7 +1067,7 @@ ibuf_rec_get_volume(
 
 /*************************************************************************
 Builds the tuple to insert to an ibuf tree when we have an entry for a
-non-clustered index. */
+non-clustered index. */ /*当有非聚集索引的条目时，构建元组插入到ibuf树中。*/
 static
 dtuple_t*
 ibuf_entry_build(
@@ -1093,13 +1093,13 @@ ibuf_entry_build(
 	the second field contains the original type information for entry,
 	and the rest of the fields are copied from entry. All fields
 	in the tuple are of the type binary. */
-
+    /*我们必须构建一个元组，其第一个字段是页码，第二个字段包含条目的原始类型信息，其余的字段从条目复制。元组中的所有字段都是二进制类型。*/
 	n_fields = dtuple_get_n_fields(entry);
 
 	tuple = dtuple_create(heap, n_fields + 2);
 
 	/* Store the page number in tuple */
-
+    /* 以元组的形式存储页码*/
 	field = dtuple_get_nth_field(tuple, 0);
 
 	buf = mem_heap_alloc(heap, 4);
@@ -1109,7 +1109,7 @@ ibuf_entry_build(
 	dfield_set_data(field, buf, 4);
 
 	/* Store the type info in tuple */
-
+    /*将类型信息存储在元组中*/
 	buf2 = mem_heap_alloc(heap, n_fields * DATA_ORDER_NULL_TYPE_BUF_SIZE);
 
 	for (i = 0; i < n_fields; i++) {
@@ -1130,7 +1130,7 @@ ibuf_entry_build(
 	dfield_set_data(field, buf2, n_fields * DATA_ORDER_NULL_TYPE_BUF_SIZE);
 
 	/* Set the types in the new tuple binary */
-
+    /* 设置新二元元组中的类型*/
 	dtuple_set_types_binary(tuple, n_fields + 2);
 
 	return(tuple);
@@ -1138,7 +1138,7 @@ ibuf_entry_build(
 
 /*************************************************************************
 Builds the entry to insert into a non-clustered index when we have the
-corresponding record in an ibuf index. */
+corresponding record in an ibuf index. */ /*当在ibuf索引中有相应的记录时，构建要插入到非聚集索引中的条目。*/
 static
 dtuple_t*
 ibuf_build_entry_from_ibuf_rec(
@@ -1183,7 +1183,7 @@ ibuf_build_entry_from_ibuf_rec(
 }
 
 /*************************************************************************
-Builds a search tuple used to search buffered inserts for an index page. */
+Builds a search tuple used to search buffered inserts for an index page. */ /*构建一个搜索元组，用于搜索索引页的缓冲插入。*/
 static
 dtuple_t*
 ibuf_search_tuple_build(
@@ -1199,7 +1199,7 @@ ibuf_search_tuple_build(
 	tuple = dtuple_create(heap, 1);
 
 	/* Store the page number in tuple */
-
+    /* 以元组的形式存储页码 */
 	field = dtuple_get_nth_field(tuple, 0);
 
 	buf = mem_heap_alloc(heap, 4);
@@ -1215,7 +1215,8 @@ ibuf_search_tuple_build(
 
 /*************************************************************************
 Checks if there are enough pages in the free list of the ibuf tree that we
-dare to start a pessimistic insert to the insert buffer. */
+dare to start a pessimistic insert to the insert buffer. */ 
+/*检查ibuf树的空闲列表中是否有足够的页，以便我们能够对插入缓冲区进行悲观插入。*/
 UNIV_INLINE
 ibool
 ibuf_data_enough_free_for_insert(
@@ -1230,7 +1231,8 @@ ibuf_data_enough_free_for_insert(
 	can change, and we must make sure that we are able to delete the
 	inserts buffered for pages that we read to the buffer pool, without
 	any risk of running out of free space in the insert buffer. */
-
+    /*我们想要一个大的空闲页面,因为b - tree有时可以生长在大小如果删除记录,随着节点的指针可以改变,
+	我们必须确保我们能够删除插入缓冲对于我们读到缓冲池页面,没有任何的自由空间的风险插入缓冲。*/
 	if (data->free_list_len >= data->size / 2 + 3 * data->height) {
 
 		return(TRUE);
@@ -1241,7 +1243,8 @@ ibuf_data_enough_free_for_insert(
 
 /*************************************************************************
 Checks if there are enough pages in the free list of the ibuf tree that we
-should remove them and free to the file space management. */
+should remove them and free to the file space management. */ 
+/*检查ibuf树的空闲列表中是否有足够的页面，我们应该删除它们并将它们释放到文件空间管理中。*/
 UNIV_INLINE
 ibool
 ibuf_data_too_much_free(
@@ -1261,7 +1264,7 @@ ibuf_data_too_much_free(
 
 /*************************************************************************
 Allocates a new page from the ibuf file segment and adds it to the free
-list. */
+list. */ /*从ibuf文件段分配一个新页，并将其添加到空闲列表中。*/
 static
 ulint
 ibuf_add_free_page(
@@ -1281,7 +1284,7 @@ ibuf_add_free_page(
 	mtr_start(&mtr);
 
 	/* Acquire the fsp latch before the ibuf header, obeying the latching
-	order */
+	order */ /*在ibuf报头之前获取fsp闩锁，遵守闩锁顺序*/
 	mtr_x_lock(fil_space_get_latch(space), &mtr);
 	
 	header_page = ibuf_header_page_get(space, &mtr);
@@ -1295,7 +1298,9 @@ ibuf_add_free_page(
 	to insert buffer tree pages, these routines can run without a risk
 	of a deadlock. This is the reason why we created a special ibuf
 	header page apart from the ibuf tree. */
-
+    /*分配一个新页:注意，如果该页是后来被删除的非聚集索引的一部分，那么该页可能在插入缓冲区中有缓冲插入，这些插入应该从那里删除。
+	当页面分配在缓冲区中创建页面时，这些将被删除。因此，下面的调用可能最终调用插入缓冲区例程，并且由于我们还没有插入缓冲区树页的latch，
+	这些例程可以在没有死锁风险的情况下运行。这就是为什么我们要在ibuf树之外创建一个特殊的ibuf标题页的原因。*/
 	page_no = fseg_alloc_free_page(header_page + IBUF_HEADER
 					+ IBUF_TREE_SEG_HEADER, 0, FSP_UP,
 									&mtr);
@@ -1316,7 +1321,7 @@ ibuf_add_free_page(
 	root = ibuf_tree_root_get(ibuf_data, space, &mtr);
 
 	/* Add the page to the free list and update the ibuf size data */
-
+    /* 将页面添加到空闲列表中，并更新ibuf大小数据*/
 	flst_add_last(root + PAGE_HEADER + PAGE_BTR_IBUF_FREE_LIST,
 		      page + PAGE_HEADER + PAGE_BTR_IBUF_FREE_LIST_NODE, &mtr);
 
@@ -1325,7 +1330,7 @@ ibuf_add_free_page(
 
 	/* Set the bit indicating that this page is now an ibuf tree page
 	(level 2 page) */
-
+    /*设置表示该页面现在是ibuf树页面的位(2级页面)*/
 	bitmap_page = ibuf_bitmap_get_map_page(space, page_no, &mtr);
 
 	ibuf_bitmap_page_set_bits(bitmap_page, page_no, IBUF_BITMAP_IBUF,
@@ -1340,7 +1345,7 @@ ibuf_add_free_page(
 }
 
 /*************************************************************************
-Removes a page from the free list and frees it to the fsp system. */
+Removes a page from the free list and frees it to the fsp system. */ /*从空闲列表中删除一个页面并将其释放给fsp系统。*/
 static
 void
 ibuf_remove_free_page(
@@ -1359,12 +1364,13 @@ ibuf_remove_free_page(
 	mtr_start(&mtr);
 
 	/* Acquire the fsp latch before the ibuf header, obeying the latching
-	order */
+	order */ /*在ibuf报头之前获取fsp闩锁，遵守闩锁顺序*/
 	mtr_x_lock(fil_space_get_latch(space), &mtr);
 	
 	header_page = ibuf_header_page_get(space, &mtr);
 
 	/* Prevent pessimistic inserts to insert buffer trees for a while */
+	/* 在一段时间内防止对插入缓冲区树的悲观插入*/
 	mutex_enter(&ibuf_pessimistic_insert_mutex);
 
 	ibuf_enter();
@@ -1395,7 +1401,7 @@ ibuf_remove_free_page(
 	/* NOTE that we must release the latch on the ibuf tree root
 	because in fseg_free_page we access level 1 pages, and the root
 	is a level 2 page. */
-		  
+	/*注意，我们必须释放ibuf树根上的锁存器，因为在fseg_free_page中，我们访问一级页面，而根是二级页面。*/
 	mtr_commit(&mtr2);
 	mutex_exit(&ibuf_mutex);
 
@@ -1406,7 +1412,8 @@ ibuf_remove_free_page(
 	pages from the free list, but they take them from the start, and
 	the free list was so long that they cannot have taken the last
 	page from it. */
-	
+	/*由于防止了悲观插入，所以我们知道页面仍在空闲列表中。注意，delete也可能从空闲列表中获取页面，
+	但它们从一开始就获取这些页面，而且空闲列表太长，它们无法从空闲列表中获取最后一页。*/
 	fseg_free_page(header_page + IBUF_HEADER + IBUF_TREE_SEG_HEADER,
 							space, page_no, &mtr);
 #ifdef UNIV_DEBUG_FILE_ACCESSES
@@ -1427,7 +1434,7 @@ ibuf_remove_free_page(
 	buf_page_dbg_add_level(page, SYNC_TREE_NODE);
 
 	/* Remove the page from the free list and update the ibuf size data */
-	
+	/* 从空闲列表中删除该页并更新ibuf大小数据*/
 	flst_remove(root + PAGE_HEADER + PAGE_BTR_IBUF_FREE_LIST,
 		    page + PAGE_HEADER + PAGE_BTR_IBUF_FREE_LIST_NODE, &mtr);
 
@@ -1438,7 +1445,7 @@ ibuf_remove_free_page(
 
 	/* Set the bit indicating that this page is no more an ibuf tree page
 	(level 2 page) */
-
+    /*设置表示该页面不再是ibuf树页面的位(2级页面)*/
 	bitmap_page = ibuf_bitmap_get_map_page(space, page_no, &mtr);
 
 	ibuf_bitmap_page_set_bits(bitmap_page, page_no, IBUF_BITMAP_IBUF,
@@ -1457,7 +1464,8 @@ ibuf_remove_free_page(
 Frees excess pages from the ibuf free list. This function is called when an OS
 thread calls fsp services to allocate a new file segment, or a new page to a
 file segment, and the thread did not own the fsp latch before this call. */ 
-
+/*从ibuf空闲列表中释放多余的页面。当一个OS线程调用fsp服务来分配一个新的文件段或一个新的页到一个文件段时，
+这个函数被调用，并且线程在这个调用之前没有fsp闩锁。*/
 void
 ibuf_free_excess_pages(
 /*===================*/
@@ -1473,7 +1481,7 @@ ibuf_free_excess_pages(
 	/* NOTE: We require that the thread did not own the latch before,
 	because then we know that we can obey the correct latching order
 	for ibuf latches */
-
+    /*注意:我们要求线程之前没有拥有闩锁，因为这样我们就知道我们可以遵守正确的ibuf闩锁的闩锁顺序*/
 	ibuf_data = fil_space_get_ibuf_data(space);
 
 	if (ibuf_data == NULL) {
@@ -1488,7 +1496,7 @@ ibuf_free_excess_pages(
 
 	/* Free at most a few pages at a time, so that we do not delay the
 	requested service too much */
-
+    /*一次最多释放几个页面，这样我们就不会过多地延迟请求的服务*/
 	for (i = 0; i < 4; i++) {
 
 		mutex_enter(&ibuf_mutex);
@@ -1507,24 +1515,26 @@ ibuf_free_excess_pages(
 }
 
 /*************************************************************************
-Reads page numbers from a leaf in an ibuf tree. */
+Reads page numbers from a leaf in an ibuf tree. *//*从ibuf树的叶子中读取页码。*/
 static
 ulint
 ibuf_get_merge_page_nos(
 /*====================*/
 				/* out: a lower limit for the combined volume
-				of records which will be merged */
+				of records which will be merged */ /*要合并的记录合并卷的下限*/
 	ibool		contract,/* in: TRUE if this function is called to
 				contract the tree, FALSE if this is called
 				when a single page becomes full and we look
-				if it pays to read also nearby pages */
+				if it pays to read also nearby pages */ 
+				/*如果调用此函数收缩树，则为TRUE;如果在单个页面满了时调用此函数，
+				并查看是否还需要读取附近的页面，则为FALSE*/
 	rec_t*		first_rec,/* in: record from which we read down and
-				up in the chain of records */
+				up in the chain of records */ /*在记录链中，我们从中向下和向上读取的记录*/
 	ulint*		page_nos,/* in/out: buffer for at least
 				IBUF_MAX_N_PAGES_MERGED many page numbers;
-				the page numbers are in an ascending order */
+				the page numbers are in an ascending order */ /*至少为IBUF_MAX_N_PAGES_MERGED多个页码的缓冲区;页码按升序排列*/
 	ulint*		n_stored)/* out: number of page numbers stored to
-				page_nos in this function */
+				page_nos in this function */ /*在这个函数中存储到page_nos中的页码数*/
 {
 	ulint	prev_page_no;
 	ulint	first_page_no;
@@ -1650,18 +1660,18 @@ ibuf_get_merge_page_nos(
 }
 
 /*************************************************************************
-Contracts insert buffer trees by reading pages to the buffer pool. */
+Contracts insert buffer trees by reading pages to the buffer pool. */ /*缩小插入缓冲树通过将页读入缓冲池。*/
 static
 ulint
 ibuf_contract_ext(
 /*==============*/
 			/* out: a lower limit for the combined size in bytes
 			of entries which will be merged from ibuf trees to the
-			pages read, 0 if ibuf is empty */
+			pages read, 0 if ibuf is empty */ /*将从ibuf树合并到所读页面的项的合并大小(以字节为单位)的下限，如果ibuf为空则为0*/
 	ulint*	n_pages,/* out: number of pages to which merged */
 	ibool	sync)	/* in: TRUE if the caller wants to wait for the
 			issued read with the highest tablespace address
-			to complete */
+			to complete */ /*如果调用者希望等待发出的具有最高表空间地址的读取完成，则为TRUE*/
 {
 	ulint		rnd_pos;
 	ibuf_data_t*	data;
@@ -1725,7 +1735,7 @@ loop:
 	
 	/* Open a cursor to a randomly chosen leaf of the tree, at a random
 	position within the leaf */
-
+    /*打开一个光标到树的一个随机选择的叶子，在叶子内的一个随机位置*/
 	btr_pcur_open_at_rnd_pos(data->index, BTR_SEARCH_LEAF, &pcur, &mtr);
 
 	if (0 == page_get_n_recs(btr_pcur_get_page(&pcur))) {
@@ -1767,7 +1777,7 @@ loop:
 
 /*************************************************************************
 Contracts insert buffer trees by reading pages to the buffer pool. */
-
+ /*缩小插入缓冲树通过将页读入缓冲池。*/
 ulint
 ibuf_contract(
 /*==========*/
@@ -1785,7 +1795,7 @@ ibuf_contract(
 
 /*************************************************************************
 Contracts insert buffer trees by reading pages to the buffer pool. */
-
+ /*缩小插入缓冲树通过将页读入缓冲池。*/
 ulint
 ibuf_contract_for_n_pages(
 /*======================*/
@@ -1819,13 +1829,13 @@ ibuf_contract_for_n_pages(
 }
 
 /*************************************************************************
-Contract insert buffer trees after insert if they are too big. */
+Contract insert buffer trees after insert if they are too big. */ /*如果缓冲区树太大，则在插入后收缩它们。*/
 UNIV_INLINE
 void
 ibuf_contract_after_insert(
 /*=======================*/
 	ulint	entry_size)	/* in: size of a record which was inserted
-				into an ibuf tree */
+				into an ibuf tree */ /*插入到ibuf树中的记录的大小*/
 {
 	ibool	sync;
 	ulint	sum_sizes;
@@ -1848,7 +1858,7 @@ ibuf_contract_after_insert(
 
 	mutex_exit(&ibuf_mutex);
 
-	/* Contract at least entry_size many bytes */
+	/* Contract at least entry_size many bytes */ /*压缩至少entry_size多个字节*/
 	sum_sizes = 0;
 	size = 1;
 
@@ -1862,7 +1872,7 @@ ibuf_contract_after_insert(
 /*************************************************************************
 Gets an upper limit for the combined size of entries buffered in the insert
 buffer for a given page. */
-
+/*获取给定页的插入缓冲区中缓冲的条目的合并大小的上限。*/
 ulint
 ibuf_get_volume_buffered(
 /*=====================*/
@@ -1870,12 +1880,13 @@ ibuf_get_volume_buffered(
 				buffered inserts for the index page, in bytes;
 				we may also return UNIV_PAGE_SIZE, if the
 				entries for the index page span on several
-				pages in the insert buffer */
+				pages in the insert buffer */ /*索引页的缓冲插入量的上限(以字节为单位);
+				如果索引页的条目跨越了插入缓冲区中的几个页面，我们也可以返回UNIV_PAGE_SIZE*/
 	btr_pcur_t*	pcur,	/* in: pcur positioned at a place in an
 				insert buffer tree where we would insert an
 				entry for the index page whose number is
 				page_no, latch mode has to be BTR_MODIFY_PREV
-				or BTR_MODIFY_TREE */
+				or BTR_MODIFY_TREE */ /*在插入缓冲区树中插入一个索引页的条目，其编号为page_no，闩锁模式必须为BTR_MODIFY_PREV或BTR_MODIFY_TREE*/
 	ulint		space,	/* in: space id */
 	ulint		page_no,/* in: page number of an index page */
 	mtr_t*		mtr)	/* in: mtr */
@@ -1892,7 +1903,7 @@ ibuf_get_volume_buffered(
 				|| (pcur->latch_mode == BTR_MODIFY_TREE));
 
 	/* Count the volume of records earlier in the alphabetical order than
-	pcur */
+	pcur */  /*按字母顺序计算比pcur更早的记录量*/
 
 	volume = 0;
 	
@@ -1921,7 +1932,7 @@ ibuf_get_volume_buffered(
 	}
 
 	/* Look at the previous page */
-	
+	/* 请看前一页*/
 	prev_page_no = btr_page_get_prev(page, mtr);
 
 	if (prev_page_no == FIL_NULL) {
@@ -1942,7 +1953,7 @@ ibuf_get_volume_buffered(
 			/* We cannot go to yet a previous page, because we
 			do not have the x-latch on it, and cannot acquire one
 			because of the latching order: we have to give up */
-		
+		    /*我们还不能进入前一页，因为它上没有x-latch，而且因为闩锁的顺序，我们也不能获得一个:我们不得不放弃*/
 			return(UNIV_PAGE_SIZE);
 		}
 		
@@ -2016,7 +2027,7 @@ count_later:
 
 /*************************************************************************
 Makes an index insert to the insert buffer, instead of directly to the disk
-page, if this is possible. */
+page, if this is possible. */ /*将索引插入到插入缓冲区，而不是直接插入到磁盘页(如果可能的话)。*/
 static
 ulint
 ibuf_insert_low(
@@ -2065,13 +2076,13 @@ ibuf_insert_low(
 	if (ibuf->size >= ibuf->max_size + IBUF_CONTRACT_DO_NOT_INSERT) {
 		/* Insert buffer is now too big, contract it but do not try
 		to insert */
-
+        /*插入缓冲区现在太大，收缩它，但不要尝试插入*/
 		mutex_exit(&ibuf_mutex);
 
 #ifdef UNIV_IBUF_DEBUG
 		printf("Ibuf too big\n");
 #endif		
-		/* Use synchronous contract (== TRUE) */
+		/* Use synchronous contract (== TRUE) */ /*使用同步收缩(== TRUE)*/
 		ibuf_contract(TRUE);
 
 		return(DB_STRONG_FAIL);
@@ -2118,19 +2129,19 @@ ibuf_insert_low(
  	/* Build the entry which contains the space id and the page number as
 	the first fields and the type information for other fields, and which
 	will be inserted to the insert buffer. */
-
+    /*构建包含空格id和页码作为第一个字段的条目，以及其他字段的类型信息，这些将被插入插入缓冲区。*/
 	ibuf_entry = ibuf_entry_build(entry, page_no, heap);
 
 	/* Open a cursor to the insert buffer tree to calculate if we can add
 	the new entry to it without exceeding the free space limit for the
 	page. */
-
+    /*打开一个指向插入缓冲区树的游标，计算是否可以在不超过该页可用空间限制的情况下向其添加新条目。*/
 	mtr_start(&mtr);
 
 	btr_pcur_open(ibuf_index, ibuf_entry, PAGE_CUR_LE, mode, &pcur, &mtr);
 
 	/* Find out the volume of already buffered inserts for the same index
-	page */
+	page */ /*找出同一索引页已经缓冲的插入量*/
 	buffered = ibuf_get_volume_buffered(&pcur, space, page_no, &mtr);
 
 #ifdef UNIV_IBUF_DEBUG
@@ -2141,7 +2152,7 @@ ibuf_insert_low(
 	bitmap_page = ibuf_bitmap_get_map_page(space, page_no, &bitmap_mtr);
 
 	/* We check if the index page is suitable for buffered entries */
-
+    /* 我们检查索引页是否适合缓冲条目*/
 	if (buf_page_peek(space, page_no)
 			|| lock_rec_expl_exist_on_page(space, page_no)) {
 
@@ -2172,7 +2183,7 @@ ibuf_insert_low(
 
 	/* Set the bitmap bit denoting that the insert buffer contains
 	buffered entries for this index page, if the bit is not set yet */
-
+    /*如果位尚未设置，则设置位图位，表示插入缓冲区包含该索引页的已缓存项*/
 	old_bit_value = ibuf_bitmap_page_get_bits(bitmap_page, page_no,
 					IBUF_BITMAP_BUFFERED, &bitmap_mtr);
 	if (!old_bit_value) {
@@ -2190,7 +2201,7 @@ ibuf_insert_low(
 						&dummy_big_rec, thr,
 						&mtr);
 		if (err == DB_SUCCESS) {
-			/* Update the page max trx id field */
+			/* Update the page max trx id field */ /*更新页面最大trx id字段*/
 			page_update_max_trx_id(buf_frame_align(ins_rec),
 							thr_get_trx(thr)->id);
 		}
@@ -2201,7 +2212,7 @@ ibuf_insert_low(
 		because a pessimistic insert releases the tree x-latch,
 		which would cause the x-latching of the root after that to
 		break the latching order. */
-		
+		/*我们在插入之前获得根页面的x-latch，因为悲观插入释放树x-latch，这将导致根的x-latch打破锁存顺序。*/
 		root = ibuf_tree_root_get(ibuf_data, space, &mtr);
 
 		err = btr_cur_pessimistic_insert(BTR_NO_LOCKING_FLAG
@@ -2266,7 +2277,7 @@ function_exit:
 Makes an index insert to the insert buffer, instead of directly to the disk
 page, if this is possible. Does not do insert if the index is clustered
 or unique. */
-
+/*将索引插入到插入缓冲区，而不是直接插入到磁盘页(如果可能的话)。如果索引是聚集的或唯一的，则不进行插入。*/
 ibool
 ibuf_insert(
 /*========*/
@@ -2314,14 +2325,14 @@ ibuf_insert(
 	
 /************************************************************************
 During merge, inserts to an index page a secondary index entry extracted
-from the insert buffer. */
+from the insert buffer. */ /*在合并期间，将从插入缓冲区提取的二级索引项插入到索引页。*/
 static
 void
 ibuf_insert_to_index_page(
 /*======================*/
 	dtuple_t*	entry,	/* in: buffered entry to insert */
 	page_t*		page,	/* in: index page where the buffered entry
-				should be placed */
+				should be placed */ /*应该放置缓冲项的索引页*/
 	mtr_t*		mtr)	/* in: mtr */
 {
 	page_cur_t	page_cur;
@@ -2344,12 +2355,12 @@ ibuf_insert_to_index_page(
 		
 		if (rec == NULL) {
 			/* If the record did not fit, reorganize */
-
+            /* 如果记录不匹配，重新组织*/
 			btr_page_reorganize(page, mtr);
 
 			page_cur_search(page, entry, PAGE_CUR_LE, &page_cur);
 
-			/* This time the record must fit */
+			/* This time the record must fit */ /*这一次的记录必须吻合*/
 			if (!page_cur_tuple_insert(&page_cur, entry, mtr)) {
 				printf(
 			"Ibuf insert fails; page free %lu, dtuple size %lu\n",
@@ -2377,7 +2388,7 @@ ibuf_insert_to_index_page(
 /*************************************************************************
 Deletes from ibuf the record on which pcur is positioned. If we have to
 resort to a pessimistic delete, this function commits mtr and closes
-the cursor. */
+the cursor. */ /*从ibuf中删除pcur所在的记录。如果必须采用悲观删除，则该函数提交mtr并关闭游标。*/
 static
 ibool
 ibuf_delete_rec(
@@ -2410,7 +2421,8 @@ ibuf_delete_rec(
 		return(FALSE);
 	}
 	
-	/* We have to resort to a pessimistic delete from ibuf */		
+	/* We have to resort to a pessimistic delete from ibuf */	
+	/* 我们必须对ibuf进行悲观删除*/	
 	btr_pcur_store_position(pcur, mtr);
 
 	btr_pcur_commit_specify_mtr(pcur, mtr);
@@ -2473,7 +2485,9 @@ The entries are deleted from the insert buffer. If the page is not read, but
 created in the buffer pool, this function deletes its buffered entries from
 the insert buffer; there can exist entries for such a page if the page
 belonged to an index which subsequently was dropped. */
-
+/*当从磁盘读取索引页到缓冲池时，该函数将在插入缓冲区中缓冲的可能索引项插入到该页。
+从插入缓冲区中删除条目。如果页面没有被读取，而是在缓冲池中创建的，这个函数将从插入的缓冲区中删除其缓冲项;
+如果该页属于随后被删除的索引，则可以存在该页的条目。*/
 void
 ibuf_merge_or_delete_for_page(
 /*==========================*/
@@ -2524,7 +2538,7 @@ ibuf_merge_or_delete_for_page(
 	if (!ibuf_bitmap_page_get_bits(bitmap_page, page_no,
 						IBUF_BITMAP_BUFFERED, &mtr)) {
 		/* No inserts buffered for this page */
-
+        /* 没有为该页缓冲插入*/
 		mtr_commit(&mtr);
 
 		return;
@@ -2545,7 +2559,7 @@ ibuf_merge_or_delete_for_page(
 		thread, so that we can acquire a second x-latch on it. This
 		is needed for the insert operations to the index page to pass
 		the debug checks. */
-
+        /*将页面上的x-latch的所有权转移到这个OS线程，这样我们就可以获得它的第二个x-latch。这是索引页的插入操作通过调试检查所必需的。*/
 		block = buf_block_align(page);
 		rw_lock_x_lock_move_ownership(&(block->lock));
 		
@@ -2568,7 +2582,7 @@ loop:
 	}
 		
 	/* Position pcur in the insert buffer at the first entry for this
-	index page */
+	index page */ /*位置发生在插入缓冲区中此索引页的第一个条目处*/
 	btr_pcur_open_on_user_rec(ibuf_data->index, search_tuple, PAGE_CUR_GE,
 						BTR_MODIFY_LEAF, &pcur, &mtr);
 
@@ -2583,7 +2597,7 @@ loop:
 
 		ibuf_rec = btr_pcur_get_rec(&pcur);
 
-		/* Check if the entry is for this index page */
+		/* Check if the entry is for this index page */ /*检查条目是否为这个索引页*/
 		if (ibuf_rec_get_page_no(ibuf_rec) != page_no) {
 
 			if (page) {
@@ -2599,7 +2613,8 @@ loop:
 			copies pointers to fields in ibuf_rec, and we must
 			keep the latch to the ibuf_rec page until the
 			insertion is finished! */
-
+            /*现在我们有了一个应该插入到索引页的记录;注意，
+			下面的调用复制了指向ibuf_rec中字段的指针，我们必须保持ibuf_rec页的锁存，直到插入完成!*/
 			max_trx_id = page_get_max_trx_id(
 						buf_frame_align(ibuf_rec));
 	
@@ -2618,13 +2633,13 @@ loop:
 
 		n_inserts++;
 		
-		/* Delete the record from ibuf */
+		/* Delete the record from ibuf */ /*从ibuf删除该记录*/
 		closed = ibuf_delete_rec(space, page_no, &pcur, search_tuple,
 									&mtr);
 		if (closed) {
 			/* Deletion was pessimistic and mtr was committed:
 			we start from the beginning again */
-
+            /*删除是悲观的，mtr是承诺的:我们从头再来*/
 			goto loop;
 		}
 
@@ -2686,7 +2701,7 @@ reset_bit:
 }
 
 /**********************************************************************
-Validates the ibuf data structures when the caller owns ibuf_mutex. */
+Validates the ibuf data structures when the caller owns ibuf_mutex. */ /*当调用者拥有ibuf_mutex时验证ibuf数据结构。*/
 static
 ibool
 ibuf_validate_low(void)
@@ -2715,7 +2730,7 @@ ibuf_validate_low(void)
 
 /**********************************************************************
 Prints info of ibuf. */
-
+/*打印ibuf的信息。*/
 void
 ibuf_print(void)
 /*============*/

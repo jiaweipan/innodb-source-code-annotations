@@ -44,6 +44,8 @@ Low-level function which reads a page asynchronously from a file to the
 buffer buf_pool if it is not already there, in which case does nothing.
 Sets the io_fix flag and sets an exclusive lock on the buffer frame. The
 flag is cleared and the x-lock released by an i/o-handler thread. */
+/*一个低级函数，它将一个页面异步地从一个文件读入缓冲区buf_pool，在这种情况下什么也不做。
+设置io_fix标志并设置缓冲区帧上的排他锁。标志被清除，x-lock被一个i/o处理器线程释放。*/
 static
 ulint
 buf_read_page_low(
@@ -93,7 +95,8 @@ buf_read_page_low(
 		i/o-thread. Ibuf bitmap pages must always be read with
                 syncronous i/o, to make sure they do not get involved in
                 thread deadlocks. */
-		
+		/*Trx sys头在锁存顺序中是如此之低，以至于我们玩得很安全，不把i/o完成留给异步i/o线程。
+		必须始终使用同步i/o读取Ibuf位图页，以确保它们不会卷入线程死锁。*/
 		sync = TRUE;
 	}
 
@@ -500,13 +503,13 @@ buf_read_ahead_linear(
 Issues read requests for pages which the ibuf module wants to read in, in
 order to contract insert buffer trees. Technically, this function is like
 a read-ahead function. */
-
+/*对ibuf模块想要读入的页面发出读请求，以收缩插入缓冲区树。从技术上讲，这个函数类似于预读函数。*/
 void
 buf_read_ibuf_merge_pages(
 /*======================*/
 	ibool	sync,		/* in: TRUE if the caller wants this function
 				to wait for the highest address page to get
-				read in, before this function returns */
+				read in, before this function returns */ /*如果调用者希望该函数等待最高的地址页被读入，然后再返回，则为TRUE*/
 	ulint	space,		/* in: space id */
 	ulint*	page_nos,	/* in: array of page numbers to read, with the
 				highest page number the last in the array */
@@ -533,7 +536,7 @@ buf_read_ibuf_merge_pages(
 		}
 	}
 	
-	/* Flush pages from the end of the LRU list if necessary */
+	/* Flush pages from the end of the LRU list if necessary */ /*如果需要，从LRU列表的末尾刷新页面*/
 	buf_flush_free_margin();
 
 	if (buf_debug_prints) {

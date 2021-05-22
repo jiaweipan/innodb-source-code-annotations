@@ -63,8 +63,7 @@ buf_flush_insert_into_flush_list(
 Inserts a modified block into the flush list in the right sorted position.
 This function is used by recovery, because there the modifications do not
 necessarily come in the order of lsn's. */
-/*将修改后的块插入flush列表中的正确排序位置。此函数用于恢复，
-因为在恢复中修改的顺序不一定是lsn的顺序。*/
+/*将修改后的块插入flush列表中的正确排序位置。此函数用于恢复，因为在恢复中修改的顺序不一定是lsn的顺序。*/
 void
 buf_flush_insert_sorted_into_flush_list(
 /*====================================*/
@@ -805,7 +804,8 @@ of replaceable pages there or in the free list. VERY IMPORTANT: this function
 is called also by threads which have locks on pages. To avoid deadlocks, we
 flush only pages such that the s-lock required for flushing can be acquired
 immediately, without waiting. */ 
-
+/*如果LRU列表末尾或空闲列表中可替换页面的空白太小，则从LRU列表末尾刷新页面。
+非常重要:这个函数也会被对页面有锁的线程调用。为了避免死锁，我们只刷新页面，以便可以立即获取刷新所需的s-lock，而无需等待。*/
 void
 buf_flush_free_margin(void)
 /*=======================*/

@@ -289,7 +289,7 @@ fil_space_get_type(
 
 /***********************************************************************
 Returns the ibuf data of a file space. */
-
+/*返回文件空间的ibuf数据。*/
 ibuf_data_t*
 fil_space_get_ibuf_data(
 /*====================*/
