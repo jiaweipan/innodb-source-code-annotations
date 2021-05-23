@@ -97,7 +97,7 @@ buf_LRU_get_recent_limit(void)
 
 /**********************************************************************
 Look for a replaceable block from the end of the LRU list and put it to
-the free list if found. */
+the free list if found. 从LRU列表的末尾寻找一个可替换的块，如果找到，把它放到空闲列表中。*/
 
 ibool
 buf_LRU_search_and_free_block(
@@ -189,7 +189,7 @@ buf_LRU_try_free_flushed_blocks(void)
 /**********************************************************************
 Returns a free block from buf_pool. The block is taken off the free list.
 If it is empty, blocks are moved from the end of the LRU list to the free
-list. */
+list. 从buf_pool返回一个空闲块。该区块从空闲列表中删除。如果它是空的，块将从LRU列表的末尾移动到空闲列表。*/
 
 buf_block_t*
 buf_LRU_get_free_block(void)
@@ -288,7 +288,7 @@ loop:
 
 /***********************************************************************
 Moves the LRU_old pointer so that the length of the old blocks list
-is inside the allowed limits. */
+is inside the allowed limits. 移动LRU_old指针，使旧块列表的长度在允许的范围内。*/
 UNIV_INLINE
 void
 buf_LRU_old_adjust_len(void)
@@ -305,7 +305,7 @@ buf_LRU_old_adjust_len(void)
 		old_len = buf_pool->LRU_old_len;
 		new_len = 3 * (UT_LIST_GET_LEN(buf_pool->LRU) / 8);
 
-		/* Update the LRU_old pointer if necessary */
+		/* Update the LRU_old pointer if necessary 如果需要，更新LRU_old指针*/
 	
 		if (old_len < new_len - BUF_LRU_OLD_TOLERANCE) {
 		
@@ -322,7 +322,7 @@ buf_LRU_old_adjust_len(void)
 			buf_pool->LRU_old_len--;
 		} else {
 			ut_ad(buf_pool->LRU_old); /* Check that we did not
-						fall out of the LRU list */
+						fall out of the LRU list 检查我们没有掉出LRU列表*/
 			return;
 		}
 	}
@@ -343,7 +343,7 @@ buf_LRU_old_init(void)
 
 	/* We first initialize all blocks in the LRU list as old and then use
 	the adjust function to move the LRU_old pointer to the right
-	position */
+	position 我们首先将LRU列表中的所有块初始化为old，然后使用adjust函数将LRU_old指针移动到正确的位置*/
 
 	block = UT_LIST_GET_FIRST(buf_pool->LRU);
 
@@ -458,7 +458,7 @@ buf_LRU_add_block_to_end_low(
 }	    	
 
 /**********************************************************************
-Adds a block to the LRU list. */
+Adds a block to the LRU list.向LRU列表添加一个块。 */
 UNIV_INLINE
 void
 buf_LRU_add_block_low(
@@ -467,7 +467,8 @@ buf_LRU_add_block_low(
 	ibool		old)	/* in: TRUE if should be put to the old blocks
 				in the LRU list, else put to the start; if the
 				LRU list is very short, the block is added to
-				the start, regardless of this parameter */
+				the start, regardless of this parameter 
+				如果应该放在LRU列表中的旧块上，则为TRUE，否则放在开头;如果LRU列表很短，则将块添加到起始位置，与该参数无关*/
 {
 	ulint	cl;
 	
@@ -490,7 +491,7 @@ buf_LRU_add_block_low(
 		buf_pool->LRU_old_len++;
 
 		/* We copy the LRU position field of the previous block
-		to the new block */
+		to the new block 我们将前一个块的LRU位置字段复制到新块中*/
 
 		block->LRU_position = (buf_pool->LRU_old)->LRU_position;
 	}
@@ -499,14 +500,14 @@ buf_LRU_add_block_low(
 
 		ut_ad(buf_pool->LRU_old);
 
-		/* Adjust the length of the old block list if necessary */
+		/* Adjust the length of the old block list if necessary 如有必要，调整旧的阻止列表的长度*/
 
 		buf_LRU_old_adjust_len();
 
 	} else if (UT_LIST_GET_LEN(buf_pool->LRU) == BUF_LRU_OLD_MIN_LEN) {
 
 		/* The LRU list is now long enough for LRU_old to become
-		defined: init it */
+		defined: init it 现在LRU列表已经足够长，可以定义LRU_old:初始化它*/
 
 		buf_LRU_old_init();
 	}	
@@ -529,7 +530,7 @@ buf_LRU_add_block(
 }
 
 /**********************************************************************
-Moves a block to the start of the LRU list. */
+Moves a block to the start of the LRU list. 移动一个块到LRU列表的开头。*/
 
 void
 buf_LRU_make_block_young(
@@ -553,7 +554,7 @@ buf_LRU_make_block_old(
 }
 
 /**********************************************************************
-Puts a block back to the free list. */
+Puts a block back to the free list. 将一个块放回空闲列表。*/
 
 void
 buf_LRU_block_free_non_file_page(

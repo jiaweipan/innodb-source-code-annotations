@@ -152,7 +152,7 @@ buf_flush_ready_for_flush(
 }
 
 /************************************************************************
-Updates the flush system data structures when a write is completed. */
+Updates the flush system data structures when a write is completed. 当写入完成时更新刷新系统数据结构。*/
 
 void
 buf_flush_write_complete(
@@ -172,7 +172,7 @@ buf_flush_write_complete(
 
 	if (block->flush_type == BUF_FLUSH_LRU) {
 		/* Put the block to the end of the LRU list to wait to be
-		moved to the free list */
+		moved to the free list 把区块放在LRU链表的末尾，等待移动到空闲链表*/
 
 		buf_LRU_make_block_old(block);
 
@@ -185,7 +185,7 @@ buf_flush_write_complete(
 	if ((buf_pool->n_flush[block->flush_type] == 0)
 	    && (buf_pool->init_flush[block->flush_type] == FALSE)) {
 
-		/* The running flush batch has ended */
+		/* The running flush batch has ended 正在运行的刷新批处理已经结束*/
 
 		os_event_set(buf_pool->no_flush[block->flush_type]);
 	}

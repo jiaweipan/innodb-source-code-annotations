@@ -14,7 +14,7 @@
      Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA. */
 /******************************************************
 The database buffer buf_pool
-
+数据库缓冲区buf_pool
 (c) 1995 Innobase Oy
 
 Created 11/5/1995 Heikki Tuuri
@@ -38,10 +38,10 @@ Created 11/5/1995 Heikki Tuuri
 #include "srv0srv.h"
 
 /*
-		IMPLEMENTATION OF THE BUFFER POOL
+		IMPLEMENTATION OF THE BUFFER POOL 缓冲池的实现
 		=================================
 
-Performance improvement: 
+Performance improvement: 性能改进:
 ------------------------
 Thread scheduling in NT may be so slow that the OS wait mechanism should
 not be used even in waiting for disk reads to complete.
@@ -49,22 +49,25 @@ Rather, we should put waiting query threads to the queue of
 waiting jobs, and let the OS thread do something useful while the i/o
 is processed. In this way we could remove most OS thread switches in
 an i/o-intensive benchmark like TPC-C.
-
+NT中的线程调度可能非常慢，甚至在等待磁盘读取完成时也不应该使用OS等待机制。
+相反，我们应该把等待的查询线程放到等待作业的队列中，让OS线程在处理i/o时做一些有用的事情。
+通过这种方式，我们可以在像TPC-C这样的i/o密集型基准测试中删除大多数OS线程开关。
 A possibility is to put a user space thread library between the database
 and NT. User space thread libraries might be very fast.
-
+一种可能性是将用户空间线程库放在数据库和NT之间。用户空间线程库可能非常快。
 SQL Server 7.0 can be configured to use 'fibers' which are lightweight
 threads in NT. These should be studied.
-
-		Buffer frames and blocks
+SQL Server 7.0可以配置为使用'fibers'，这是NT中的轻量级线程。我们应该研究一下。
+		Buffer frames and blocks 缓冲帧和块
 		------------------------
 Following the terminology of Gray and Reuter, we call the memory
 blocks where file pages are loaded buffer frames. For each buffer
 frame there is a control block, or shortly, a block, in the buffer
 control array. The control info which does not need to be stored
 in the file along with the file page, resides in the control block.
-
-		Buffer pool struct
+按照Gray和Reuter的术语，我们将加载文件页的内存块称为缓冲帧。
+对于每个缓冲帧，缓冲控制数组中都有一个控制块。不需要与文件页一起存储在文件中的控制信息驻留在控制块中。
+		Buffer pool struct 缓冲池结构
 		------------------
 The buffer buf_pool contains a single mutex which protects all the
 control data structures of the buf_pool. The content of a buffer frame is
@@ -72,20 +75,23 @@ protected by a separate read-write lock in its control block, though.
 These locks can be locked and unlocked without owning the buf_pool mutex.
 The OS events in the buf_pool struct can be waited for without owning the
 buf_pool mutex.
-
+缓冲区buf_pool包含一个互斥锁，它保护buf_pool的所有控制数据结构。
+但是，缓冲帧的内容由其控制块中的一个独立的读写锁保护。这些锁可以在不拥有buf_pool互斥锁的情况下被锁定和解锁。
+buf_pool结构中的操作系统事件可以等待而不拥有buf_pool互斥锁。
 The buf_pool mutex is a hot-spot in main memory, causing a lot of
 memory bus traffic on multiprocessor systems when processors
 alternately access the mutex. On our Pentium, the mutex is accessed
 maybe every 10 microseconds. We gave up the solution to have mutexes
 for each control block, for instance, because it seemed to be
 complicated.
-
+buf_pool互斥锁是主存中的一个热点，在多处理器系统中，当处理器交替访问互斥锁时，会导致大量内存总线流量。
+在我们的奔腾上，互斥锁可能每10微秒被访问一次。例如，我们放弃了为每个控制块使用互斥锁的解决方案，因为它看起来很复杂。
 A solution to reduce mutex contention of the buf_pool mutex is to
 create a separate mutex for the page hash table. On Pentium,
 accessing the hash table takes 2 microseconds, about half
 of the total buf_pool mutex hold time.
-
-		Control blocks
+减少buf_pool互斥锁争用的一个解决方案是为页哈希表创建一个单独的互斥锁。在Pentium上，访问哈希表需要2微秒，大约占buf_pool互斥锁保持时间的一半。
+		Control blocks 控制块
 		--------------
 
 The control block contains, for instance, the bufferfix count
@@ -93,11 +99,11 @@ which is incremented when a thread wants a file page to be fixed
 in a buffer frame. The bufferfix operation does not lock the
 contents of the frame, however. For this purpose, the control
 block contains a read-write lock.
-
+例如，控制块包含bufferfix计数，当线程希望在缓冲帧中固定文件页时，该计数将增加。但是bufferfix操作并不锁定帧的内容。为此，控制块包含一个读写锁。
 The buffer frames have to be aligned so that the start memory
 address of a frame is divisible by the universal page size, which
 is a power of two.
-
+缓冲帧必须对齐，以便帧的起始内存地址能被通用页大小(2的幂)整除。
 We intend to make the buffer buf_pool size on-line reconfigurable,
 that is, the buf_pool size can be changed without closing the database.
 Then the database administarator may adjust it to be bigger
@@ -107,7 +113,9 @@ which is used in the particular database.
 If the buf_pool size is cut, we exploit the virtual memory mechanism of
 the OS, and just refrain from using frames at high addresses. Then the OS
 can swap them to disk.
-
+我们打算使缓冲区buf_pool的大小在线重新配置，也就是说，buf_pool的大小可以在不关闭数据库的情况下改变。
+例如，数据库管理员可能会在晚上将其调整为更大。控制块数组必须包含足够的控制块，以满足特定数据库中使用的最大缓冲区buf_pool大小。
+如果buf_pool的大小被削减，我们就利用操作系统的虚拟内存机制，并且避免在高位地址使用帧。然后操作系统可以将它们交换到磁盘。
 The control blocks containing file pages are put to a hash table
 according to the file address of the page.
 We could speed up the access to an individual page by using
@@ -121,13 +129,17 @@ Drawbacks of this solution are added complexity and,
 possibly, extra space required on non-leaf pages for memory pointers.
 A simpler solution is just to speed up the hash table mechanism
 in the database, using tables whose size is a power of 2.
-
-		Lists of blocks
+包含文件页的控制块根据该页的文件地址放入哈希表中。我们可以使用“指针混合”来加速对单个页面的访问:
+如果页面存在于buf_pool中，我们可以用指向非叶索引页面的直接指针来替代对该页面的引用。
+我们可以创建一个单独的哈希表，在这个哈希表中，我们可以将驻留在buf_pool中的非叶页中的所有页引用连接起来，
+使用页引用作为哈希键，并在读取一个页时相应地更新指针。这种解决方案的缺点是增加了复杂性，可能还需要在非叶页上为内存指针提供额外的空间。
+一种更简单的解决方案是使用大小为2的幂的表来加速数据库中的哈希表机制。
+		Lists of blocks 块列表
 		---------------
 
 There are several lists of control blocks. The free list contains
 blocks which are currently not used.
-
+有几个控制块列表。空闲列表包含当前未使用的块。
 The LRU-list contains all the blocks holding a file page
 except those for which the bufferfix count is non-zero.
 The pages are in the LRU list roughly in the order of the last
@@ -142,13 +154,18 @@ of pages, and it can also be used when there is a scan of a full
 table which cannot fit in the memory. Putting the pages near the
 of the LRU list, we make sure that most of the buf_pool stays in the
 main memory, undisturbed.
-
+LRU-list包含包含文件页的所有块，bufferfix计数不为零的块除外。
+这些页面在LRU列表中大致是按照最后一次访问页面的顺序排列的，因此最老的页面位于列表的末尾。
+我们还保留了一个指向LRU列表末尾的指针，当我们想在buf_pool中人为地老化一个页面时，可以使用它。
+如果我们知道某个页面在一段时间内不再需要了，就会使用这种方法:我们将块插入到指针的后面，导致它比通常情况下更早地被替换。
+目前这种老化机制用于页的预读机制，也可以用于扫描一个满表，但内存不能容纳它。
+将页面放在LRU列表的附近，我们可以确保buf_pool的大部分保持在主存中，不受干扰。
 The chain of modified blocks contains the blocks
 holding file pages that have been modified in the memory
 but not written to disk yet. The block with the oldest modification
 which has not yet been written to disk is at the end of the chain.
-
-		Loading a file page
+被修改的块链包含保存在内存中被修改但尚未写入磁盘的文件页的块。修改时间最久且尚未写入磁盘的区块位于链的末端。
+		Loading a file page 加载文件页面
 		-------------------
 
 First, a victim block for replacement has to be found in the
@@ -158,12 +175,14 @@ the io_fix field is set in the block fixing the block in buf_pool,
 and the io-operation for loading the page is queued. The io-handler thread
 releases the X-lock on the frame and resets the io_fix field
 when the io operation completes.
-
+首先，必须在buf_pool中找到一个用于替换的受害者块。它从空闲列表中获取，或者从lru -列表的末尾搜索。
+一个排他锁被保留给帧，io_fix字段被设置在buf_pool中固定块的块中，加载页面的io操作被排队。
+io-handler线程释放帧上的X-lock，并在io操作完成时重置io_fix字段。
 A thread may request the above operation using the buf_page_get-
 function. It may then continue to request a lock on the frame.
 The lock is granted when the io-handler releases the x-lock.
-
-		Read-ahead
+线程可以使用buf_page_get函数请求上述操作。然后它可能继续请求帧上的锁。当io处理程序释放x-lock时授予锁。
+		Read-ahead 预读
 		----------
 
 The read-ahead mechanism is intended to be intelligent and
@@ -173,7 +192,8 @@ information if a file page has a natural successor or
 predecessor page. On the leaf level of a B-tree index,
 these are the next and previous pages in the natural
 order of the pages.
-
+预读机制旨在实现智能，并与语义上更高级别的数据库索引管理隔离。
+在较高层，只有当文件页具有自然的后继或前身页时，我们才需要这些信息。在b -树索引的叶级上，这些是按页面的自然顺序排列的下一页和下一页。
 Let us first explain the read-ahead mechanism when the leafs
 of a B-tree are scanned in an ascending or descending order.
 When a read page is the first time referenced in the buf_pool,
@@ -189,29 +209,35 @@ issues read-requests for all the pages in that area. Maybe
 we could relax the condition that all the pages in the area
 have to be accessed: if data is deleted from a table, there may
 appear holes of unused pages in the area.
-
+让我们首先解释当b树的叶子按升序或降序扫描时的预读机制。
+当一个读页第一次在buf_pool中被引用时，缓冲区管理器检查它是否位于所谓的线性预读区边界。
+例如，表空间被划分为大小为64块的区域。因此，如果页面位于这样一个区域的边界，那么预读机制将检查该区域中的所有其他块是否已按升序或降序访问。
+如果是这种情况，系统将查看页面的自然后继或前身，检查它是否位于另一个区域的边界，并在这种情况下对该区域中的所有页面发出读取请求。
+也许我们可以放宽必须访问该区域内所有页面的条件:如果从表中删除数据，该区域内可能会出现未使用页面的漏洞。
 A different read-ahead mechanism is used when there appears
 to be a random access pattern to a file.
 If a new page is referenced in the buf_pool, and several pages
 of its random access area (for instance, 32 consecutive pages
 in a tablespace) have recently been referenced, we may predict
 that the whole area may be needed in the near future, and issue
-the read requests for the whole area. */
+the read requests for the whole area.
+当出现对文件的随机访问模式时，将使用不同的预读机制。
+如果buf_pool中引用一个新页面,和几页随机访问的区域(例如,连续32页表空间)最近被引用,我们可以预计,整个地区可能需要在不久的将来,整个地区的读请求和问题。 */
 
-buf_pool_t*	buf_pool = NULL; /* The buffer buf_pool of the database */
+buf_pool_t*	buf_pool = NULL; /* The buffer buf_pool of the database */ /*数据库的缓冲区buf_pool*/
 
 ulint		buf_dbg_counter	= 0; /* This is used to insert validation
 					operations in excution in the
-					debug version */
+					debug version 这用于在调试版本中插入执行中的验证操作*/
 ibool		buf_debug_prints = FALSE; /* If this is set TRUE,
 					the program prints info whenever
-					read-ahead or flush occurs */
+					read-ahead or flush occurs 如果设置为TRUE，当预读或刷新发生时，程序打印信息*/
 
 /************************************************************************
 Calculates a page checksum which is stored to the page when it is written
 to a file. Note that we must be careful to calculate the same value
-on 32-bit and 64-bit architectures. */
-
+on 32-bit and 64-bit architectures. 
+计算写入文件时存储到页面中的页面校验和。注意，我们必须小心地在32位和64位体系结构上计算相同的值。*/
 ulint
 buf_calc_page_checksum(
 /*===================*/
@@ -230,7 +256,7 @@ buf_calc_page_checksum(
 }
 
 /************************************************************************
-Checks if a page is corrupt. */
+Checks if a page is corrupt.检查页面是否损坏。 */
 
 ibool
 buf_page_is_corrupted(
@@ -245,8 +271,8 @@ buf_page_is_corrupted(
 	/* Note that InnoDB initializes empty pages to zero, and
 	early versions of InnoDB did not store page checksum to
 	the 4 most significant bytes of the page lsn field at the
-	end of a page: */
-	
+	end of a page: 注意InnoDB会将空页面初始化为0，
+	早期的InnoDB版本不会将页面校验和存储在页面末尾的page lsn字段中最重要的4个字节:*/
 	if ((mach_read_from_4(read_buf + FIL_PAGE_LSN + 4)
 		    		!= mach_read_from_4(read_buf + UNIV_PAGE_SIZE
 					- FIL_PAGE_END_LSN + 4))
@@ -264,7 +290,7 @@ buf_page_is_corrupted(
 }
 
 /************************************************************************
-Prints a page to stderr. */
+Prints a page to stderr. 将页面打印到标准错误。*/
 
 void
 buf_page_print(
@@ -329,7 +355,7 @@ buf_page_print(
 }
 
 /************************************************************************
-Initializes a buffer control block when the buf_pool is created. */
+Initializes a buffer control block when the buf_pool is created.在创建buf_pool时初始化缓冲区控制块。 */
 static
 void
 buf_block_init(
@@ -356,7 +382,7 @@ buf_block_init(
 }
 
 /************************************************************************
-Creates a buffer buf_pool object. */
+Creates a buffer buf_pool object. 创建缓冲区buf_pool对象。*/
 static
 buf_pool_t*
 buf_pool_create(
@@ -377,7 +403,7 @@ buf_pool_create(
 	
 	buf_pool = mem_alloc(sizeof(buf_pool_t));
 
-	/* 1. Initialize general fields
+	/* 1. Initialize general fields 初始化通用字段
 	   ---------------------------- */
 	mutex_create(&(buf_pool->mutex));
 	mutex_set_level(&(buf_pool->mutex), SYNC_BUF_POOL);
@@ -401,14 +427,14 @@ buf_pool_create(
 	buf_pool->max_size = max_size;
 	buf_pool->curr_size = curr_size;
 
-	/* Align pointer to the first frame */
+	/* Align pointer to the first frame 对齐指针到第一帧*/
 
 	frame = ut_align(buf_pool->frame_mem, UNIV_PAGE_SIZE);
 	buf_pool->frame_zero = frame;
 
 	buf_pool->high_end = frame + UNIV_PAGE_SIZE * curr_size;
 
-	/* Init block structs and assign frames for them */
+	/* Init block structs and assign frames for them 初始化块结构并为它们分配帧*/
 	for (i = 0; i < max_size; i++) {
 
 		block = buf_pool_get_nth_block(buf_pool, i);
@@ -432,7 +458,7 @@ buf_pool_create(
 	buf_pool->n_pages_written_old = 0;
 	buf_pool->n_pages_created_old = 0;
 	
-	/* 2. Initialize flushing fields
+	/* 2. Initialize flushing fields 初始化冲洗字段
 	   ---------------------------- */
 	UT_LIST_INIT(buf_pool->flush_list);
 
@@ -447,19 +473,19 @@ buf_pool_create(
 	buf_pool->ulint_clock = 1;
 	buf_pool->freed_page_clock = 0;
 	
-	/* 3. Initialize LRU fields
+	/* 3. Initialize LRU fields 初始化LRU字段
 	   ---------------------------- */
 	UT_LIST_INIT(buf_pool->LRU);
 
 	buf_pool->LRU_old = NULL;
 
-	/* Add control blocks to the free list */
+	/* Add control blocks to the free list  向空闲列表中添加控制块*/
 	UT_LIST_INIT(buf_pool->free);
 	for (i = 0; i < curr_size; i++) {
 
 		block = buf_pool_get_nth_block(buf_pool, i);
 
-		/* Wipe contents of page to eliminate a Purify warning */
+		/* Wipe contents of page to eliminate a Purify warning 擦去页面的内容以消除Purify警告*/
 		memset(block->frame, '\0', UNIV_PAGE_SIZE);
 
 		UT_LIST_ADD_FIRST(free, buf_pool->free, block);
@@ -473,7 +499,7 @@ buf_pool_create(
 }	
 
 /************************************************************************
-Initializes the buffer buf_pool of the database. */
+Initializes the buffer buf_pool of the database. 初始化数据库的缓冲区buf_pool。*/
 
 void
 buf_pool_init(
@@ -490,7 +516,7 @@ buf_pool_init(
 }
 
 /************************************************************************
-Allocates a buffer block. */
+Allocates a buffer block. 分配一个缓冲区块。*/
 UNIV_INLINE
 buf_block_t*
 buf_block_alloc(void)
@@ -506,7 +532,7 @@ buf_block_alloc(void)
 
 /************************************************************************
 Moves to the block to the start of the LRU list if there is a danger
-that the block would drift out of the buffer pool. */
+that the block would drift out of the buffer pool. 如果块有漂移出缓冲池的危险，则移动到LRU列表的开头。*/
 UNIV_INLINE
 void
 buf_block_make_young(
@@ -517,8 +543,8 @@ buf_block_make_young(
 				+ 1 + (buf_pool->curr_size / 1024)) {
 
 		/* There has been freeing activity in the LRU list:
-		best to move to the head of the LRU list */
-
+		best to move to the head of the LRU list
+		LRU列表中已经有了释放活动:最好移到LRU列表的头部 */
 		buf_LRU_make_block_young(block);
 	}
 }
@@ -526,7 +552,7 @@ buf_block_make_young(
 /************************************************************************
 Moves a page to the start of the buffer pool LRU list. This high-level
 function can be used to prevent an important page from from slipping out of
-the buffer pool. */
+the buffer pool.我们首先将LRU列表中的所有块初始化为old，然后使用adjust函数将LRU_old指针移动到正确的位置 */
 
 void
 buf_page_make_young(
@@ -547,7 +573,7 @@ buf_page_make_young(
 }
 
 /************************************************************************
-Frees a buffer block which does not contain a file page. */
+Frees a buffer block which does not contain a file page. 释放不包含文件页的缓冲区块。*/
 UNIV_INLINE
 void
 buf_block_free(
@@ -576,7 +602,7 @@ buf_frame_alloc(void)
 
 /*************************************************************************
 Frees a buffer frame which does not contain a file page. */
-
+/*释放不包含文件页的缓冲帧。*/
 void
 buf_frame_free(
 /*===========*/
@@ -588,8 +614,8 @@ buf_frame_free(
 /************************************************************************
 Returns the buffer control block if the page can be found in the buffer
 pool. NOTE that it is possible that the page is not yet read
-from disk, though. This is a very low-level function: use with care! */
-
+from disk, though. This is a very low-level function: use with care! 
+如果可以在缓冲池中找到该页，则返回缓冲控制块。注意，有可能该页还没有从磁盘读取。这是一个非常低级的函数:小心使用!*/
 buf_block_t*
 buf_page_peek_block(
 /*================*/
@@ -613,8 +639,8 @@ buf_page_peek_block(
 /************************************************************************
 Returns the current state of is_hashed of a page. FALSE if the page is
 not in the pool. NOTE that this operation does not fix the page in the
-pool if it is found there. */
-
+pool if it is found there. 返回页面的is_hash的当前状态。
+如果页不在池中，则为FALSE。注意，如果在池中找到页面，此操作不会将其固定在池中。*/
 ibool
 buf_page_peek_if_search_hashed(
 /*===========================*/
@@ -666,8 +692,8 @@ buf_page_peek(
 Sets file_page_was_freed TRUE if the page is found in the buffer pool.
 This function should be called when we free a file page and want the
 debug version to check that it is not accessed any more unless
-reallocated. */
-
+reallocated. 如果在缓冲池中找到页面，则设置file_page_was_freed为TRUE。
+当释放文件页并希望调试版本检查该文件页是否不再被访问(除非重新分配)时，应该调用此函数。*/
 buf_block_t*
 buf_page_set_file_page_was_freed(
 /*=============================*/
@@ -695,7 +721,8 @@ buf_page_set_file_page_was_freed(
 Sets file_page_was_freed FALSE if the page is found in the buffer pool.
 This function should be called when we free a file page and want the
 debug version to check that it is not accessed any more unless
-reallocated. */
+reallocated. 如果在缓冲池中找到页面，则将file_page_was_freed设置为FALSE。
+当释放文件页并希望调试版本检查该文件页是否不再被访问(除非重新分配)时，应该调用此函数。*/
 
 buf_block_t*
 buf_page_reset_file_page_was_freed(
@@ -774,7 +801,7 @@ loop:
 	}
 
 	if (block == NULL) {
-		/* Page not in buf_pool: needs to be read from file */
+		/* Page not in buf_pool: needs to be read from file :Page not in buf_pool:需要从文件中读取*/
 
 		mutex_exit(&(buf_pool->mutex));
 
@@ -803,7 +830,7 @@ loop:
 
 		if (mode == BUF_GET_IF_IN_POOL) {
 
-			/* The page is only being read to buffer */
+			/* The page is only being read to buffer 页面只被读取到缓冲区*/
 			mutex_exit(&(buf_pool->mutex));
 
 			return(NULL);
@@ -817,7 +844,7 @@ loop:
 #endif
 	buf_block_make_young(block);
 
-	/* Check if this is the first access to the page */
+	/* Check if this is the first access to the page 检查这是否是对页面的第一次访问*/
 
 	accessed = block->accessed;
 
@@ -884,7 +911,7 @@ loop:
 
 	if (!accessed) {
 		/* In the case of a first access, try to apply linear
-		read-ahead */
+		read-ahead 在第一次访问的情况下，尝试应用线性预读*/
 
 		buf_read_ahead_linear(space, offset);
 	}
@@ -897,7 +924,7 @@ loop:
 
 /************************************************************************
 This is the general function used to get optimistic access to a database
-page. */
+page. 这是用于优化访问数据库页面的通用函数。*/
 
 ibool
 buf_page_optimistic_get_func(
@@ -939,7 +966,7 @@ buf_page_optimistic_get_func(
 #endif
 	buf_block_make_young(block);
 
-	/* Check if this is the first access to the page */
+	/* Check if this is the first access to the page 检查这是否是对页面的第一次访问*/
 
 	accessed = block->accessed;
 
@@ -1055,8 +1082,8 @@ buf_page_get_known_nowait(
 		attempt to access the page can only come through the hash
 		index because when the buffer block state is ..._REMOVE_HASH,
 		we have already removed it from the page address hash table
-		of the buffer pool. */
-
+		of the buffer pool. 另一个线程只是从缓冲池的LRU列表中释放块:不要尝试访问这个页面;
+		这种访问页面的尝试只能通过哈希索引，因为当缓冲区块状态是…_REMOVE_HASH，我们已经从缓冲池的页地址哈希表中删除了它。*/
 	        mutex_exit(&(buf_pool->mutex));
 
 		return(FALSE);
@@ -1120,7 +1147,7 @@ buf_page_get_known_nowait(
 }
 
 /************************************************************************
-Inits a page to the buffer buf_pool. */
+Inits a page to the buffer buf_pool. 将一个页面初始化为缓冲区buf_pool。*/
 static
 void
 buf_page_init(
@@ -1128,13 +1155,13 @@ buf_page_init(
 				/* out: pointer to the block */
 	ulint		space,	/* in: space id */
 	ulint		offset,	/* in: offset of the page within space
-				in units of a page */
+				in units of a page 页在空间内的偏移量，以页为单位*/
 	buf_block_t*	block)	/* in: block to init */
 {
 	ut_ad(mutex_own(&(buf_pool->mutex)));
 	ut_ad(block->state == BUF_BLOCK_READY_FOR_USE);
 
-	/* Set the state of the block */
+	/* Set the state of the block 设置块的状态*/
 	block->state 		= BUF_BLOCK_FILE_PAGE;
 	block->space 		= space;
 	block->offset 		= offset;
@@ -1142,7 +1169,7 @@ buf_page_init(
 	block->lock_hash_val	= lock_rec_hash(space, offset);
 	block->lock_mutex	= NULL;
 	
-	/* Insert into the hash table of file pages */
+	/* Insert into the hash table of file pages 插入到文件页的哈希表中*/
 
 	HASH_INSERT(buf_block_t, hash, buf_pool->page_hash,
 				buf_page_address_fold(space, offset), block);
@@ -1189,7 +1216,7 @@ buf_page_init_for_read(
 	ut_ad(buf_pool);
 
 	if (mode == BUF_READ_IBUF_PAGES_ONLY) {
-		/* It is a read-ahead within an ibuf routine */
+		/* It is a read-ahead within an ibuf routine 它是ibuf例程中的预读*/
 
 		ut_ad(!ibuf_bitmap_page(offset));
 		ut_ad(ibuf_inside());
@@ -1214,7 +1241,7 @@ buf_page_init_for_read(
 	
 	if (NULL != buf_page_hash_get(space, offset)) {
 
-		/* The page is already in buf_pool, return */
+		/* The page is already in buf_pool, return 页面已经在buf_pool中，返回*/
 
 		mutex_exit(&(buf_pool->mutex));
 		buf_block_free(block);
@@ -1231,7 +1258,7 @@ buf_page_init_for_read(
 	
 	buf_page_init(space, offset, block);
 
-	/* The block must be put to the LRU list, to the old blocks */
+	/* The block must be put to the LRU list, to the old blocks 该块必须放到LRU列表中，放到旧的块中*/
 
 	buf_LRU_add_block(block, TRUE); 	/* TRUE == to old blocks */
 	
@@ -1243,8 +1270,9 @@ buf_page_init_for_read(
 	this point of code) can wait for the read to complete by waiting
 	for the x-lock on the frame; if the x-lock were recursive, the
 	same thread would illegally get the x-lock before the page read
-	is completed. The x-lock is cleared by the io-handler thread. */
-	
+	is completed. The x-lock is cleared by the io-handler thread.
+	 我们在帧上设置一个pass类型的x-lock，因为调用读操作的同一个线程(现在正在运行)可以通过等待帧上的x-lock来等待读操作完成;
+	 如果x-lock是递归的，那么同一个线程会在页读完成之前非法获得x-lock。x-lock被io-handler线程清除。*/
 	rw_lock_x_lock_gen(&(block->lock), BUF_IO_READ);
 
 	rw_lock_x_lock_gen(&(block->read_lock), BUF_IO_READ);
@@ -1285,8 +1313,8 @@ buf_page_create(
 	free_block = buf_LRU_get_free_block();
 
 	/* Delete possible entries for the page from the insert buffer:
-	such can exist if the page belonged to an index which was dropped */
-
+	such can exist if the page belonged to an index which was dropped
+	从插入缓冲区中删除该页的可能条目:如果该页属于被删除的索引，则可能存在这样的条目 */
 	ibuf_merge_or_delete_for_page(NULL, space, offset);	
 	
 	mutex_enter(&(buf_pool->mutex));
@@ -1299,7 +1327,7 @@ buf_page_create(
 #endif
 		block->file_page_was_freed = FALSE;
 
-		/* Page can be found in buf_pool */
+		/* Page can be found in buf_pool 页面可以在buf_pool中找到*/
 		mutex_exit(&(buf_pool->mutex));
 
 		buf_block_free(free_block);
@@ -1309,7 +1337,7 @@ buf_page_create(
 		return(frame);
 	}
 
-	/* If we get here, the page was not in buf_pool: init it there */
+	/* If we get here, the page was not in buf_pool: init it there 如果我们到达这里，页面不在buf_pool中:在那里初始化它*/
 
 	if (buf_debug_prints) {
 		printf("Creating space %lu page %lu to buffer\n", space,
@@ -1320,7 +1348,7 @@ buf_page_create(
 	
 	buf_page_init(space, offset, block);
 
-	/* The block must be put to the LRU list */
+	/* The block must be put to the LRU list 该块必须放到LRU列表中*/
 	buf_LRU_add_block(block, FALSE);
 		
 #ifdef UNIV_SYNC_DEBUG
@@ -1336,7 +1364,7 @@ buf_page_create(
 
 	mutex_exit(&(buf_pool->mutex));
 
-	/* Flush pages from the end of the LRU list if necessary */
+	/* Flush pages from the end of the LRU list if necessary 如果需要，从LRU列表的末尾刷新页面*/
 	buf_flush_free_margin();
 
 	frame = block->frame;
@@ -1355,7 +1383,7 @@ buf_page_create(
 
 /************************************************************************
 Completes an asynchronous read or write request of a file page to or from
-the buffer pool. */
+the buffer pool. 完成对缓冲池的文件页的异步读或写请求。*/
 
 void
 buf_page_io_complete(
@@ -1372,8 +1400,8 @@ buf_page_io_complete(
 
 	if (io_type == BUF_IO_READ) {
 		/* From version 3.23.38 up we store the page checksum
-		   to the 4 upper bytes of the page end lsn field */
-
+		   to the 4 upper bytes of the page end lsn field
+		从3.23.38版本开始，我们将页面校验和存储到页面结束lsn字段的上部4个字节*/
 		if (buf_page_is_corrupted(block->frame)) {
 		  	fprintf(stderr,
 			  "InnoDB: Database page corruption or a failed\n"
@@ -1419,14 +1447,14 @@ buf_page_io_complete(
 	/* Because this thread which does the unlocking is not the same that
 	did the locking, we use a pass value != 0 in unlock, which simply
 	removes the newest lock debug record, without checking the thread
-	id. */
+	id. 因为执行解锁的线程与执行锁定的线程不同，我们在unlock中使用了一个pass值!= 0，它只是删除了最新的锁调试记录，而不检查线程id。*/
 
 	block->io_fix = 0;
 	
 	if (io_type == BUF_IO_READ) {
 		/* NOTE that the call to ibuf may have moved the ownership of
 		the x-latch to this OS thread: do not let this confuse you in
-		debugging! */		
+		debugging! 注意，对ibuf的调用可能已经将x-latch的所有权移到了这个操作系统线程:在调试时不要让它迷惑你!*/		
 	
 		ut_ad(buf_pool->n_pend_reads > 0);
 		buf_pool->n_pend_reads--;
@@ -1443,7 +1471,7 @@ buf_page_io_complete(
 		ut_ad(io_type == BUF_IO_WRITE);
 
 		/* Write means a flush operation: call the completion
-		routine in the flush system */
+		routine in the flush system 写表示刷新操作:在刷新系统中调用完成例程*/
 
 		buf_flush_write_complete(block);
 
@@ -1481,7 +1509,8 @@ buf_page_io_complete(
 /*************************************************************************
 Invalidates the file pages in the buffer pool when an archive recovery is
 completed. All the file pages buffered must be in a replaceable state when
-this function is called: not latched and not modified. */
+this function is called: not latched and not modified. 
+当存档恢复完成时，使缓冲池中的文件页无效。当调用此函数时，所有缓冲的文件页必须处于可替换状态:未锁存和未修改。*/
 
 void
 buf_pool_invalidate(void)
@@ -1505,7 +1534,7 @@ buf_pool_invalidate(void)
 }
 
 /*************************************************************************
-Validates the buffer buf_pool data structure. */
+Validates the buffer buf_pool data structure.验证缓冲区buf_pool数据结构。 */
 
 ibool
 buf_validate(void)
@@ -1600,7 +1629,7 @@ buf_validate(void)
 }	
 
 /*************************************************************************
-Prints info of the buffer buf_pool data structure. */
+Prints info of the buffer buf_pool data structure. 打印缓冲区buf_pool数据结构的信息。*/
 
 void
 buf_print(void)
@@ -1641,7 +1670,7 @@ buf_print(void)
 			buf_pool->n_pages_read, buf_pool->n_pages_created,
 						buf_pool->n_pages_written);
 
-	/* Count the number of blocks belonging to each index in the buffer */
+	/* Count the number of blocks belonging to each index in the buffer 计算属于缓冲区中每个索引的块的数量*/
 	
 	n_found = 0;
 
@@ -1656,7 +1685,7 @@ buf_print(void)
 
 			id = btr_page_get_index_id(frame);
 
-			/* Look for the id in the index_ids array */
+			/* Look for the id in the index_ids array 在index_ids数组中查找id*/
 			j = 0;
 
 			while (j < n_found) {
@@ -1700,7 +1729,7 @@ buf_print(void)
 }	
 
 /*************************************************************************
-Returns the number of pending buf pool ios. */
+Returns the number of pending buf pool ios. 返回挂起的buf池ios的数量。*/
 
 ulint
 buf_get_n_pending_ios(void)
@@ -1713,7 +1742,7 @@ buf_get_n_pending_ios(void)
 }
 
 /*************************************************************************
-Prints info of the buffer i/o. */
+Prints info of the buffer i/o. 打印缓冲区i/o的信息。*/
 
 void
 buf_print_io(void)
@@ -1777,7 +1806,7 @@ buf_print_io(void)
 }
 
 /*************************************************************************
-Checks that all file pages in the buffer are in a replaceable state. */
+Checks that all file pages in the buffer are in a replaceable state. 检查缓冲区中的所有文件页是否处于可替换状态。*/
 
 ibool
 buf_all_freed(void)
@@ -1812,7 +1841,7 @@ buf_all_freed(void)
 
 /*************************************************************************
 Checks that there currently are no pending i/o-operations for the buffer
-pool. */
+pool. 检查缓冲池当前没有挂起的i/o操作。*/
 
 ibool
 buf_pool_check_no_pending_io(void)
@@ -1837,7 +1866,7 @@ buf_pool_check_no_pending_io(void)
 }
 
 /*************************************************************************
-Gets the current length of the free list of buffer blocks. */
+Gets the current length of the free list of buffer blocks. 获取缓冲区块的空闲列表的当前长度。*/
 
 ulint
 buf_get_free_list_len(void)
