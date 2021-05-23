@@ -13,12 +13,12 @@ Created 11/5/1995 Heikki Tuuri
 
 extern ulint		buf_dbg_counter; /* This is used to insert validation
 					operations in execution in the
-					debug version */
+					debug version 这用于在调试版本中插入执行中的验证操作*/
 					
 /************************************************************************
 Recommends a move of a block to the start of the LRU list if there is danger
 of dropping from the buffer pool. NOTE: does not reserve the buffer pool
-mutex. */
+mutex. 如果有从缓冲池中删除的危险，建议将块移动到LRU列表的开头。注意:不保留缓冲池互斥。*/
 UNIV_INLINE
 ibool
 buf_block_peek_if_too_old(
@@ -36,7 +36,7 @@ buf_block_peek_if_too_old(
 }
 
 /*************************************************************************
-Gets the current size of buffer buf_pool in bytes. */
+Gets the current size of buffer buf_pool in bytes. */ /*获取缓冲区buf_pool的当前大小(以字节为单位)。*/
 UNIV_INLINE
 ulint
 buf_pool_get_curr_size(void)
@@ -47,7 +47,7 @@ buf_pool_get_curr_size(void)
 }	
 
 /*************************************************************************
-Gets the maximum size of buffer buf_pool in bytes. */
+Gets the maximum size of buffer buf_pool in bytes. */ /*获取缓冲区buf_pool的最大大小(以字节为单位)。*/
 UNIV_INLINE
 ulint
 buf_pool_get_max_size(void)
@@ -58,7 +58,7 @@ buf_pool_get_max_size(void)
 }	
 
 /***********************************************************************
-Accessor function for block array. */
+Accessor function for block array. */ /*块数组的访问函数。*/
 UNIV_INLINE
 buf_block_t*
 buf_pool_get_nth_block(
@@ -75,7 +75,7 @@ buf_pool_get_nth_block(
 
 /***********************************************************************
 Checks if a pointer points to the block array of the buffer pool (blocks, not
-the frames). */
+the frames). 检查指针是否指向缓冲池的块数组(块，而不是帧)。*/
 UNIV_INLINE
 ibool
 buf_pool_is_block(
@@ -94,7 +94,8 @@ buf_pool_is_block(
 
 /************************************************************************
 Gets the smallest oldest_modification lsn for any page in the pool. Returns
-ut_dulint_zero if all modified pages have been flushed to disk. */
+ut_dulint_zero if all modified pages have been flushed to disk. 
+获取池中任何页面的最小oldest_modify lsn。如果所有修改的页面都已刷新到磁盘，则返回ut_dulint_zero。*/
 UNIV_INLINE
 dulint
 buf_pool_get_oldest_modification(void)
@@ -122,7 +123,8 @@ buf_pool_get_oldest_modification(void)
 
 /***********************************************************************
 Increments the buf_pool clock by one and returns its new value. Remember
-that in the 32 bit version the clock wraps around at 4 billion! */
+that in the 32 bit version the clock wraps around at 4 billion! 
+增加buf_pool时钟1并返回它的新值。记住，在32位的版本中，时钟在40亿左右!*/
 UNIV_INLINE
 ulint
 buf_pool_clock_tic(void)
@@ -137,7 +139,7 @@ buf_pool_clock_tic(void)
 }
 
 /*************************************************************************
-Gets a pointer to the memory frame of a block. */
+Gets a pointer to the memory frame of a block. 获取指向块的内存帧的指针。*/
 UNIV_INLINE
 buf_frame_t*
 buf_block_get_frame(
@@ -156,7 +158,7 @@ buf_block_get_frame(
 }	
 
 /*************************************************************************
-Gets the space id of a block. */
+Gets the space id of a block. 获取块的空间id。*/
 UNIV_INLINE
 ulint
 buf_block_get_space(
@@ -174,7 +176,7 @@ buf_block_get_space(
 }	
 
 /*************************************************************************
-Gets the page number of a block. */
+Gets the page number of a block. 获取块的页码。*/
 UNIV_INLINE
 ulint
 buf_block_get_page_no(
@@ -246,7 +248,7 @@ buf_block_align_low(
 }	
 
 /***********************************************************************
-Gets the frame the pointer is pointing to. */
+Gets the frame the pointer is pointing to. 获取指针所指向的框架。*/
 UNIV_INLINE
 buf_frame_t*
 buf_frame_align(
@@ -269,7 +271,7 @@ buf_frame_align(
 
 /**************************************************************************
 Gets the page number of a pointer pointing within a buffer frame containing
-a file page. */
+a file page. 获取指向包含文件页的缓冲帧内的指针的页码。*/
 UNIV_INLINE
 ulint
 buf_frame_get_page_no(
@@ -282,7 +284,7 @@ buf_frame_get_page_no(
 
 /**************************************************************************
 Gets the space id of a pointer pointing within a buffer frame containing a
-file page. */
+file page. 获取指向包含文件页的缓冲帧内的指针的空间id。*/
 UNIV_INLINE
 ulint
 buf_frame_get_space_id(
@@ -295,7 +297,8 @@ buf_frame_get_space_id(
 
 /**************************************************************************
 Gets the space id, page offset, and byte offset within page of a
-pointer pointing to a buffer frame containing a file page. */
+pointer pointing to a buffer frame containing a file page. 
+获取指向包含文件页的缓冲区帧的指针的页内的空间id、页偏移量和字节偏移量。*/
 UNIV_INLINE
 void
 buf_ptr_get_fsp_addr(
@@ -315,7 +318,7 @@ buf_ptr_get_fsp_addr(
 
 /**************************************************************************
 Gets the hash value of the page the pointer is pointing to. This can be used
-in searches in the lock hash table. */
+in searches in the lock hash table. 获取指针所指向的页面的哈希值。这可以在锁散列表的搜索中使用。*/
 UNIV_INLINE
 ulint
 buf_frame_get_lock_hash_val(
@@ -332,7 +335,7 @@ buf_frame_get_lock_hash_val(
 
 /**************************************************************************
 Gets the mutex number protecting the page record lock hash chain in the lock
-table. */
+table. 获取保护锁表中页记录锁散列链的互斥锁号。*/
 UNIV_INLINE
 mutex_t*
 buf_frame_get_lock_mutex(
@@ -348,7 +351,7 @@ buf_frame_get_lock_mutex(
 }
 
 /*************************************************************************
-Copies contents of a buffer frame to a given buffer. */
+Copies contents of a buffer frame to a given buffer. 将缓冲区帧的内容复制到给定的缓冲区。*/
 UNIV_INLINE
 byte*
 buf_frame_copy(
@@ -366,7 +369,7 @@ buf_frame_copy(
 
 /************************************************************************
 Calculates a folded value of a file page address to use in the page hash
-table. */
+table. 计算要在页哈希表中使用的文件页地址的折叠值。*/
 UNIV_INLINE
 ulint
 buf_page_address_fold(
@@ -380,7 +383,7 @@ buf_page_address_fold(
 
 /************************************************************************
 This function is used to get info if there is an io operation
-going on on a buffer page. */
+going on on a buffer page. 该函数用于在缓冲区页面上进行io操作时获取信息。*/
 UNIV_INLINE
 ibool
 buf_page_io_query(
@@ -406,7 +409,7 @@ buf_page_io_query(
 
 /************************************************************************
 Gets the youngest modification log sequence number for a frame. Returns zero
-if not a file page or no modification occurred yet. */
+if not a file page or no modification occurred yet. 获取帧的最新修改日志序号。如果没有文件页或未发生任何修改，则返回零。*/
 UNIV_INLINE
 dulint
 buf_frame_get_newest_modification(
@@ -482,7 +485,7 @@ buf_frame_get_modify_clock(
 }
 
 /***********************************************************************
-Increments the bufferfix count. */
+Increments the bufferfix count. 增加缓冲修正计数。*/
 UNIV_INLINE
 void
 buf_block_buf_fix_inc_debug(
@@ -501,7 +504,7 @@ buf_block_buf_fix_inc_debug(
 }
 
 /***********************************************************************
-Increments the bufferfix count. */
+Increments the bufferfix count. 增加缓冲修正计数。*/
 UNIV_INLINE
 void
 buf_block_buf_fix_inc(
@@ -512,7 +515,7 @@ buf_block_buf_fix_inc(
 }
 
 /**********************************************************************
-Returns the control block of a file page, NULL if not found. */
+Returns the control block of a file page, NULL if not found.返回文件页的控制块，如果没有找到则为NULL。 */
 UNIV_INLINE
 buf_block_t*
 buf_page_hash_get(
@@ -527,7 +530,7 @@ buf_page_hash_get(
 	ut_ad(buf_pool);
 	ut_ad(mutex_own(&(buf_pool->mutex)));
 
-	/* Look for the page in the hash table */
+	/* Look for the page in the hash table 在哈希表中查找该页*/
 
 	fold = buf_page_address_fold(space, offset);
 
@@ -540,7 +543,8 @@ buf_page_hash_get(
 Tries to get the page, but if file io is required, releases all latches
 in mtr down to the given savepoint. If io is required, this function
 retrieves the page to buffer buf_pool, but does not bufferfix it or latch
-it. */
+it. 尝试获取页面，但如果需要文件io，则释放mtr中的所有锁存到给定保存点。
+如果需要io，这个函数将获取页面以缓冲buf_pool，但不进行缓冲修复或闩锁。*/
 UNIV_INLINE
 buf_frame_t*
 buf_page_get_release_on_io(
@@ -569,14 +573,14 @@ buf_page_get_release_on_io(
 
 	/* The page was not in the buffer buf_pool: release the latches
 	down to the savepoint */
-		
+	/*页面不在缓冲区buf_pool中:释放锁存到保存点*/	
 	mtr_rollback_to_savepoint(mtr, savepoint);
 		
 	buf_page_get(space, offset, RW_S_LATCH, mtr);
 		
 	/* When we get here, the page is in buffer, but we release
 	the latches again down to the savepoint, before returning */
-
+    /*当我们到达这里时，页面在缓冲区中，但是我们在返回之前再次释放闩锁到保存点*/
 	mtr_rollback_to_savepoint(mtr, savepoint);
 		
 	return(NULL);
