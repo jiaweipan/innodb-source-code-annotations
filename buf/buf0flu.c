@@ -1,6 +1,6 @@
 /******************************************************
 The database buffer buf_pool flush algorithm
-
+数据库缓冲池刷新算法
 (c) 1995-2001 Innobase Oy
 
 Created 11/11/1995 Heikki Tuuri

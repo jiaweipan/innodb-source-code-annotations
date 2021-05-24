@@ -1,6 +1,6 @@
 /******************************************************
 The database buffer read
-
+数据库缓冲区读取
 (c) 1995 Innobase Oy
 
 Created 11/5/1995 Heikki Tuuri
@@ -17,8 +17,8 @@ High-level function which reads a page asynchronously from a file to the
 buffer buf_pool if it is not already there. Sets the io_fix flag and sets
 an exclusive lock on the buffer frame. The flag is cleared and the x-lock
 released by the i/o-handler thread. Does a random read-ahead if it seems
-sensible. */
-
+sensible. 这是一种高级函数，它将一个不存在的页面从文件异步读取到缓冲区buf_pool中。
+设置io_fix标志并设置缓冲区帧上的排他锁。标记被清除，x-lock被i/o-handler线程释放。如果看起来合理的话，执行随机预读。*/
 ulint
 buf_read_page(
 /*==========*/

@@ -1,6 +1,6 @@
 /******************************************************
 The database buffer read
-
+数据库缓冲区读取
 (c) 1995 Innobase Oy
 
 Created 11/5/1995 Heikki Tuuri
