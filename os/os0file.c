@@ -1409,7 +1409,7 @@ os_aio_array_free_slot(
 }
 
 /**************************************************************************
-Wakes up a simulated aio i/o-handler thread if it has something to do. */
+Wakes up a simulated aio i/o-handler thread if it has something to do. 如果aio i/o处理程序有事情要做，则唤醒模拟的aio i/o处理线程。*/
 static
 void
 os_aio_simulated_wake_handler_thread(
@@ -1429,7 +1429,7 @@ os_aio_simulated_wake_handler_thread(
 
 	n = array->n_slots / array->n_segments;
 
-	/* Look through n slots after the segment * n'th slot */
+	/* Look through n slots after the segment * n'th slot 在段*第n个槽后查看n个槽*/
 
 	os_mutex_enter(array->mutex);
 
@@ -1437,7 +1437,7 @@ os_aio_simulated_wake_handler_thread(
 		slot = os_aio_array_get_nth_slot(array, i + segment * n);
 
 		if (slot->reserved) {
-			/* Found an i/o request */
+			/* Found an i/o request 发现一个i/o请求*/
 			
 			break;
 		}
@@ -1451,8 +1451,8 @@ os_aio_simulated_wake_handler_thread(
 }
 
 /**************************************************************************
-Wakes up simulated aio i/o-handler threads if they have something to do. */
-
+Wakes up simulated aio i/o-handler threads if they have something to do. 
+如果模拟aio i/o处理程序线程有事情要做，则唤醒它们。*/
 void
 os_aio_simulated_wake_handler_threads(void)
 /*=======================================*/
@@ -1460,7 +1460,7 @@ os_aio_simulated_wake_handler_threads(void)
 	ulint	i;
 
 	if (os_aio_use_native_aio) {
-		/* We do not use simulated aio: do nothing */
+		/* We do not use simulated aio: do nothing 我们不使用模拟aio:什么也不做*/
 
 		return;
 	}

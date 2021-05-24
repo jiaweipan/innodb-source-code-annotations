@@ -331,11 +331,11 @@ struct trx_doublewrite_struct{
 	byte*	write_buf; 	/* write buffer used in writing to the
 				doublewrite buffer, aligned to an
 				address divisible by UNIV_PAGE_SIZE
-				(which is required by Windows aio) */
+				(which is required by Windows aio) */ /*写入doublewrite缓冲区，对齐到UNIV_PAGE_SIZE可整除的地址(Windows aio要求)*/
 	byte*	write_buf_unaligned; /* pointer to write_buf, but unaligned */
 	buf_block_t**
 		buf_block_arr;	/* array to store pointers to the buffer
-				blocks which have been cached to write_buf */
+				blocks which have been cached to write_buf 指向已缓存到write_buf的缓冲区块的指针数组*/
 };
 
 /* The transaction system central memory data structure; protected by the

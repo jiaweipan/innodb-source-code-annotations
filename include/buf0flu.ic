@@ -1,6 +1,6 @@
 /******************************************************
 The database buffer pool flush algorithm
-数据库缓冲池刷新算法
+数据库缓冲池淘汰算法
 (c) 1995 Innobase Oy
 
 Created 11/5/1995 Heikki Tuuri
@@ -11,7 +11,7 @@ Created 11/5/1995 Heikki Tuuri
 
 /************************************************************************
 Inserts a modified block into the flush list. */
-
+/*将修改后的块插入刷新列表中。*/
 void
 buf_flush_insert_into_flush_list(
 /*=============================*/
@@ -20,7 +20,7 @@ buf_flush_insert_into_flush_list(
 Inserts a modified block into the flush list in the right sorted position.
 This function is used by recovery, because there the modifications do not
 necessarily come in the order of lsn's. */
-
+/*将修改后的块插入到刷新列表的右排序位置。这个函数用于恢复，因为在恢复中修改不一定是按照lsn的顺序来的。*/
 void
 buf_flush_insert_sorted_into_flush_list(
 /*====================================*/

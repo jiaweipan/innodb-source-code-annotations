@@ -26,12 +26,12 @@ Created 11/11/1995 Heikki Tuuri
 
 /* When flushed, dirty blocks are searched in neigborhoods of this size, and
 flushed along with the original page. */
-
+/*当刷新时，将在这个大小的社区中搜索脏块，并与原始页面一起刷新。*/
 #define BUF_FLUSH_AREA		ut_min(BUF_READ_AHEAD_AREA,\
 					       buf_pool->curr_size / 16)
 
 /**********************************************************************
-Validates the flush list. */
+Validates the flush list. 验证刷新列表。*/
 static
 ibool
 buf_flush_validate_low(void);
@@ -39,7 +39,7 @@ buf_flush_validate_low(void);
 		/* out: TRUE if ok */
 
 /************************************************************************
-Inserts a modified block into the flush list. */
+Inserts a modified block into the flush list. 将修改后的块插入刷新列表中。*/
 
 void
 buf_flush_insert_into_flush_list(
@@ -95,8 +95,8 @@ buf_flush_insert_sorted_into_flush_list(
 
 /************************************************************************
 Returns TRUE if the file page block is immediately suitable for replacement,
-i.e., the transition FILE_PAGE => NOT_USED allowed. */
-
+i.e., the transition FILE_PAGE => NOT_USED allowed. 
+如果文件页块立即适合替换，则返回TRUE。，转换FILE_PAGE => NOT_USED允许。*/
 ibool
 buf_flush_ready_for_replace(
 /*========================*/
@@ -118,7 +118,7 @@ buf_flush_ready_for_replace(
 }
 
 /************************************************************************
-Returns TRUE if the block is modified and ready for flushing. */
+Returns TRUE if the block is modified and ready for flushing. 如果块已修改并准备刷新，则返回TRUE。*/
 UNIV_INLINE
 ibool
 buf_flush_ready_for_flush(
@@ -135,6 +135,7 @@ buf_flush_ready_for_flush(
 	    					&& (block->io_fix == 0)) {
 
 	    	if (flush_type != BUF_FLUSH_LRU) {
+				  。
 
 			return(TRUE);
 
@@ -142,7 +143,7 @@ buf_flush_ready_for_flush(
  
 			/* If we are flushing the LRU list, to avoid deadlocks
 			we require the block not to be bufferfixed, and hence
-			not latched. */
+			not latched. 如果我们刷新LRU列表，为了避免死锁，我们要求块不被缓冲固定，因此不锁存。*/
 
 			return(TRUE);
 		}
@@ -196,7 +197,8 @@ Flushes possible buffered writes from the doublewrite memory buffer to disk,
 and also wakes up the aio thread if simulated aio is used. It is very
 important to call this function after a batch of writes has been posted,
 and also when we may have to wait for a page latch! Otherwise a deadlock
-of threads can occur. */
+of threads can occur. */ /*将可能的缓冲写从doublewrite内存缓冲区刷新到磁盘，如果使用了模拟的aio，还会唤醒aio线程。
+在发送了一批写操作之后，以及在可能需要等待页面锁存时，调用这个函数是非常重要的!否则会发生线程死锁。*/
 static
 void
 buf_flush_buffered_writes(void)
@@ -216,7 +218,7 @@ buf_flush_buffered_writes(void)
 
 	/* Write first to doublewrite buffer blocks. We use synchronous
 	aio and thus know that file write has been completed when the
-	control returns. */
+	control returns. 先写doublewrite缓冲区块。我们使用同步aio，因此知道当控件返回时文件写入已经完成。*/
 
 	if (trx_doublewrite->first_free == 0) {
 
@@ -248,14 +250,14 @@ buf_flush_buffered_writes(void)
 			NULL);
 	}
 
-	/* Now flush the doublewrite buffer data to disk */
+	/* Now flush the doublewrite buffer data to disk 现在将doublewrite缓冲区数据刷新到磁盘*/
 
 	fil_flush(TRX_SYS_SPACE);
 
 	/* We know that the writes have been flushed to disk now
 	and in recovery we will find them in the doublewrite buffer
-	blocks. Next do the writes to the intended positions. */
-
+	blocks. Next do the writes to the intended positions. 
+	我们知道写操作现在已经被刷新到磁盘，在恢复过程中，我们将在doublewrite缓冲区块中找到它们。接下来将写入到预期的位置。*/
 	for (i = 0; i < trx_doublewrite->first_free; i++) {
 		block = trx_doublewrite->buf_block_arr[i];
 
@@ -265,21 +267,17 @@ buf_flush_buffered_writes(void)
 	}
 	
 	/* Wake possible simulated aio thread to actually post the
-	writes to the operating system */
-
+	writes to the operating system 唤醒可能的模拟aio线程，将写操作实际发布到操作系统*/
 	os_aio_simulated_wake_handler_threads();
 
 	/* Wait that all async writes to tablespaces have been posted to
-	the OS */	
-	
+	the OS 等待所有对表空间的异步写都被发送到操作系统*/	
 	os_aio_wait_until_no_pending_writes();
 
-	/* Now we flush the data to disk (for example, with fsync) */
-
+	/* Now we flush the data to disk (for example, with fsync) 现在我们将数据刷新到磁盘(例如，使用fsync)*/
 	fil_flush_file_spaces(FIL_TABLESPACE);
 
-	/* We can now reuse the doublewrite memory buffer: */
-
+	/* We can now reuse the doublewrite memory buffer: 我们现在可以重用doublewrite内存缓冲区:*/
 	trx_doublewrite->first_free = 0;
 
 	mutex_exit(&(trx_doublewrite->mutex));	
@@ -288,7 +286,7 @@ buf_flush_buffered_writes(void)
 /************************************************************************
 Posts a buffer page for writing. If the doublewrite memory buffer is
 full, calls buf_flush_buffered_writes and waits for for free space to
-appear. */
+appear. 发布用于写入的缓冲页。如果doublewrite内存缓冲区已满，则调用buf_flush_buffered_writes并等待空闲空间出现。*/
 static
 void
 buf_flush_post_to_doublewrite_buf(
@@ -330,7 +328,8 @@ try_again:
 /************************************************************************
 Does an asynchronous write of a buffer page. NOTE: in simulated aio and
 also when the doublewrite buffer is used, we must call
-buf_flush_buffered_writes after we have posted a batch of writes! */
+buf_flush_buffered_writes after we have posted a batch of writes! 
+异步写缓冲页。注意:在模拟aio和使用doublewrite缓冲区时，我们必须在发布了一批写操作之后调用buf_flush_buffered_writes !*/
 static
 void
 buf_flush_write_block_low(
@@ -346,22 +345,22 @@ buf_flush_write_block_low(
 	printf(
 	"Warning: cannot force log to disk in the log debug version!\n");
 #else
-	/* Force the log to the disk before writing the modified block */
+	/* Force the log to the disk before writing the modified block 在写入修改的块之前，强制将日志写入磁盘*/
 	log_flush_up_to(block->newest_modification, LOG_WAIT_ALL_GROUPS);
 #endif	
-	/* Write the newest modification lsn to the page */
+	/* Write the newest modification lsn to the page 将最新的修改lsn写入页面*/
 	mach_write_to_8(block->frame + FIL_PAGE_LSN,
 						block->newest_modification);
 	mach_write_to_8(block->frame + UNIV_PAGE_SIZE - FIL_PAGE_END_LSN,
 						block->newest_modification);
 
-	/* Write to the page the space id and page number */
+	/* Write to the page the space id and page number 将空格id和页码写入页面*/
 
 	mach_write_to_4(block->frame + FIL_PAGE_SPACE, block->space);
 	mach_write_to_4(block->frame + FIL_PAGE_OFFSET, block->offset);
 
 	/* We overwrite the first 4 bytes of the end lsn field to store
-	a page checksum */
+	a page checksum 我们重写end lsn字段的前4个字节来存储页面校验和*/
 
 	mach_write_to_4(block->frame + UNIV_PAGE_SIZE - FIL_PAGE_END_LSN,
 			buf_calc_page_checksum(block->frame));
@@ -379,7 +378,8 @@ buf_flush_write_block_low(
 Writes a page asynchronously from the buffer buf_pool to a file, if it can be
 found in the buf_pool and it is in a flushable state. NOTE: in simulated aio
 we must call os_aio_simulated_wake_handler_threads after we have posted a batch
-of writes! */
+of writes! 如果可以在buf_pool中找到且处于可刷新状态，则将一个页异步地从buf_pool写入一个文件。
+注意:在模拟aio中，我们必须在发布了一批写操作后调用os_aio_simulated_wake_handler_threads。*/
 static
 ulint
 buf_flush_try_page(
@@ -417,8 +417,8 @@ buf_flush_try_page(
 		
 		/* If the simulated aio thread is not running, we must
 		not wait for any latch, as we may end up in a deadlock:
-		if buf_fix_count == 0, then we know we need not wait */
-
+		if buf_fix_count == 0, then we know we need not wait 
+		如果模拟的aio线程没有运行，则不应等待任何锁存，因为可能会导致死锁:如果buf_fix_count == 0，则知道不需要等待*/
 		if (block->buf_fix_count == 0) {
 			rw_lock_s_lock_gen(&(block->lock), BUF_IO_WRITE);
 
@@ -451,8 +451,8 @@ buf_flush_try_page(
 		s-lock is acquired on the page without waiting: this is
 		accomplished because in the if-condition above we require
 		the page not to be bufferfixed (in function
-		..._ready_for_flush). */
-
+		..._ready_for_flush). 非常重要:因为任何线程可以调用LRU刷新,即使拥有锁页,为了避免死锁,
+		我们必须确保s锁定在页面上获得不等待:这是我们需要完成,因为在上面的if条件页面不是bufferfixed(在函数…_ready_for_flush)。*/
 		block->io_fix = BUF_IO_WRITE;
 		block->flush_type = flush_type;
 
@@ -467,7 +467,7 @@ buf_flush_try_page(
 
 		/* Note that the s-latch is acquired before releasing the
 		buf_pool mutex: this ensures that the latch is acquired
-		immediately. */
+		immediately.注意，s-latch是在释放buf_pool互斥锁之前获得的:这确保了latch是立即获得的 */
 		
 		mutex_exit(&(buf_pool->mutex));
 
@@ -508,7 +508,7 @@ buf_flush_try_page(
 }
 
 /***************************************************************
-Flushes to disk all flushable pages within the flush area. */
+Flushes to disk all flushable pages within the flush area. 将刷新区域内的所有可刷新页面刷新到磁盘。*/
 static
 ulint
 buf_flush_try_neighbors(
@@ -530,7 +530,7 @@ buf_flush_try_neighbors(
 
 	if (UT_LIST_GET_LEN(buf_pool->LRU) < BUF_LRU_OLD_MIN_LEN) {
 		/* If there is little space, it is better not to flush any
-		block except from the end of the LRU list */
+		block except from the end of the LRU list 如果空间很小，最好不要刷新LRU列表末尾以外的任何块*/
 	
 		low = offset;
 		high = offset + 1;
@@ -538,8 +538,8 @@ buf_flush_try_neighbors(
 		/* Since semaphore waits require us to flush the
 		doublewrite buffer to disk, it is best that the
 		search area is just the page itself, to minimize
-		chances for semaphore waits */
-
+		chances for semaphore waits 
+		由于信号量等待要求我们将doublewrite缓冲区刷新到磁盘，所以搜索区域最好是页面本身，以减少信号量等待的机会*/
 		low = offset;
 		high = offset + 1;
 	}		
@@ -560,7 +560,7 @@ buf_flush_try_neighbors(
 		    && !block->old) {
 
 		  /* We avoid flushing 'non-old' blocks in an LRU flush,
-		     because the flushed blocks are soon freed */
+		     because the flushed blocks are soon freed 我们避免在LRU刷新中刷新“非旧的”块，因为刷新的块很快就会被释放*/
 
 		  continue;
 		}
@@ -572,8 +572,8 @@ buf_flush_try_neighbors(
 			/* Note: as we release the buf_pool mutex above, in
 			buf_flush_try_page we cannot be sure the page is still
 			in a flushable state: therefore we check it again
-			inside that function. */
-
+			inside that function. 注意:当我们释放上面的buf_pool互斥锁时，
+			在buf_flush_try_page中，我们不能确定页面是否仍然处于可刷新状态:因此我们在该函数中再次检查它。*/
 			count += buf_flush_try_page(space, i, flush_type);
 
 			mutex_enter(&(buf_pool->mutex));
@@ -591,23 +591,25 @@ NOTE 1: in the case of an LRU flush the calling thread may own latches to
 pages: to avoid deadlocks, this function must be written so that it cannot
 end up waiting for these latches! NOTE 2: in the case of a flush list flush,
 the calling thread is not allowed to own any latches on pages! */
-
+/*这个实用程序从LRU列表或flush_list的末尾刷新脏块。注1:在LRU刷新的情况下，调用线程可能拥有对页面的锁存:
+为了避免死锁，必须编写这个函数，使它不能等待这些锁存!注2:在刷新列表刷新的情况下，调用线程不允许拥有页上的任何锁存!*/
 ulint
 buf_flush_batch(
 /*============*/
 				/* out: number of blocks for which the write
 				request was queued; ULINT_UNDEFINED if there
-				was a flush of the same type already running */
+				was a flush of the same type already running 写请求排队的块数;ULINT_UNDEFINED(如果已经运行了同一类型的刷新)*/
 	ulint	flush_type,	/* in: BUF_FLUSH_LRU or BUF_FLUSH_LIST; if
 				BUF_FLUSH_LIST, then the caller must not own
 				any latches on pages */
 	ulint	min_n,		/* in: wished minimum mumber of blocks flushed
 				(it is not guaranteed that the actual number
-				is that big, though) */
+				is that big, though) 希望刷新的最小块数量(但不能保证实际数量有那么大)*/
 	dulint	lsn_limit)	/* in the case BUF_FLUSH_LIST all blocks whose
 				oldest_modification is smaller than this
 				should be flushed (if their number does not
-				exceed min_n), otherwise ignored */
+				exceed min_n), otherwise ignored 
+				在BUF_FLUSH_LIST的情况下，所有的oldest_modify小于这个值的块都应该被刷新(如果它们的数量不超过min_n)，否则忽略*/
 {
 	buf_block_t*	block;
 	ulint		page_count 	= 0;
@@ -625,7 +627,7 @@ buf_flush_batch(
 	if ((buf_pool->n_flush[flush_type] > 0)
 	    || (buf_pool->init_flush[flush_type] == TRUE)) {
 
-		/* There is already a flush batch of the same type running */
+		/* There is already a flush batch of the same type running 已经有一个相同类型的刷新批处理在运行*/
 		
 		mutex_exit(&(buf_pool->mutex));
 
@@ -635,14 +637,14 @@ buf_flush_batch(
 	(buf_pool->init_flush)[flush_type] = TRUE;
 	
 	for (;;) {
-		/* If we have flushed enough, leave the loop */
+		/* If we have flushed enough, leave the loop 如果我们冲够了，就离开循环*/
 		if (page_count >= min_n) {
 
 			break;
 		}
 	
 		/* Start from the end of the list looking for a suitable
-		block to be flushed. */
+		block to be flushed. 从列表末尾开始寻找要刷新的合适块。*/
 		
 	    	if (flush_type == BUF_FLUSH_LRU) {
 			block = UT_LIST_GET_LAST(buf_pool->LRU);
@@ -666,8 +668,9 @@ buf_flush_batch(
 		flush also all its neighbors, and after that start from the
 		END of the LRU list or flush list again: the list may change
 		during the flushing and we cannot safely preserve within this
-		function a pointer to a block in the list! */
-
+		function a pointer to a block in the list! 
+		注意,寻找一个可冲洗页面后,我们也试图冲它所有的邻居,然后从结束的LRU列表或再次刷新列表:列表可能会改变在冲洗和我们不能安全地保留在这个函数指针列表中的一块!
+		*/
 	    	while ((block != NULL) && !found) {
 
 			if (buf_flush_ready_for_flush(block, flush_type)) {
@@ -680,7 +683,7 @@ buf_flush_batch(
 
 				old_page_count = page_count;
 				
-				/* Try to flush also all the neighbors */
+				/* Try to flush also all the neighbors 把所有邻居也冲一冲*/
 				page_count +=
 					buf_flush_try_neighbors(space, offset,
 								flush_type);
@@ -703,7 +706,7 @@ buf_flush_batch(
 			}
 	    	}
 
-	    	/* If we could not find anything to flush, leave the loop */
+	    	/* If we could not find anything to flush, leave the loop 如果我们找不到任何要冲洗的东西，就离开循环*/
 
 	    	if (!found) {
 	    		break;
@@ -715,7 +718,7 @@ buf_flush_batch(
 	if ((buf_pool->n_flush[flush_type] == 0)
 	    && (buf_pool->init_flush[flush_type] == FALSE)) {
 
-		/* The running flush batch has ended */
+		/* The running flush batch has ended 正在运行的刷新批处理已经结束*/
 
 		os_event_set(buf_pool->no_flush[flush_type]);
 	}
@@ -740,7 +743,7 @@ buf_flush_batch(
 }
 
 /**********************************************************************
-Waits until a flush batch of the given type ends */
+Waits until a flush batch of the given type ends 等待给定类型的刷新批处理结束*/
 
 void
 buf_flush_wait_batch_end(
@@ -755,13 +758,13 @@ buf_flush_wait_batch_end(
 /**********************************************************************
 Gives a recommendation of how many blocks should be flushed to establish
 a big enough margin of replaceable blocks near the end of the LRU list
-and in the free list. */
+and in the free list. 给出了应该刷新多少块以在LRU列表末尾和空闲列表中建立足够大的可替换块的建议。*/
 static
 ulint
 buf_flush_LRU_recommendation(void)
 /*==============================*/
 			/* out: number of blocks which should be flushed
-			from the end of the LRU list */
+			from the end of the LRU list 应该从LRU列表末尾刷新的块数*/
 {
 	buf_block_t*	block;
 	ulint		n_replaceable;
@@ -820,7 +823,7 @@ buf_flush_free_margin(void)
 }
 
 /**********************************************************************
-Validates the flush list. */
+Validates the flush list. 验证刷新列表。*/
 static
 ibool
 buf_flush_validate_low(void)
@@ -851,7 +854,7 @@ buf_flush_validate_low(void)
 }
 
 /**********************************************************************
-Validates the flush list. */
+Validates the flush list. 验证刷新列表。*/
 
 ibool
 buf_flush_validate(void)
