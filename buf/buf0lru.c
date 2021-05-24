@@ -32,18 +32,20 @@ Created 11/5/1995 Heikki Tuuri
 pointed to, must be 3/8 of the whole LRU list length, except that the
 tolerance defined below is allowed. Note that the tolerance must be small
 enough such that for even the BUF_LRU_OLD_MIN_LEN long LRU list, the
-LRU_old pointer is not allowed to point to either end of the LRU list. */
-
+LRU_old pointer is not allowed to point to either end of the LRU list. 
+从LRU_old指针开始的块的数量，包括所指向的块，必须是整个LRU列表长度的3/8，除了下面定义的公差是允许的。
+注意，允许的范围必须足够小，即使是BUF_LRU_OLD_MIN_LEN长LRU列表，也不允许LRU_old指针指向LRU列表的任何一端。
+*/
 #define BUF_LRU_OLD_TOLERANCE	20
 
 /* The whole LRU list length is divided by this number to determine an
-initial segment in buf_LRU_get_recent_limit */
+initial segment in buf_LRU_get_recent_limit 整个LRU列表的长度除以这个数字来确定buf_LRU_get_recent_limit中的初始段*/
 
 #define BUF_LRU_INITIAL_RATIO	8
 
 /**********************************************************************
 Takes a block out of the LRU list and page hash table and sets the block
-state to BUF_BLOCK_REMOVE_HASH. */
+state to BUF_BLOCK_REMOVE_HASH. 从LRU列表和页哈希表中取出一个块，并将块状态设置为BUF_BLOCK_REMOVE_HASH。*/
 static
 void
 buf_LRU_block_remove_hashed_page(
@@ -52,7 +54,7 @@ buf_LRU_block_remove_hashed_page(
 				be in a state where it can be freed; there
 				may or may not be a hash index to the page */
 /**********************************************************************
-Puts a file page whose has no hash index to the free list. */
+Puts a file page whose has no hash index to the free list. 将一个没有哈希索引的文件页放到空闲列表中。*/
 static
 void
 buf_LRU_block_free_hashed_page(
@@ -64,7 +66,7 @@ buf_LRU_block_free_hashed_page(
 Gets the minimum LRU_position field for the blocks in an initial segment
 (determined by BUF_LRU_INITIAL_RATIO) of the LRU list. The limit is not
 guaranteed to be precise, because the ulint_clock may wrap around. */
-
+/*获取LRU列表初始段(由BUF_LRU_INITIAL_RATIO决定)中块的最小LRU_position字段。这个限制不能保证是精确的，因为ulint_clock可能会绕圈。*/
 ulint
 buf_LRU_get_recent_limit(void)
 /*==========================*/
@@ -79,7 +81,7 @@ buf_LRU_get_recent_limit(void)
 	len = UT_LIST_GET_LEN(buf_pool->LRU);
 
 	if (len < BUF_LRU_OLD_MIN_LEN) {
-		/* The LRU list is too short to do read-ahead */
+		/* The LRU list is too short to do read-ahead LRU列表太短，无法进行预读*/
 
 		mutex_exit(&(buf_pool->mutex));
 
@@ -166,8 +168,9 @@ operation, as flushed pages from non-unique non-clustered indexes are here
 taken out of the buffer pool, and their inserts redirected to the insert
 buffer. Otherwise, the flushed blocks could get modified again before read
 operations need new buffer blocks, and the i/o work done in flushing would be
-wasted. */
-
+wasted. 尝试从LRU列表的末尾删除LRU刷新的块，并将它们放到空闲列表中。
+这有利于提高插入缓冲区操作的效率，因为非惟一非聚集索引中的刷新页将从缓冲池中取出，并将它们的插入重定向到插入缓冲区。
+否则，在读取操作需要新的缓冲区块之前，可能会再次修改刷新的块，并且在刷新中完成的i/o工作将被浪费。*/
 void
 buf_LRU_try_free_flushed_blocks(void)
 /*=================================*/
@@ -212,7 +215,7 @@ loop:
 		mutex_enter(&(buf_pool->mutex));
 	}
 	
-	/* If there is a block in the free list, take it */
+	/* If there is a block in the free list, take it 如果空闲列表中有块，就把它拿走*/
 	if (UT_LIST_GET_LEN(buf_pool->free) > 0) {
 		
 		block = UT_LIST_GET_FIRST(buf_pool->free);
@@ -229,7 +232,7 @@ loop:
 	}
 	
 	/* If no block was in the free list, search from the end of the LRU
-	list and try to free a block there */
+	list and try to free a block there 如果在空闲列表中没有块，从LRU列表的末尾搜索并尝试在那里释放一个块*/
 
 	mutex_exit(&(buf_pool->mutex));
 
@@ -270,7 +273,7 @@ loop:
 		srv_print_innodb_monitor = TRUE;
 	}
 
-	/* No free block was found: try to flush the LRU list */
+	/* No free block was found: try to flush the LRU list 没有发现空闲块:请尝试刷新LRU列表*/
 
 	buf_flush_free_margin();
 
@@ -331,7 +334,8 @@ buf_LRU_old_adjust_len(void)
 /***********************************************************************
 Initializes the old blocks pointer in the LRU list.
 This function should be called when the LRU list grows to
-BUF_LRU_OLD_MIN_LEN length. */
+BUF_LRU_OLD_MIN_LEN length. 
+初始化LRU列表中的旧块指针。当LRU列表的长度增加到BUF_LRU_OLD_MIN_LEN时，应该调用这个函数。*/
 static
 void
 buf_LRU_old_init(void)
@@ -359,7 +363,7 @@ buf_LRU_old_init(void)
 }	    	
 
 /**********************************************************************
-Removes a block from the LRU list. */
+Removes a block from the LRU list. 从LRU列表中移除一个块。*/
 UNIV_INLINE
 void
 buf_LRU_remove_block(
@@ -371,14 +375,14 @@ buf_LRU_remove_block(
 	ut_ad(mutex_own(&(buf_pool->mutex)));
 		
 	/* If the LRU_old pointer is defined and points to just this block,
-	move it backward one step */
+	move it backward one step 如果定义了LRU_old指针并只指向这个块，则将它向后移动一步*/
 
 	if (block == buf_pool->LRU_old) {
 
 		/* Below: the previous block is guaranteed to exist, because
 		the LRU_old pointer is only allowed to differ by the
-		tolerance value from strict 3/8 of the LRU list length. */
-
+		tolerance value from strict 3/8 of the LRU list length. 
+		下面:前面的块保证存在，因为LRU_old指针只允许与严格的LRU列表长度的3/8的公差值不同。*/
 		buf_pool->LRU_old = UT_LIST_GET_PREV(LRU, block);
 		(buf_pool->LRU_old)->old = TRUE;
 
@@ -386,10 +390,10 @@ buf_LRU_remove_block(
 		ut_ad(buf_pool->LRU_old);
 	}
 
-	/* Remove the block from the LRU list */
+	/* Remove the block from the LRU list 从LRU列表中移除该块*/
 	UT_LIST_REMOVE(LRU, buf_pool->LRU, block);
 
-	/* If the LRU list is so short that LRU_old not defined, return */
+	/* If the LRU list is so short that LRU_old not defined, return 如果LRU列表太短以至于LRU_old没有定义，则返回*/
 	if (UT_LIST_GET_LEN(buf_pool->LRU) < BUF_LRU_OLD_MIN_LEN) {
 
 		buf_pool->LRU_old = NULL;
@@ -399,18 +403,18 @@ buf_LRU_remove_block(
 
 	ut_ad(buf_pool->LRU_old);	
 
-	/* Update the LRU_old_len field if necessary */
+	/* Update the LRU_old_len field if necessary 如果需要，更新LRU_old_len字段*/
 	if (block->old) {
 
 		buf_pool->LRU_old_len--;
 	}
 
-	/* Adjust the length of the old block list if necessary */
+	/* Adjust the length of the old block list if necessary 如有必要，调整旧的阻止列表的长度*/
 	buf_LRU_old_adjust_len();
 }	    	
 
 /**********************************************************************
-Adds a block to the LRU list end. */
+Adds a block to the LRU list end. 将一个块添加到LRU列表的末尾。*/
 UNIV_INLINE
 void
 buf_LRU_add_block_to_end_low(
@@ -444,14 +448,14 @@ buf_LRU_add_block_to_end_low(
 
 		ut_ad(buf_pool->LRU_old);
 
-		/* Adjust the length of the old block list if necessary */
+		/* Adjust the length of the old block list if necessary 如有必要，调整旧的阻止列表的长度*/
 
 		buf_LRU_old_adjust_len();
 
 	} else if (UT_LIST_GET_LEN(buf_pool->LRU) == BUF_LRU_OLD_MIN_LEN) {
 
 		/* The LRU list is now long enough for LRU_old to become
-		defined: init it */
+		defined: init it 现在LRU列表已经足够长，可以定义LRU_old:初始化它*/
 
 		buf_LRU_old_init();
 	}
@@ -514,7 +518,7 @@ buf_LRU_add_block_low(
 }	    	
 
 /**********************************************************************
-Adds a block to the LRU list. */
+Adds a block to the LRU list.向LRU列表添加一个块。 */
 
 void
 buf_LRU_add_block(
@@ -542,7 +546,7 @@ buf_LRU_make_block_young(
 }
 
 /**********************************************************************
-Moves a block to the end of the LRU list. */
+Moves a block to the end of the LRU list. 移动一个块到LRU列表的末尾。*/
 
 void
 buf_LRU_make_block_old(
@@ -578,7 +582,7 @@ buf_LRU_block_free_non_file_page(
 
 /**********************************************************************
 Takes a block out of the LRU list and page hash table and sets the block
-state to BUF_BLOCK_REMOVE_HASH. */
+state to BUF_BLOCK_REMOVE_HASH. 从LRU列表和页哈希表中取出一个块，并将块状态设置为BUF_BLOCK_REMOVE_HASH。*/
 static
 void
 buf_LRU_block_remove_hashed_page(
@@ -610,7 +614,7 @@ buf_LRU_block_remove_hashed_page(
 }
 
 /**********************************************************************
-Puts a file page whose has no hash index to the free list. */
+Puts a file page whose has no hash index to the free list. 将一个没有哈希索引的文件页放到空闲列表中。*/
 static
 void
 buf_LRU_block_free_hashed_page(
@@ -627,7 +631,7 @@ buf_LRU_block_free_hashed_page(
 }
 				
 /**************************************************************************
-Validates the LRU list. */
+Validates the LRU list. 验证LRU列表。*/
 
 ibool
 buf_LRU_validate(void)
@@ -699,7 +703,7 @@ buf_LRU_validate(void)
 }
 
 /**************************************************************************
-Prints the LRU list. */
+Prints the LRU list. 打印LRU列表。*/
 
 void
 buf_LRU_print(void)
