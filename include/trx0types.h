@@ -1,6 +1,6 @@
 /******************************************************
 Transaction system global type definitions
-
+事务系统全局类型定义
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
