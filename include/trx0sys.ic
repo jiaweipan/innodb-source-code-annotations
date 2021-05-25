@@ -1,6 +1,6 @@
 /******************************************************
 Transaction system
-
+交易系统
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
@@ -10,29 +10,29 @@ Created 3/26/1996 Heikki Tuuri
 #include "trx0trx.h"
 #include "data0type.h"
 
-/* The typedef for rseg slot in the file copy */
+/* The typedef for rseg slot in the file copy 文件副本中rseg槽的类型定义*/
 typedef byte 	trx_sysf_rseg_t;
 
-/* Rollback segment specification slot offsets */
+/* Rollback segment specification slot offsets 回滚段指定槽偏移量*/
 /*-------------------------------------------------------------*/
 #define	TRX_SYS_RSEG_SPACE	0	/* space where the the segment
-					header is placed */
+					header is placed 段标头所在的空间*/
 #define	TRX_SYS_RSEG_PAGE_NO	4	/*  page number where the the segment
 					header is placed; this is FIL_NULL
-					if the slot is unused */
+					if the slot is unused 段标头所在的页码;如果插槽未使用，则为FIL_NULL*/
 /*-------------------------------------------------------------*/
-/* Size of a rollback segment specification slot */
+/* Size of a rollback segment specification slot 回滚段指定槽的大小*/
 #define TRX_SYS_RSEG_SLOT_SIZE	8
 
 /*********************************************************************
-Writes the value of max_trx_id to the file based trx system header. */
+Writes the value of max_trx_id to the file based trx system header. 将max_trx_id的值写入基于文件的trx系统头文件。*/
 
 void
 trx_sys_flush_max_trx_id(void);
 /*==========================*/
 
 /*******************************************************************
-Checks if a page address is the trx sys header page. */
+Checks if a page address is the trx sys header page. 检查页面地址是否为trx sys报头页。*/
 UNIV_INLINE
 ibool
 trx_sys_hdr_page(
@@ -50,7 +50,7 @@ trx_sys_hdr_page(
 }
 
 /*******************************************************************
-Gets the pointer in the nth slot of the rseg array. */
+Gets the pointer in the nth slot of the rseg array. 获取rseg数组的第n个槽中的指针。*/
 UNIV_INLINE
 trx_rseg_t*
 trx_sys_get_nth_rseg(
@@ -67,7 +67,7 @@ trx_sys_get_nth_rseg(
 }
 
 /*******************************************************************
-Sets the pointer in the nth slot of the rseg array. */
+Sets the pointer in the nth slot of the rseg array. 设置rseg数组的第n个槽位的指针。*/
 UNIV_INLINE
 void
 trx_sys_set_nth_rseg(
@@ -83,7 +83,7 @@ trx_sys_set_nth_rseg(
 }
 
 /**************************************************************************
-Gets a pointer to the transaction system header and x-latches its page. */
+Gets a pointer to the transaction system header and x-latches its page. 获取一个指向事务系统标头的指针，并x-latch其页面。*/
 UNIV_INLINE
 trx_sysf_t*
 trx_sysf_get(
@@ -106,7 +106,7 @@ trx_sysf_get(
 
 /*********************************************************************
 Gets the space of the nth rollback segment slot in the trx system
-file copy. */
+file copy. 获取trx系统文件副本中第n个回滚段槽的空间。*/
 UNIV_INLINE
 ulint
 trx_sysf_rseg_get_space(
@@ -127,7 +127,7 @@ trx_sysf_rseg_get_space(
 
 /*********************************************************************
 Gets the page number of the nth rollback segment slot in the trx system
-header. */
+header. 获取trx系统标头中第n个回滚段槽的页码。*/
 UNIV_INLINE
 ulint
 trx_sysf_rseg_get_page_no(
@@ -149,7 +149,7 @@ trx_sysf_rseg_get_page_no(
 
 /*********************************************************************
 Sets the space id of the nth rollback segment slot in the trx system
-file copy. */
+file copy. 设置trx系统文件副本中第n个回滚段槽位的空格id。*/
 UNIV_INLINE
 void
 trx_sysf_rseg_set_space(
@@ -172,7 +172,7 @@ trx_sysf_rseg_set_space(
 
 /*********************************************************************
 Sets the page number of the nth rollback segment slot in the trx system
-header. */
+header. 设置trx系统标头中第n个回滚段槽位的页码。*/
 UNIV_INLINE
 void
 trx_sysf_rseg_set_page_no(
@@ -197,7 +197,7 @@ trx_sysf_rseg_set_page_no(
 /*********************************************************************
 Writes a trx id to an index page. In case that the id size changes in
 some future version, this function should be used instead of
-mach_write_... */
+mach_write_... 将trx id写入索引页。如果在将来的版本中id大小发生了变化，应该使用这个函数而不是mach_write_…*/
 UNIV_INLINE
 void
 trx_write_trx_id(
@@ -213,7 +213,7 @@ trx_write_trx_id(
 /*********************************************************************
 Reads a trx id from an index page. In case that the id size changes in
 some future version, this function should be used instead of
-mach_read_... */
+mach_read_... 从索引页中读取trx id。如果在将来的版本中id大小发生了变化，应该使用这个函数而不是mach_read_…*/
 UNIV_INLINE
 dulint
 trx_read_trx_id(
@@ -257,13 +257,14 @@ trx_get_on_id(
 Returns the minumum trx id in trx list. This is the smallest id for which
 the trx can possibly be active. (But, you must look at the trx->conc_state to
 find out if the minimum trx id transaction itself is active, or already
-committed.) */
+committed.) 返回trx列表中trx id的最小值。这是trx可能处于活动状态的最小id。
+(但是，您必须查看trx->conc_state，以确定最小trx id事务本身是活动的，还是已经提交。)*/
 UNIV_INLINE
 dulint
 trx_list_get_min_trx_id(void)
 /*=========================*/
 			/* out: the minimum trx id, or trx_sys->max_trx_id
-			if the trx list is empty */
+			if the trx list is empty  最小TRX id，或trx_sys->max_trx_id，如果TRX列表为空*/
 {
 	trx_t*	trx;
 
@@ -280,7 +281,7 @@ trx_list_get_min_trx_id(void)
 }
 
 /********************************************************************
-Checks if a transaction with the given id is active. */
+Checks if a transaction with the given id is active. 检查具有给定id的事务是否处于活动状态。*/
 UNIV_INLINE
 ibool
 trx_is_active(
@@ -307,7 +308,7 @@ trx_is_active(
 }
 
 /*********************************************************************
-Allocates a new transaction id. */
+Allocates a new transaction id. 分配一个新的事务id。*/
 UNIV_INLINE
 dulint
 trx_sys_get_new_trx_id(void)
@@ -323,7 +324,8 @@ trx_sys_get_new_trx_id(void)
 	will evaluate to TRUE when this function is first time called,
 	and the value for trx id will be written to disk-based header!
 	Thus trx id values will not overlap when the database is
-	repeatedly started! */
+	repeatedly started! 非常重要的一点是:数据库启动后，max_trx_id的值被TRX_SYS_TRX_ID_WRITE_MARGIN整除，
+	下面的if在第一次调用该函数时计算为TRUE, trx id的值将被写入基于磁盘的头部!因此，当重复启动数据库时，trx id值不会重叠!*/
 	
 	if (ut_dulint_get_low(trx_sys->max_trx_id)
 				% TRX_SYS_TRX_ID_WRITE_MARGIN == 0) {
@@ -339,7 +341,7 @@ trx_sys_get_new_trx_id(void)
 }
 
 /*********************************************************************
-Allocates a new transaction number. */
+Allocates a new transaction number. 分配一个新的事务号。*/
 UNIV_INLINE
 dulint
 trx_sys_get_new_trx_no(void)

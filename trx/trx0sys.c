@@ -1,5 +1,5 @@
 /******************************************************
-Transaction system
+Transaction system 交易系统
 
 (c) 1996 Innobase Oy
 
@@ -21,18 +21,18 @@ Created 3/26/1996 Heikki Tuuri
 #include "trx0purge.h"
 #include "log0log.h"
 
-/* The transaction system */
+/* The transaction system 事务系统*/
 trx_sys_t*		trx_sys 	= NULL;
 trx_doublewrite_t*	trx_doublewrite = NULL;
 
 /********************************************************************
-Creates or initialializes the doublewrite buffer at a database start. */
+Creates or initialializes the doublewrite buffer at a database start. 在数据库启动时创建或初始化doublewrite缓冲区。*/
 static
 void
 trx_doublewrite_init(
 /*=================*/
 	byte*	doublewrite)	/* in: pointer to the doublewrite buf
-				header on trx sys page */
+				header on trx sys page In:指向TRX sys页上doublewrite buf头的指针*/
 {
 	trx_doublewrite = mem_alloc(sizeof(trx_doublewrite_t));
 
@@ -62,8 +62,8 @@ trx_doublewrite_init(
 
 /********************************************************************
 Creates the doublewrite buffer at a database start. The header of the
-doublewrite buffer is placed on the trx system header page. */
-
+doublewrite buffer is placed on the trx system header page. 
+在数据库启动时创建doublewrite缓冲区。doublewrite缓冲区的头被放置在trx系统头页上。*/
 void
 trx_sys_create_doublewrite_buf(void)
 /*================================*/
@@ -96,7 +96,7 @@ start_again:
 					== TRX_SYS_DOUBLEWRITE_MAGIC_N) {
 
 		/* The doublewrite buffer has already been created:
-		just read in some numbers */
+		just read in some numbers doublewrite缓冲区已经创建:只读取一些数字*/
 
 		trx_doublewrite_init(doublewrite);
 		
@@ -121,7 +121,7 @@ start_again:
 			TRX_SYS_DOUBLEWRITE + TRX_SYS_DOUBLEWRITE_FSEG, &mtr);
 
 		/* fseg_create acquires a second latch on the page,
-		therefore we must declare it: */
+		therefore we must declare it: Fseg_create在页面上获得第二个闩锁，因此必须声明它:*/
 
 		buf_page_dbg_add_level(page2, SYNC_NO_ORDER_CHECK);
 
@@ -132,7 +132,7 @@ start_again:
 			"InnoDB: Cannot continue operation.\n");
 
 			/* We exit without committing the mtr to prevent
-			its modifications to the database getting to disk */
+			its modifications to the database getting to disk 我们退出时没有提交mtr，以防止它对数据库的修改到达磁盘*/
 			
 			exit(1);
 		}
@@ -162,14 +162,16 @@ start_again:
 			from the doublewrite buffer, we know that if the
 			space id and page number in them are the same as
 			the page position in the tablespace, then the page
-			has not been written to in doublewrite. */
+			has not been written to in doublewrite. 
+			我们将已分配的页读入缓冲池;当它们被刷新到磁盘时，空间id和页号字段也被写入到页中。
+			当我们在数据库启动时从doublewrite缓冲区读取页面时，我们知道，如果其中的空间id和页码与表空间中的页位置相同，那么该页没有被写入doublewrite。*/
 			
 			new_page = buf_page_get(TRX_SYS_SPACE, page_no,
 							RW_X_LATCH, &mtr);
 			buf_page_dbg_add_level(new_page, SYNC_NO_ORDER_CHECK);
 
 			/* Make a dummy change to the page to ensure it will
-			be written to disk in a flush */
+			be written to disk in a flush 对该页做一个虚拟更改，以确保它将在刷新时写入磁盘*/
 
 			mlog_write_ulint(new_page + FIL_PAGE_DATA,
 					TRX_SYS_DOUBLEWRITE_MAGIC_N,
@@ -206,7 +208,7 @@ start_again:
 				TRX_SYS_DOUBLEWRITE_MAGIC_N, MLOG_4BYTES, &mtr);
 		mtr_commit(&mtr);
 		
-		/* Flush the modified pages to disk and make a checkpoint */
+		/* Flush the modified pages to disk and make a checkpoint 将修改后的页刷新到磁盘并创建检查点*/
 		log_make_checkpoint_at(ut_dulint_max, TRUE);
 
 		fprintf(stderr, "InnoDB: Doublewrite buffer created\n");
@@ -217,8 +219,8 @@ start_again:
 
 /********************************************************************
 At a database startup uses a possible doublewrite buffer to restore
-half-written pages in the data files. */
-
+half-written pages in the data files. 
+在数据库启动时，使用一个可能的doublewrite缓冲区来恢复数据文件中半写的页。*/
 void
 trx_sys_doublewrite_restore_corrupt_pages(void)
 /*===========================================*/
@@ -234,13 +236,13 @@ trx_sys_doublewrite_restore_corrupt_pages(void)
 	ulint	page_no;
 	ulint	i;
 	
-	/* We do the file i/o past the buffer pool */
+	/* We do the file i/o past the buffer pool 我们通过缓冲池执行文件i/o*/
 
 	unaligned_read_buf = ut_malloc(2 * UNIV_PAGE_SIZE);
 	read_buf = ut_align(unaligned_read_buf, UNIV_PAGE_SIZE);	
 
 	/* Read the trx sys header to check if we are using the
-	doublewrite buffer */
+	doublewrite buffer 读取trx sys头文件以检查是否使用了doublewrite缓冲区*/
 
 	fil_io(OS_FILE_READ, TRUE, TRX_SYS_SPACE, TRX_SYS_PAGE_NO, 0,
 					UNIV_PAGE_SIZE, read_buf, NULL);
@@ -249,8 +251,8 @@ trx_sys_doublewrite_restore_corrupt_pages(void)
 
 	if (mach_read_from_4(doublewrite + TRX_SYS_DOUBLEWRITE_MAGIC)
 					== TRX_SYS_DOUBLEWRITE_MAGIC_N) {
-		/* The doublewrite buffer has been created */
-		
+		/* The doublewrite buffer has been created 
+		doublewrite缓冲区已经创建*/
 		trx_doublewrite_init(doublewrite);
 
 		block1 = trx_doublewrite->block1;
@@ -261,7 +263,7 @@ trx_sys_doublewrite_restore_corrupt_pages(void)
 		goto leave_func;
 	}
 
-	/* Read the pages from the doublewrite buffer to memory */
+	/* Read the pages from the doublewrite buffer to memory 将页从doublewrite缓冲区读入内存*/
 
 	fil_io(OS_FILE_READ, TRUE, TRX_SYS_SPACE, block1, 0,
 			TRX_SYS_DOUBLEWRITE_BLOCK_SIZE * UNIV_PAGE_SIZE,
@@ -271,7 +273,7 @@ trx_sys_doublewrite_restore_corrupt_pages(void)
 			buf + TRX_SYS_DOUBLEWRITE_BLOCK_SIZE * UNIV_PAGE_SIZE,
 			NULL);
 	/* Check if any of these pages is half-written in data files, in the
-	intended position */
+	intended position 检查这些页面中是否有半写在数据文件的指定位置*/
 
 	page = buf;
 	
@@ -295,14 +297,14 @@ trx_sys_doublewrite_restore_corrupt_pages(void)
 				< block2 + TRX_SYS_DOUBLEWRITE_BLOCK_SIZE))) {
 
 			/* It is an unwritten doublewrite buffer page:
-			do nothing */
+			do nothing 它是一个未写的doublewrite缓冲页:什么也不做*/
 
 		} else {
-			/* Read in the actual page from the data files */
+			/* Read in the actual page from the data files 从数据文件中读取实际页面*/
 			
 			fil_io(OS_FILE_READ, TRUE, space_id, page_no, 0,
 					UNIV_PAGE_SIZE, read_buf, NULL);
-			/* Check if the page is corrupt */
+			/* Check if the page is corrupt 检查页面是否损坏*/
 
 			if (buf_page_is_corrupted(read_buf)) {
 
@@ -321,7 +323,7 @@ trx_sys_doublewrite_restore_corrupt_pages(void)
 
 				/* Write the good page from the
 				doublewrite buffer to the intended
-				position */
+				position 将好的页从doublewrite缓冲区写到预期的位置*/
 
 				fil_io(OS_FILE_WRITE, TRUE, space_id,
 					page_no, 0,
@@ -369,7 +371,7 @@ trx_in_trx_list(
 }
 
 /*********************************************************************
-Writes the value of max_trx_id to the file based trx system header. */
+Writes the value of max_trx_id to the file based trx system header. 将max_trx_id的值写入基于文件的trx系统头文件。*/
 
 void
 trx_sys_flush_max_trx_id(void)
