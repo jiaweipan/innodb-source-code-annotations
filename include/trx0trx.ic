@@ -1,13 +1,13 @@
 /******************************************************
 The transaction
-
+事务
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
 *******************************************************/
 
 /*****************************************************************
-Starts the transaction if it is not yet started. */
+Starts the transaction if it is not yet started. 如果事务尚未启动，则启动事务。*/
 UNIV_INLINE
 void
 trx_start_if_not_started(

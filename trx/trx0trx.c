@@ -1,6 +1,6 @@
 /******************************************************
 The transaction
-
+事务
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
