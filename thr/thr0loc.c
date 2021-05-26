@@ -180,7 +180,7 @@ thr_local_create(void)
 }
 
 /***********************************************************************
-Frees the local storage struct for the specified thread. */
+Frees the local storage struct for the specified thread.释放指定线程的本地存储结构。 */
 
 void
 thr_local_free(

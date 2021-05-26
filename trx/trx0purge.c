@@ -242,8 +242,8 @@ trx_purge_sys_create(void)
 
 /************************************************************************
 Adds the update undo log as the first log in the history list. Removes the
-update undo log segment from the rseg slot if it is too big for reuse. */
-
+update undo log segment from the rseg slot if it is too big for reuse. 
+将更新撤销日志添加为历史列表中的第一个日志。如果更新undo日志段太大而不能重用，则从rseg槽位中删除该更新undo日志段。*/
 void
 trx_purge_add_update_undo_to_history(
 /*=================================*/
@@ -274,7 +274,7 @@ trx_purge_add_update_undo_to_history(
 	page_header = undo_page + TRX_UNDO_PAGE_HDR;
 	
 	if (undo->state != TRX_UNDO_CACHED) {
-		/* The undo log segment will not be reused */
+		/* The undo log segment will not be reused undo日志段不会被重用*/
 
 		if (undo->id >= TRX_RSEG_N_SLOTS) {
 			fprintf(stderr,
@@ -293,11 +293,11 @@ trx_purge_add_update_undo_to_history(
 				hist_size + undo->size, MLOG_4BYTES, mtr);	
 	}
 
-	/* Add the log as the first in the history list */
+	/* Add the log as the first in the history list 将日志添加为历史列表中的第一个日志*/
 	flst_add_first(rseg_header + TRX_RSEG_HISTORY,
 				undo_header + TRX_UNDO_HISTORY_NODE, mtr);
 
-	/* Write the trx number to the undo log header */
+	/* Write the trx number to the undo log header 将trx号写入撤消日志头*/
 	mlog_write_dulint(undo_header + TRX_UNDO_TRX_NO, trx->no, MLOG_8BYTES,
 									mtr);
 	/* Write information about delete markings to the undo log header */

@@ -332,7 +332,7 @@ trx_undo_arr_create(void)
 }
 
 /***********************************************************************
-Frees an undo number array. */
+Frees an undo number array. 释放一个撤消编号数组。*/
 
 void
 trx_undo_arr_free(

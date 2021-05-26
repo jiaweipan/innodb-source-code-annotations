@@ -74,7 +74,7 @@ srv_que_round_robin(
 
 /**************************************************************************
 Enqueues a task to server task queue and releases a worker thread, if there
-is a suspended one. */
+is a suspended one. 将一个任务排队到服务器任务队列，并释放一个工作线程(如果有一个挂起的工作线程)。*/
 
 void
 srv_que_task_enqueue_low(

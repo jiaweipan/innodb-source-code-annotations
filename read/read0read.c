@@ -120,8 +120,7 @@ read_view_oldest_copy_or_open_new(
 
 /*************************************************************************
 Opens a read view where exactly the transactions serialized before this
-point in time are seen in the view. */
-
+point in time are seen in the view. 打开一个读视图，在该视图中可以看到在此时间点之前序列化的事务。*/
 read_view_t*
 read_view_open_now(
 /*===============*/
@@ -139,7 +138,7 @@ read_view_open_now(
 
 	view->creator = cr_trx;
 
-	/* No future transactions should be visible in the view */
+	/* No future transactions should be visible in the view 未来的事务不应该在视图中可见*/
 
   	view->low_limit_no = trx_sys->max_trx_id;
 	view->low_limit_id = view->low_limit_no;
@@ -149,7 +148,7 @@ read_view_open_now(
 	n = 0;
 	trx = UT_LIST_GET_FIRST(trx_sys->trx_list);
 
-	/* No active transaction should be visible, except cr_trx */
+	/* No active transaction should be visible, except cr_trx 除cr_trx外，不应该有活动的事务*/
 
 	while (trx) {
 		if (trx != cr_trx && trx->conc_state == TRX_ACTIVE) {
@@ -162,8 +161,8 @@ read_view_open_now(
 			trx_sys->max_trx_id can still be active, if it is
 			in the middle of its commit! Note that when a
 			transaction starts, we initialize trx->no to
-			ut_dulint_max. */
-		
+			ut_dulint_max.注意，如果一个事务的trx号是< trx_sys->max_trx_id，
+			它仍然可以是活动的，如果它是在提交的中间!注意，当事务启动时，我们将trx->no初始化为ut_dulint_max。 */
 			if (ut_dulint_cmp(view->low_limit_no, trx->no) > 0) {
 
 				view->low_limit_no = trx->no;
@@ -176,7 +175,7 @@ read_view_open_now(
 	view->n_trx_ids = n;		
 
 	if (n > 0) {
-		/* The last active transaction has the smallest id: */
+		/* The last active transaction has the smallest id:最后一个活动事务的id最小: */
 		view->up_limit_id = read_view_get_nth_trx_id(view, n - 1);
 	} else {
 		view->up_limit_id = view->low_limit_id;

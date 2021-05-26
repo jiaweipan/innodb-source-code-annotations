@@ -1034,7 +1034,7 @@ loop:
 }
 
 /**************************************************************************
-Frees an undo log segment which is not in the history list. */
+Frees an undo log segment which is not in the history list. 释放不在历史列表中的undo日志段。*/
 static
 void
 trx_undo_seg_free(
@@ -1560,7 +1560,7 @@ trx_undo_assign_undo(
 }
 
 /**********************************************************************
-Sets the state of the undo log segment at a transaction finish. */
+Sets the state of the undo log segment at a transaction finish. 在事务结束时设置撤消日志段的状态。*/
 
 page_t*
 trx_undo_set_state_at_finish(
@@ -1610,7 +1610,7 @@ trx_undo_set_state_at_finish(
 /**************************************************************************
 Adds the update undo log header as the first in the history list, and
 frees the memory object, or puts it to the list of cached update undo log
-segments. */
+segments. 添加更新撤消日志头作为历史列表中的第一个，并释放内存对象，或将其放入缓存的更新撤消日志段列表中。*/
 
 void
 trx_undo_update_cleanup(
@@ -1695,8 +1695,8 @@ trx_undo_update_cleanup_by_discard(
 /**********************************************************************
 Frees or caches an insert undo log after a transaction commit or rollback.
 Knowledge of inserts is not needed after a commit or rollback, therefore
-the data can be discarded. */
-
+the data can be discarded.
+在事务提交或回滚后释放或缓存插入的撤消日志。在提交或回滚之后不需要了解插入，因此可以丢弃数据。 */
 void
 trx_undo_insert_cleanup(
 /*====================*/
@@ -1721,7 +1721,7 @@ trx_undo_insert_cleanup(
 	} else {
 		ut_ad(undo->state == TRX_UNDO_TO_FREE);
 
-		/* Delete first the undo log segment in the file */
+		/* Delete first the undo log segment in the file 首先删除文件中的undo log段*/
 
 		mutex_exit(&(rseg->mutex));
 

@@ -203,8 +203,7 @@ que_thr_create(
 Moves a suspended query thread to the QUE_THR_RUNNING state and may release
 a single worker thread to execute it. This function should be used to end
 the wait state of a query thread waiting for a lock or a stored procedure
-completion. */
-
+completion. 将一个挂起的查询线程移动到QUE_THR_RUNNING状态，并可能释放一个工作线程来执行它。此函数应用于结束查询线程等待锁或存储过程完成的等待状态。*/
 void
 que_thr_end_wait(
 /*=============*/
@@ -390,8 +389,8 @@ que_fork_start_command(
 /**************************************************************************
 After signal handling is finished, returns control to a query graph error
 handling routine. (Currently, just returns the control to the root of the
-graph so that the graph can communicate an error message to the client.) */
-
+graph so that the graph can communicate an error message to the client.)
+信号处理完成后，将控制返回到查询图错误处理例程。(目前，只是将控件返回到图的根，以便图可以向客户端传递错误消息。) */
 void
 que_fork_error_handle(
 /*==================*/
