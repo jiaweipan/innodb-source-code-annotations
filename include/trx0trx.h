@@ -20,14 +20,14 @@ Created 3/26/1996 Heikki Tuuri
 extern ulint	trx_n_mysql_transactions;
 
 /************************************************************************
-Releases the search latch if trx has reserved it. */
+Releases the search latch if trx has reserved it.如果trx保留了搜索锁存器，则释放它。 */
 
 void
 trx_search_latch_release_if_reserved(
 /*=================================*/
         trx_t*     trx); /* in: transaction */
 /********************************************************************
-Retrieves the error_info field from a trx. */
+Retrieves the error_info field from a trx. 从trx中检索error_info字段。*/
 
 void*
 trx_get_error_info(
@@ -35,7 +35,7 @@ trx_get_error_info(
 		     /* out: the error info */
 	trx_t*  trx); /* in: trx object */
 /********************************************************************
-Creates and initializes a transaction object. */
+Creates and initializes a transaction object. 创建并初始化事务对象。*/
 
 trx_t*
 trx_create(
@@ -43,21 +43,21 @@ trx_create(
 			/* out, own: the transaction */
 	sess_t*	sess);	/* in: session or NULL */
 /************************************************************************
-Creates a transaction object for MySQL. */
+Creates a transaction object for MySQL. 为MySQL创建事务对象。*/
 
 trx_t*
 trx_allocate_for_mysql(void);
 /*========================*/
 				/* out, own: transaction object */
 /************************************************************************
-Creates a transaction object for background operations by the master thread. */
+Creates a transaction object for background operations by the master thread. 为主线程的后台操作创建一个事务对象。*/
 
 trx_t*
 trx_allocate_for_background(void);
 /*=============================*/
 				/* out, own: transaction object */
 /************************************************************************
-Frees a transaction object. */
+Frees a transaction object. 释放事务对象。*/
 
 void
 trx_free(
@@ -71,7 +71,7 @@ trx_free_for_mysql(
 /*===============*/
 	trx_t*	trx);	/* in, own: trx object */
 /************************************************************************
-Frees a transaction object of a background operation of the master thread. */
+Frees a transaction object of a background operation of the master thread. 释放主线程的后台操作的事务对象。*/
 
 void
 trx_free_for_background(
@@ -82,13 +82,13 @@ Creates trx objects for transactions and initializes the trx list of
 trx_sys at database start. Rollback segment and undo log lists must
 already exist when this function is called, because the lists of
 transactions to be rolled back or cleaned up are built based on the
-undo log lists. */
-
+undo log lists. 为事务创建trx对象，并在数据库启动时初始化trx_sys的trx列表。
+调用此函数时，回滚段和撤销日志列表必须已经存在，因为要回滚或清理的事务列表是基于撤销日志列表构建的。*/
 void
 trx_lists_init_at_db_start(void);
 /*============================*/
 /********************************************************************
-Starts a new transaction. */
+Starts a new transaction. 启动一个新事务。*/
 
 ibool
 trx_start(
@@ -100,7 +100,7 @@ trx_start(
 			is passed, the system chooses the rollback segment
 			automatically in a round-robin fashion */
 /********************************************************************
-Starts a new transaction. */
+Starts a new transaction. 启动一个新事务。*/
 
 ibool
 trx_start_low(
@@ -111,21 +111,21 @@ trx_start_low(
 			is passed, the system chooses the rollback segment
 			automatically in a round-robin fashion */
 /*****************************************************************
-Starts the transaction if it is not yet started. */
+Starts the transaction if it is not yet started. 如果事务尚未启动，则启动事务。*/
 UNIV_INLINE
 void
 trx_start_if_not_started(
 /*=====================*/
 	trx_t*	trx);	/* in: transaction */
 /********************************************************************
-Commits a transaction. */
+Commits a transaction. 提交一个事务。*/
 
 void
 trx_commit_off_kernel(
 /*==================*/
 	trx_t*	trx);	/* in: transaction */
 /**************************************************************************
-Does the transaction commit for MySQL. */
+Does the transaction commit for MySQL.是否为MySQL提交事务。 */
 
 ulint
 trx_commit_for_mysql(
@@ -133,7 +133,7 @@ trx_commit_for_mysql(
 			/* out: 0 or error number */
 	trx_t*	trx);	/* in: trx handle */
 /**************************************************************************
-Marks the latest SQL statement ended. */
+Marks the latest SQL statement ended. 标记最新的SQL语句结束。*/
 
 void
 trx_mark_sql_stat_end(
@@ -142,8 +142,8 @@ trx_mark_sql_stat_end(
 /************************************************************************
 Assigns a read view for a consistent read query. All the consistent reads
 within the same transaction will get the same read view, which is created
-when this function is first called for a new started transaction. */
-
+when this function is first called for a new started transaction.为一致性读查询分配一个读视图。
+同一事务中的所有一致读取将获得相同的读视图，该视图是在为一个新启动的事务首次调用此函数时创建的。 */
 read_view_t*
 trx_assign_read_view(
 /*=================*/
@@ -152,14 +152,14 @@ trx_assign_read_view(
 /***************************************************************
 The transaction must be in the TRX_QUE_LOCK_WAIT state. Puts it to
 the TRX_QUE_RUNNING state and releases query threads which were
-waiting for a lock in the wait_thrs list. */
-
+waiting for a lock in the wait_thrs list. 
+事务必须处于TRX_QUE_LOCK_WAIT状态。将其置为TRX_QUE_RUNNING状态，并释放wait_thrs列表中等待锁的查询线程。*/
 void
 trx_end_lock_wait(
 /*==============*/
 	trx_t*	trx);	/* in: transaction */
 /********************************************************************
-Sends a signal to a trx object. */
+Sends a signal to a trx object. 向trx对象发送一个信号。*/
 
 ibool
 trx_sig_send(
@@ -187,7 +187,7 @@ trx_sig_send(
 					is NULL, it is ignored */
 /********************************************************************
 Send the reply message when a signal in the queue of the trx has
-been handled. */
+been handled. 当trx队列中的信号被处理后发送应答消息。*/
 
 void
 trx_sig_reply(
@@ -200,7 +200,7 @@ trx_sig_reply(
 					calling function can start running
 					a new query thread */
 /********************************************************************
-Removes the signal object from a trx signal queue. */
+Removes the signal object from a trx signal queue. 从trx信号队列中移除信号对象。*/
 
 void
 trx_sig_remove(
@@ -208,7 +208,7 @@ trx_sig_remove(
 	trx_t*		trx,	/* in: trx handle */
 	trx_sig_t*	sig);	/* in, own: signal */
 /********************************************************************
-Starts handling of a trx signal. */
+Starts handling of a trx signal.开始处理trx信号。 */
 
 void
 trx_sig_start_handle(
@@ -223,14 +223,15 @@ trx_sig_start_handle(
 Ends signal handling. If the session is in the error state, and
 trx->graph_before_signal_handling != NULL, returns control to the error
 handling routine of the graph (currently only returns the control to the
-graph root which then sends an error message to the client). */
-
+graph root which then sends an error message to the client).
+ 信号处理结束。如果会话处于错误状态，并且trx->graph_before_signal_handling != NULL，
+ 则将控制权返回给图形的错误处理例程(目前仅将控制权返回给图形根，然后由根向客户端发送错误消息)。*/
 void
 trx_end_signal_handling(
 /*====================*/
 	trx_t*	trx);	/* in: trx */
 /*************************************************************************
-Creates a commit command node struct. */
+Creates a commit command node struct. 创建一个提交命令节点结构。*/
 
 commit_node_t*
 commit_node_create(
@@ -238,8 +239,8 @@ commit_node_create(
 				/* out, own: commit node struct */
 	mem_heap_t*	heap);	/* in: mem heap where created */
 /***************************************************************
-Performs an execution step for a commit type node in a query graph. */
-
+Performs an execution step for a commit type node in a query graph. 
+为查询图中的提交类型节点执行执行步骤。*/
 que_thr_t*
 trx_commit_step(
 /*============*/
@@ -247,8 +248,7 @@ trx_commit_step(
 	que_thr_t*	thr);	/* in: query thread */
 /**************************************************************************
 Prints info about a transaction to the standard output. The caller must
-own the kernel mutex. */
-
+own the kernel mutex. 将有关事务的信息打印到标准输出。调用者必须拥有内核互斥锁。*/
 void
 trx_print(
 /*======*/
