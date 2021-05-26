@@ -343,7 +343,7 @@ leave_func:
 }
 
 /********************************************************************
-Checks that trx is in the trx list. */
+Checks that trx is in the trx list. 检查trx是否在trx列表中。*/
 
 ibool
 trx_in_trx_list(
@@ -393,8 +393,8 @@ trx_sys_flush_max_trx_id(void)
 
 /*********************************************************************
 Updates the offset information about the end of the MySQL binlog entry
-which corresponds to the transaction just being committed. */
-
+which corresponds to the transaction just being committed. 
+更新MySQL binlog条目末尾的偏移量信息，它对应于刚刚提交的事务。*/
 void
 trx_sys_update_mysql_binlog_offset(
 /*===============================*/
@@ -412,7 +412,7 @@ trx_sys_update_mysql_binlog_offset(
 
 	/* Copy the whole MySQL log file name to the buffer, or only the
 	last characters, if it does not fit */
-
+    /*复制整个MySQL日志文件名到缓冲区，如果不合适，只复制最后一个字符*/
 	if (ut_strlen(trx->mysql_log_file_name)
 			> TRX_SYS_MYSQL_LOG_NAME_LEN - 1) {
 		ut_memcpy(namebuf, trx->mysql_log_file_name
@@ -467,10 +467,11 @@ trx_sys_update_mysql_binlog_offset(
 
 /*********************************************************************
 Prints to stderr the MySQL binlog offset info in the trx system header if
-the magic number shows it valid. */
-
+the magic number shows it valid. 
+打印到stderr的MySQL binlog偏移量信息在trx系统头如果魔术数字显示它有效。*/
 void
 trx_sys_print_mysql_binlog_offset(void)
+
 /*===================================*/
 {
 	trx_sysf_t*	sys_header;
@@ -501,8 +502,8 @@ trx_sys_print_mysql_binlog_offset(void)
 }
 
 /********************************************************************
-Looks for a free slot for a rollback segment in the trx system file copy. */
-
+Looks for a free slot for a rollback segment in the trx system file copy. 
+在trx系统文件副本中为回滚段寻找空闲槽。*/
 ulint
 trx_sysf_rseg_find_free(
 /*====================*/
@@ -532,7 +533,7 @@ trx_sysf_rseg_find_free(
 	
 /*********************************************************************
 Creates the file page for the transaction system. This function is called only
-at the database creation, before trx_sys_init. */
+at the database creation, before trx_sys_init. 为事务系统创建文件页面。这个函数只在创建数据库时调用，在trx_sys_init之前。*/
 static
 void
 trx_sysf_create(
@@ -549,12 +550,12 @@ trx_sysf_create(
 
 	/* Note that below we first reserve the file space x-latch, and
 	then enter the kernel: we must do it in this order to conform
-	to the latching order rules. */
+	to the latching order rules. 注意，下面我们首先保留文件空间x-latch，然后进入内核:我们必须按照这个顺序来做，以符合闩锁顺序规则。*/
 
 	mtr_x_lock(fil_space_get_latch(TRX_SYS_SPACE), mtr);
 	mutex_enter(&kernel_mutex);
 
-	/* Create the trx sys file block in a new allocated file segment */
+	/* Create the trx sys file block in a new allocated file segment  在新分配的文件段中创建trx sys文件块*/
 	page = fseg_create(TRX_SYS_SPACE, 0, TRX_SYS + TRX_SYS_FSEG_HEADER,
 					    				mtr);
 	ut_a(buf_frame_get_page_no(page) == TRX_SYS_PAGE_NO);
@@ -563,17 +564,17 @@ trx_sysf_create(
 
 	sys_header = trx_sysf_get(mtr);
 
-	/* Start counting transaction ids from number 1 up */
+	/* Start counting transaction ids from number 1 up 从1开始计算事务id*/
 	mlog_write_dulint(sys_header + TRX_SYS_TRX_ID_STORE,
 				ut_dulint_create(0, 1), MLOG_8BYTES, mtr);
 
-	/* Reset the rollback segment slots */
+	/* Reset the rollback segment slots 复位回滚段槽位*/
 	for (i = 0; i < TRX_SYS_N_RSEGS; i++) {
 
 		trx_sysf_rseg_set_page_no(sys_header, i, FIL_NULL, mtr);
 	}
 
-	/* Create the first rollback segment in the SYSTEM tablespace */
+	/* Create the first rollback segment in the SYSTEM tablespace 在SYSTEM表空间中创建第一个回滚段*/
 	page_no = trx_rseg_header_create(TRX_SYS_SPACE, ULINT_MAX, &slot_no,
 									mtr);
 	ut_a(slot_no == TRX_SYS_SYSTEM_RSEG_ID);
@@ -584,8 +585,8 @@ trx_sysf_create(
 
 /*********************************************************************
 Creates and initializes the central memory structures for the transaction
-system. This is called when the database is started. */
-
+system. This is called when the database is started.
+ 为事务系统创建和初始化中央内存结构。这在数据库启动时调用。*/
 void
 trx_sys_init_at_db_start(void)
 /*==========================*/
@@ -612,8 +613,8 @@ trx_sys_init_at_db_start(void)
 	trx_sys_get_new_trx_id will evaluate to TRUE when the function
 	is first time called, and the value for trx id will be written
 	to the disk-based header! Thus trx id values will not overlap when
-	the database is repeatedly started! */
-
+	the database is repeatedly started! 非常重要的一点是:数据库启动后，max_trx_id的值能被TRX_SYS_TRX_ID_WRITE_MARGIN整除，
+	并且trx_sys_get_new_trx_id中的'if'将在第一次调用时被赋值为TRUE, trx id的值将被写入基于磁盘的头部!因此，当重复启动数据库时，trx id值不会重叠!*/
 	trx_sys->max_trx_id = ut_dulint_add(
 			      	ut_dulint_align_up(
 					mtr_read_dulint(sys_header
@@ -646,7 +647,7 @@ trx_sys_init_at_db_start(void)
 
 /*********************************************************************
 Creates and initializes the transaction system at the database creation. */
-
+/*在创建数据库时创建并初始化事务系统。*/
 void
 trx_sys_create(void)
 /*================*/
