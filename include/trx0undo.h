@@ -1,6 +1,6 @@
 /******************************************************
 Transaction undo log
-
+事务undo日志
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
