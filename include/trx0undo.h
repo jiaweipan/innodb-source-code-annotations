@@ -331,11 +331,11 @@ in the corresponding transaction object 事务撤销日志内存对象;它由相
 struct trx_undo_struct{
 	/*-----------------------------*/
 	ulint		id;		/* undo log slot number within the
-					rollback segment */
+					rollback segment Undo回滚段内的日志槽位号*/
 	ulint		type;		/* TRX_UNDO_INSERT or
 					TRX_UNDO_UPDATE */
 	ulint		state;		/* state of the corresponding undo log
-					segment */
+					segment 对应的undo日志段状态*/
 	ibool		del_marks;	/* relevant only in an update undo log:
 					this is TRUE if the transaction may
 					have delete marked records, because of
@@ -343,64 +343,65 @@ struct trx_undo_struct{
 					indexed field; purge is then
 					necessary; also TRUE if the transaction
 					has updated an externally stored
-					field */
+					field 仅在更新撤销日志中相关:如果事务可能由于一行的删除或索引字段的更新而删除了标记的记录，则为TRUE;
+					净化是必要的;如果事务更新了外部存储的字段，也为TRUE*/
 	dulint		trx_id;		/* id of the trx assigned to the undo
-					log */
-	ibool		dict_operation;	/* TRUE if a dict operation trx */
+					log 分配给undo日志的TRX Id*/
+	ibool		dict_operation;	/* TRUE if a dict operation trx 如果dict操作为trx*/
 	dulint		table_id;	/* if a dict operation, then the table
-					id */
-	trx_rseg_t*	rseg;		/* rseg where the undo log belongs */
+					id 如果是dict操作，则表id*/
+	trx_rseg_t*	rseg;		/* rseg where the undo log belongs undo日志所属的Rseg*/
 	/*-----------------------------*/
 	ulint		space;		/* space id where the undo log
-					placed */
+					placed 放置undo日志的空间id*/
 	ulint		hdr_page_no;	/* page number of the header page in
-					the undo log */
+					the undo log 撤消日志中的页眉页号*/
 	ulint		hdr_offset;	/* header offset of the undo log on the
-					page */
+					page 页上撤销日志的头偏移量*/
 	ulint		last_page_no;	/* page number of the last page in the
 					undo log; this may differ from
-					top_page_no during a rollback */
-	ulint		size;		/* current size in pages */
+					top_page_no during a rollback 撤消日志中最后一页的页码;这可能与回滚期间的top_page_no不同*/
+	ulint		size;		/* current size in pages 当前页面大小*/
 	/*-----------------------------*/
 	ulint		empty;		/* TRUE if the stack of undo log
-					records is currently empty */
+					records is currently empty 如果撤消日志记录的堆栈当前为空，则为TRUE*/
 	ulint		top_page_no;	/* page number where the latest undo
 					log record was catenated; during
 					rollback the page from which the latest
-					undo record was chosen */
+					undo record was chosen 连接最新撤销日志记录的页码;在回滚期间，选择了最近的撤销记录的页面*/
 	ulint		top_offset;	/* offset of the latest undo record,
 					i.e., the topmost element in the undo
-					log if we think of it as a stack */
-	dulint		top_undo_no;	/* undo number of the latest record */
+					log if we think of it as a stack 最新撤销记录的偏移量，即。，如果我们把它看作一个堆栈的话，它是撤销日志中最顶层的元素*/
+	dulint		top_undo_no;	/* undo number of the latest record 撤消最新记录的编号*/
 	page_t*		guess_page;	/* guess for the buffer frame where
-					the top page might reside */
+					the top page might reside 猜测顶页可能驻留的缓冲帧*/
 	/*-----------------------------*/
 	UT_LIST_NODE_T(trx_undo_t) undo_list;
 					/* undo log objects in the rollback
-					segment are chained into lists */
+					segment are chained into lists 回滚段中的撤销日志对象被链接到列表中*/
 };
 
-/* The offset of the undo log page header on pages of the undo log */
+/* The offset of the undo log page header on pages of the undo log 撤销日志页头在撤销日志页上的偏移量*/
 #define	TRX_UNDO_PAGE_HDR	FSEG_PAGE_DATA
 /*-------------------------------------------------------------*/
-/* Transaction undo log page header offsets */
+/* Transaction undo log page header offsets 事务撤销日志页头偏移量*/
 #define	TRX_UNDO_PAGE_TYPE	0	/* TRX_UNDO_INSERT or
 					TRX_UNDO_UPDATE */
 #define	TRX_UNDO_PAGE_START	2	/* Byte offset where the undo log
 					records for the LATEST transaction
 					start on this page (remember that
 					in an update undo log, the first page
-					can contain several undo logs) */
+					can contain several undo logs) 此页面上最新事务的撤销日志记录的字节偏移量(请记住，在更新撤销日志中，第一页可以包含多个撤销日志)*/
 #define	TRX_UNDO_PAGE_FREE	4	/* On each page of the undo log this
 					field contains the byte offset of the
-					first free byte on the page */
+					first free byte on the page 在撤销日志的每个页面上，该字段包含页面上第一个空闲字节的字节偏移量*/
 #define TRX_UNDO_PAGE_NODE	6	/* The file list node in the chain
-					of undo log pages */
+					of undo log pages undo日志页面链中的文件列表节点*/
 /*-------------------------------------------------------------*/
 #define TRX_UNDO_PAGE_HDR_SIZE	(6 + FLST_NODE_SIZE)
 
 /* An update undo segment with just one page can be reused if it has
-< this number bytes used */
+< this number bytes used  一个只有一个页面的更新撤销段可以被重用，如果它使用了<这个数字字节*/
 
 #define TRX_UNDO_PAGE_REUSE_LIMIT	(3 * UNIV_PAGE_SIZE / 4)
 
@@ -411,60 +412,62 @@ owns the undo log records on subsequent pages if the segment is bigger than
 one page. If an undo log is stored in a segment, then on the first page it is
 allowed to have zero undo records, but if the segment extends to several
 pages, then all the rest of the pages must contain at least one undo log
-record. */
-
+record. 一个更新的撤销日志段可能在其第一页上包含多个撤销日志，如果这些撤销日志占用的空间很小，可以缓存和重用这些段。
+然后，所有撤销日志头都在第一个页面上，如果段大于一个页面，最后一个页面拥有后续页面上的撤销日志记录。
+如果一个撤销日志存储在一个段中，那么在第一个页面上允许有零条撤销记录，但是如果这个段扩展到几个页面，那么所有其余的页面必须包含至少一条撤销日志记录。*/
 /* The offset of the undo log segment header on the first page of the undo
-log segment */
+log segment undo日志段头在undo日志段第一页上的偏移量*/
 
 #define	TRX_UNDO_SEG_HDR	(TRX_UNDO_PAGE_HDR + TRX_UNDO_PAGE_HDR_SIZE)
 /*-------------------------------------------------------------*/
 #define	TRX_UNDO_STATE		0	/* TRX_UNDO_ACTIVE, ... */
 #define	TRX_UNDO_LAST_LOG	2	/* Offset of the last undo log header
 					on the segment header page, 0 if
-					none */
+					none 段报头页上最后一个undo日志报头的偏移量，如果没有则为0*/
 #define	TRX_UNDO_FSEG_HEADER	4	/* Header for the file segment which
-					the undo log segment occupies */
+					the undo log segment occupies --undo log段占用的文件段的头*/
 #define	TRX_UNDO_PAGE_LIST	(4 + FSEG_HEADER_SIZE)
 					/* Base node for the list of pages in
 					the undo log segment; defined only on
-					the undo log segment's first page */
+					the undo log segment's first page --undo日志段中页面列表的基本节点;仅在撤销日志段的第一页上定义*/
 /*-------------------------------------------------------------*/
-/* Size of the undo log segment header */
+/* Size of the undo log segment header --undo日志段报头大小*/
 #define TRX_UNDO_SEG_HDR_SIZE	(4 + FSEG_HEADER_SIZE + FLST_BASE_NODE_SIZE)
 
 
 /* The undo log header. There can be several undo log headers on the first
-page of an update undo log segment. */
+page of an update undo log segment.撤消日志头。在更新撤消日志段的第一页上可以有几个撤消日志头。 */
 /*-------------------------------------------------------------*/
-#define	TRX_UNDO_TRX_ID		0	/* Transaction id */
+#define	TRX_UNDO_TRX_ID		0	/* Transaction id 事务id*/
 #define	TRX_UNDO_TRX_NO		8	/* Transaction number of the
 					transaction; defined only if the log
-					is in a history list */
+					is in a history list 交易的交易编号;仅当日志在历史列表中时定义*/
 #define TRX_UNDO_DEL_MARKS	16	/* Defined only in an update undo
 					log: TRUE if the transaction may have
 					done delete markings of records, and
-					thus purge is necessary */
+					thus purge is necessary 仅在更新撤销日志中定义:如果事务可能已经做了记录的删除标记，因此需要清除，则为TRUE*/
 #define	TRX_UNDO_LOG_START	18	/* Offset of the first undo log record
 					of this log on the header page; purge
 					may remove undo log record from the
 					log start, and therefore this is not
 					necessarily the same as this log
-					header end offset */
+					header end offset 报头页上此日志的第一个撤消日志记录的偏移量;清除可能会从日志开始时删除撤销日志记录，因此这并不一定与日志头结束偏移量相同*/
 #define	TRX_UNDO_DICT_OPERATION	20	/* TRUE if the transaction is a table
 					create, index create, or drop
 					transaction: in recovery
 					the transaction cannot be rolled back
 					in the usual way: a 'rollback' rather
 					means dropping the created or dropped
-					table, if it still exists */
+					table, if it still exists 如果事务是表创建、索引创建或删除事务，则为TRUE:
+					在恢复中，事务不能以通常的方式回滚:一个“回滚”意味着删除创建或删除的表，如果它仍然存在*/
 #define TRX_UNDO_TABLE_ID	22	/* Id of the table if the preceding
-					field is TRUE */
+					field is TRUE 如果上述字段为TRUE，表示表的Id*/
 #define	TRX_UNDO_NEXT_LOG	30	/* Offset of the next undo log header
-					on this page, 0 if none */
+					on this page, 0 if none 本页上下一个撤消日志头的偏移量，如果没有则为0*/
 #define	TRX_UNDO_PREV_LOG	32	/* Offset of the previous undo log
-					header on this page, 0 if none */
+					header on this page, 0 if none 本页上前一个撤消日志头的偏移量，如果没有则为0*/
 #define TRX_UNDO_HISTORY_NODE	34	/* If the log is put to the history
-					list, the file list node is here */
+					list, the file list node is here 如果将日志放到历史列表中，则文件列表节点在这里*/
 /*-------------------------------------------------------------*/
 #define TRX_UNDO_LOG_HDR_SIZE	(34 + FLST_NODE_SIZE)
 

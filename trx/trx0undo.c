@@ -21,6 +21,7 @@ Created 3/26/1996 Heikki Tuuri
 #include "trx0purge.h"
 
 /* How should the old versions in the history list be managed?
+  历史列表中的旧版本应该如何管理?
    ----------------------------------------------------------
 If each transaction is given a whole page for its update undo log, file
 space consumption can be 10 times higher than necessary. Therefore,
@@ -29,13 +30,18 @@ is no way individual pages can be ordered so that the ordering agrees
 with the serialization numbers of the transactions on the pages. Thus,
 the history list must be formed of undo logs, not their header pages as
 it was in the old implementation.
+如果每个事务都为其更新撤销日志提供了整个页面，那么文件空间的消耗可能比必要的高出10倍。
+因此，部分填充的更新撤销日志页面应该是可重用的。但是，无法对单个页面进行排序，从而使排序与页面上事务的串行编号一致。
+因此，历史列表必须由撤消日志组成，而不是像旧实现中那样由它们的头页面组成。
 	However, on a single header page the transactions are placed in
 the order of their serialization numbers. As old versions are purged, we
 may free the page when the last transaction on the page has been purged.
+但是，在单个标头页面上，事务是按其序列化编号的顺序排列的。由于旧版本被清除，当页面上的最后一个交易被清除时，我们可以释放该页面。
 	A problem is that the purge has to go through the transactions
 in the serialization order. This means that we have to look through all
 rollback segments for the one that has the smallest transaction number
 in its history list.
+一个问题是清除必须按照序列化的顺序通过事务。这意味着我们必须查看所有回滚段，寻找历史列表中事务号最小的那个。
 	When should we do a purge? A purge is necessary when space is
 running out in any of the rollback segments. Then we may have to purge
 also old version which might be needed by some consistent read. How do
@@ -43,6 +49,9 @@ we trigger the start of a purge? When a transaction writes to an undo log,
 it may notice that the space is running out. When a read view is closed,
 it may make some history superfluous. The server can have an utility which
 periodically checks if it can purge some history.
+我们应该什么时候进行清除?当任何回滚段中的空间耗尽时，需要进行清除。然后我们可能不得不清除旧版本，这可能需要一些一致的读取。
+我们要怎么启动清洗?当事务写入撤消日志时，它可能会注意到空间耗尽。当一个读视图关闭时，它可能会使一些历史记录变得多余。
+服务器可以有一个实用程序，定期检查是否可以清除一些历史记录。
 	In a parallellized purge we have the problem that a query thread
 can remove a delete marked clustered index record before another query
 thread has processed an earlier version of the record, which cannot then
@@ -50,33 +59,44 @@ be done because the row cannot be constructed from the clustered index
 record. To avoid this problem, we will store in the update and delete mark
 undo record also the columns necessary to construct the secondary index
 entries which are modified.
+在并行清除中，我们会遇到这样的问题:一个查询线程可以在另一个查询线程处理一个较早版本的记录之前删除一个标记为删除的聚集索引记录，
+但这不能这样做，因为不能从聚集索引记录构造行。为了避免这个问题，我们还将在更新和删除标记撤销记录中存储构建被修改的二级索引条目所需的列。
 	We can latch the stack of versions of a single clustered index record
 by taking a latch on the clustered index page. As long as the latch is held,
 no new versions can be added and no versions removed by undo. But, a purge
-can still remove old versions from the bottom of the stack. */
+can still remove old versions from the bottom of the stack. 
+我们可以通过在聚集索引页上获取闩锁来闩锁单个聚集索引记录的版本堆栈。
+只要锁存器被保持，就不能添加新版本，也不能通过撤销来删除新版本。但是，清除仍然可以从堆栈的底部删除旧版本。*/
 
-/* How to protect rollback segments, undo logs, and history lists with
+/* How to protect rollback segments, undo logs, and history lists with latches?
    -------------------------------------------------------------------
-latches?
+如何保护回滚段，撤销日志和历史列表与锁存?
 -------
 The contention of the kernel mutex should be minimized. When a transaction
 does its first insert or modify in an index, an undo log is assigned for it.
 Then we must have an x-latch to the rollback segment header.
+应该尽量减少内核互斥锁的争用。当事务在索引中进行第一次插入或修改时，将为其分配一个撤消日志。然后我们必须有一个x锁存到回滚段头。
 	When the transaction does more modifys or rolls back, the undo log is
 protected with undo_mutex in the transaction.
+当事务进行更多修改或回滚时，在事务中使用undo_mutex保护undo日志。
 	When the transaction commits, its insert undo log is either reset and
 cached for a fast reuse, or freed. In these cases we must have an x-latch on
 the rollback segment page. The update undo log is put to the history list. If
 it is not suitable for reuse, its slot in the rollback segment is reset. In
 both cases, an x-latch must be acquired on the rollback segment.
+当事务提交时，它的插入撤销日志要么被重置并缓存以便快速重用，要么被释放。
+在这些情况下，我们必须在回滚段页上有一个x锁存器。更新撤销日志被放到历史列表中。
+如果它不适合重用，那么它在回滚段中的槽位将被重置。在这两种情况下，必须在回滚段上获取x-latch。
 	The purge operation steps through the history list without modifying
 it until a truncate operation occurs, which can remove undo logs from the end
 of the list and release undo log segments. In stepping through the list,
 s-latches on the undo log pages are enough, but in a truncate, x-latches must
-be obtained on the rollback segment and individual pages. */
+be obtained on the rollback segment and individual pages. 
+清除操作在不修改历史列表的情况下进行操作，直到发生截断操作，这可以从列表的末尾删除撤消日志并释放撤消日志段。
+在逐步遍历列表时，undo日志页上的s-latches就足够了，但是在截断时，必须在回滚段和各个页上获得x-latches。*/
 
 /************************************************************************
-Initializes the fields in an undo log segment page. */
+Initializes the fields in an undo log segment page. 初始化undo日志段页面中的字段。*/
 static
 void
 trx_undo_page_init(
@@ -85,7 +105,7 @@ trx_undo_page_init(
 	ulint	type,		/* in: undo log segment type */
 	mtr_t*	mtr);		/* in: mtr */
 /************************************************************************
-Creates and initializes an undo log memory object. */
+Creates and initializes an undo log memory object. 创建并初始化一个撤消日志内存对象。*/
 static
 trx_undo_t*
 trx_undo_mem_create(
@@ -100,7 +120,7 @@ trx_undo_mem_create(
 	ulint		page_no,/* in: undo log header page number */
 	ulint		offset);	/* in: undo log header byte offset on page */
 /*******************************************************************
-Initializes a cached insert undo log header page for new use. */
+Initializes a cached insert undo log header page for new use. 初始化一个缓存的插入撤销日志头页以供新使用。*/
 static
 ulint
 trx_undo_insert_header_reuse(
@@ -112,7 +132,7 @@ trx_undo_insert_header_reuse(
 	mtr_t*	mtr);		/* in: mtr */
 /**************************************************************************
 If an update undo log can be discarded immediately, this function frees the
-space, resetting the page to the proper state for caching. */
+space, resetting the page to the proper state for caching. 如果更新撤销日志可以立即丢弃，则此函数释放空间，将页面重置为适当的状态以便缓存。*/
 static
 void
 trx_undo_discard_latest_update_undo(
@@ -122,7 +142,7 @@ trx_undo_discard_latest_update_undo(
 
 
 /***************************************************************************
-Gets the previous record in an undo log from the previous page. */
+Gets the previous record in an undo log from the previous page. 从上一页获取撤消日志中的上一页记录。*/
 static
 trx_undo_rec_t*
 trx_undo_get_prev_rec_from_prev_page(
