@@ -1,6 +1,6 @@
 /******************************************************
 Rollback segment
-
+回滚段
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
@@ -18,7 +18,7 @@ Created 3/26/1996 Heikki Tuuri
 #include "trx0purge.h"
 
 /**********************************************************************
-Looks for a rollback segment, based on the rollback segment id. */
+Looks for a rollback segment, based on the rollback segment id. 根据回滚段id查找回滚段。*/
 
 trx_rseg_t*
 trx_rseg_get_on_id(
@@ -41,7 +41,7 @@ trx_rseg_get_on_id(
 
 /********************************************************************
 Creates a rollback segment header. This function is called only when
-a new rollback segment is created in the database. */
+a new rollback segment is created in the database. 创建回滚段标头。只有在数据库中创建了一个新的回滚段时，才会调用这个函数。*/
 
 ulint
 trx_rseg_header_create(
@@ -72,11 +72,11 @@ trx_rseg_header_create(
 		return(FIL_NULL);
 	}
 
-	/* Allocate a new file segment for the rollback segment */
+	/* Allocate a new file segment for the rollback segment 为回滚段分配一个新的文件段*/
 	page = fseg_create(space, 0, TRX_RSEG + TRX_RSEG_FSEG_HEADER, mtr);
 
 	if (page == NULL) {
-		/* No space left */
+		/* No space left 没有空间了*/
 
 		return(FIL_NULL);
 	}
@@ -85,25 +85,25 @@ trx_rseg_header_create(
 
 	page_no = buf_frame_get_page_no(page);
 
-	/* Get the rollback segment file page */
+	/* Get the rollback segment file page 获取回滚段文件页面*/
 	rsegf = trx_rsegf_get_new(space, page_no, mtr);
 					    
-	/* Initialize max size field */
+	/* Initialize max size field 初始化最大大小字段*/
 	mlog_write_ulint(rsegf + TRX_RSEG_MAX_SIZE, max_size, MLOG_4BYTES, mtr);
 	
-	/* Initialize the history list */
+	/* Initialize the history list 初始化历史记录列表*/
 
 	mlog_write_ulint(rsegf + TRX_RSEG_HISTORY_SIZE, 0, MLOG_4BYTES, mtr);
 	flst_init(rsegf + TRX_RSEG_HISTORY, mtr);
 
-	/* Reset the undo log slots */
+	/* Reset the undo log slots 复位undo log槽位*/
 	for (i = 0; i < TRX_RSEG_N_SLOTS; i++) {
 
 		trx_rsegf_set_nth_undo(rsegf, i, FIL_NULL, mtr);
 	}
 
 	/* Add the rollback segment info to the free slot in the trx system
-	header */
+	header 将回滚段信息添加到trx系统头的空闲槽中*/
 
 	trx_sysf_rseg_set_space(sys_header, *slot_no, space, mtr);	
 	trx_sysf_rseg_set_page_no(sys_header, *slot_no, page_no, mtr);
@@ -115,7 +115,8 @@ trx_rseg_header_create(
 Creates and initializes a rollback segment object. The values for the
 fields are read from the header. The object is inserted to the rseg
 list of the trx system object and a pointer is inserted in the rseg
-array in the trx system object. */
+array in the trx system object. 
+创建并初始化一个回滚段对象。字段的值从报头读取。该对象被插入到trx系统对象的rseg列表中，一个指针被插入到trx系统对象的rseg数组中。*/
 static
 trx_rseg_t*
 trx_rseg_mem_create(
@@ -152,7 +153,7 @@ trx_rseg_mem_create(
 	rseg->max_size = mtr_read_ulint(rseg_header + TRX_RSEG_MAX_SIZE,
 							MLOG_4BYTES, mtr);
 
-	/* Initialize the undo log lists according to the rseg header */
+	/* Initialize the undo log lists according to the rseg header 根据rseg头初始化undo日志列表*/
 
 	sum_of_undo_sizes = trx_undo_lists_init(rseg);
 
@@ -187,7 +188,7 @@ trx_rseg_mem_create(
 
 /*************************************************************************
 Creates the memory copies for rollback segments and initializes the
-rseg list and array in trx_sys at a database startup. */
+rseg list and array in trx_sys at a database startup. 为回滚段创建内存副本，并在数据库启动时在trx_sys中初始化rseg列表和数组*/
 
 void
 trx_rseg_list_and_array_init(
@@ -217,7 +218,7 @@ trx_rseg_list_and_array_init(
 }
 
 /********************************************************************
-Creates a new rollback segment to the database. */
+Creates a new rollback segment to the database. 为数据库创建一个新的回滚段。*/
 
 trx_rseg_t*
 trx_rseg_create(

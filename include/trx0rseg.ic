@@ -1,6 +1,6 @@
 /******************************************************
 Rollback segment
-
+回滚段
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
@@ -9,7 +9,7 @@ Created 3/26/1996 Heikki Tuuri
 #include "srv0srv.h"
 
 /**********************************************************************
-Gets a rollback segment header. */
+Gets a rollback segment header. 获取回滚段标头。*/
 UNIV_INLINE
 trx_rsegf_t*
 trx_rsegf_get(
@@ -30,7 +30,7 @@ trx_rsegf_get(
 }
 
 /**********************************************************************
-Gets a newly created rollback segment header. */
+Gets a newly created rollback segment header.获取一个新创建的回滚段标头。 */
 UNIV_INLINE
 trx_rsegf_t*
 trx_rsegf_get_new(
@@ -51,7 +51,7 @@ trx_rsegf_get_new(
 }
 
 /*******************************************************************
-Gets the file page number of the nth undo log slot. */
+Gets the file page number of the nth undo log slot.获取第n个撤消日志槽的文件页号。 */
 UNIV_INLINE
 ulint
 trx_rsegf_get_nth_undo(
@@ -72,7 +72,7 @@ trx_rsegf_get_nth_undo(
 }
 
 /*******************************************************************
-Sets the file page number of the nth undo log slot. */
+Sets the file page number of the nth undo log slot. 设置第n个undo日志槽位的文件页号。*/
 UNIV_INLINE
 void
 trx_rsegf_set_nth_undo(
@@ -93,7 +93,7 @@ trx_rsegf_set_nth_undo(
 }
 
 /********************************************************************
-Looks for a free slot for an undo log segment. */
+Looks for a free slot for an undo log segment. 为撤消日志段寻找空闲槽位。*/
 UNIV_INLINE
 ulint
 trx_rsegf_undo_find_free(

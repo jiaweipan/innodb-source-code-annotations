@@ -1192,7 +1192,7 @@ trx_undo_mem_create_at_db_start(
 /************************************************************************
 Initializes the undo log lists for a rollback segment memory copy. This
 function is only called when the database is started or a new rollback
-segment is created. */
+segment is created. 初始化回滚段内存副本的撤销日志列表。这个函数只在数据库启动或创建一个新的回滚段时调用。*/
 
 ulint
 trx_undo_lists_init(
