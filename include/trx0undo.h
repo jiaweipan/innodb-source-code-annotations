@@ -16,7 +16,7 @@ Created 3/26/1996 Heikki Tuuri
 #include "page0types.h"
 
 /***************************************************************************
-Builds a roll pointer dulint. */
+Builds a roll pointer dulint. 建立一个滚动指针dulint。*/
 UNIV_INLINE
 dulint
 trx_undo_build_roll_ptr(
@@ -27,7 +27,7 @@ trx_undo_build_roll_ptr(
 	ulint	page_no,	/* in: page number */
 	ulint	offset);		/* in: offset of the undo entry within page */
 /***************************************************************************
-Decodes a roll pointer dulint. */
+Decodes a roll pointer dulint. 解码一个滚动指针dulint。*/
 UNIV_INLINE
 void
 trx_undo_decode_roll_ptr(
@@ -38,7 +38,7 @@ trx_undo_decode_roll_ptr(
 	ulint*	page_no,	/* out: page number */
 	ulint*	offset);		/* out: offset of the undo entry within page */
 /***************************************************************************
-Returns TRUE if the roll pointer is of the insert type. */
+Returns TRUE if the roll pointer is of the insert type. 如果滚动指针是插入类型，则返回TRUE。*/
 UNIV_INLINE
 ibool
 trx_undo_roll_ptr_is_insert(
@@ -48,7 +48,7 @@ trx_undo_roll_ptr_is_insert(
 /*********************************************************************
 Writes a roll ptr to an index page. In case that the size changes in
 some future version, this function should be used instead of
-mach_write_... */
+mach_write_... 将滚动指针写入索引页。如果在将来的版本中大小发生了变化，应该使用这个函数而不是mach_write_…*/
 UNIV_INLINE
 void
 trx_write_roll_ptr(
@@ -58,7 +58,7 @@ trx_write_roll_ptr(
 /*********************************************************************
 Reads a roll ptr from an index page. In case that the roll ptr size
 changes in some future version, this function should be used instead of
-mach_read_... */
+mach_read_... 从索引页读取一个回滚指针。如果roll ptr的大小在将来的版本中改变了，应该使用这个函数而不是mach_read_…*/
 UNIV_INLINE
 dulint
 trx_read_roll_ptr(
@@ -66,7 +66,7 @@ trx_read_roll_ptr(
 			/* out: roll ptr */
 	byte*	ptr);	/* in: pointer to memory from where to read */
 /**********************************************************************
-Gets an undo log page and x-latches it. */
+Gets an undo log page and x-latches it. 获取一个撤消日志页面并x-latch它。*/
 UNIV_INLINE
 page_t*
 trx_undo_page_get(
@@ -76,7 +76,7 @@ trx_undo_page_get(
 	ulint	page_no,	/* in: page number */
 	mtr_t*	mtr);		/* in: mtr */
 /**********************************************************************
-Gets an undo log page and s-latches it. */
+Gets an undo log page and s-latches it. 获取一个撤消日志页并s-锁存它。*/
 UNIV_INLINE
 page_t*
 trx_undo_page_get_s_latched(
@@ -87,7 +87,7 @@ trx_undo_page_get_s_latched(
 	mtr_t*	mtr);		/* in: mtr */
 /**********************************************************************
 Returns the previous undo record on the page in the specified log, or
-NULL if none exists. */
+NULL if none exists. 返回指定日志中页面上先前的撤销记录，如果不存在则返回NULL。*/
 UNIV_INLINE
 trx_undo_rec_t*
 trx_undo_page_get_prev_rec(
@@ -98,7 +98,7 @@ trx_undo_page_get_prev_rec(
 	ulint		offset);	/* in: undo log header offset on page */
 /**********************************************************************
 Returns the next undo log record on the page in the specified log, or
-NULL if none exists. */
+NULL if none exists. 返回指定日志中页面上的下一个撤消日志记录，如果不存在则返回NULL。*/
 UNIV_INLINE
 trx_undo_rec_t*
 trx_undo_page_get_next_rec(
@@ -109,7 +109,7 @@ trx_undo_page_get_next_rec(
 	ulint		offset);	/* in: undo log header offset on page */
 /**********************************************************************
 Returns the last undo record on the page in the specified undo log, or
-NULL if none exists. */
+NULL if none exists. 返回指定撤消日志中页面上的最后一条撤消记录，如果不存在则返回NULL。*/
 UNIV_INLINE
 trx_undo_rec_t*
 trx_undo_page_get_last_rec(
@@ -120,7 +120,7 @@ trx_undo_page_get_last_rec(
 	ulint	offset);	/* in: undo log header offset on page */
 /**********************************************************************
 Returns the first undo record on the page in the specified undo log, or
-NULL if none exists. */
+NULL if none exists. 返回指定撤销日志中页上的第一个撤销记录，如果不存在则返回NULL。*/
 UNIV_INLINE
 trx_undo_rec_t*
 trx_undo_page_get_first_rec(
@@ -130,7 +130,7 @@ trx_undo_page_get_first_rec(
 	ulint	page_no,/* in: undo log header page number */
 	ulint	offset);	/* in: undo log header offset on page */
 /***************************************************************************
-Gets the previous record in an undo log. */
+Gets the previous record in an undo log. 获取撤消日志中的前一条记录。*/
 
 trx_undo_rec_t*
 trx_undo_get_prev_rec(
@@ -142,7 +142,7 @@ trx_undo_get_prev_rec(
 	ulint		offset,	/* in: undo log header offset on page */
 	mtr_t*		mtr);	/* in: mtr */
 /***************************************************************************
-Gets the next record in an undo log. */
+Gets the next record in an undo log.获取撤销日志中的下一条记录。 */
 
 trx_undo_rec_t*
 trx_undo_get_next_rec(
@@ -154,7 +154,7 @@ trx_undo_get_next_rec(
 	ulint		offset,	/* in: undo log header offset on page */
 	mtr_t*		mtr);	/* in: mtr */
 /***************************************************************************
-Gets the first record in an undo log. */
+Gets the first record in an undo log. 获取撤消日志中的第一条记录。*/
 
 trx_undo_rec_t*
 trx_undo_get_first_rec(
@@ -167,7 +167,7 @@ trx_undo_get_first_rec(
 	ulint	mode,	/* in: latching mode: RW_S_LATCH or RW_X_LATCH */
 	mtr_t*	mtr);	/* in: mtr */
 /************************************************************************
-Tries to add a page to the undo log segment where the undo log is placed. */
+Tries to add a page to the undo log segment where the undo log is placed. 尝试向放置撤销日志的撤销日志段添加一个页面。*/
 
 ulint
 trx_undo_add_page(
@@ -181,7 +181,7 @@ trx_undo_add_page(
 				the rollback segment mutex */
 /***************************************************************************
 Truncates an undo log from the end. This function is used during a rollback
-to free space from an undo log. */
+to free space from an undo log. 从末尾截断undo日志。在回滚期间使用此函数从撤消日志中释放空间。*/
 
 void
 trx_undo_truncate_end(
@@ -192,7 +192,7 @@ trx_undo_truncate_end(
 				>= this value should be truncated */
 /***************************************************************************
 Truncates an undo log from the start. This function is used during a purge
-operation. */
+operation. 从一开始就截断撤消日志。此函数在清除操作期间使用。*/
 
 void
 trx_undo_truncate_start(
@@ -209,7 +209,7 @@ trx_undo_truncate_start(
 /************************************************************************
 Initializes the undo log lists for a rollback segment memory copy.
 This function is only called when the database is started or a new
-rollback segment created. */
+rollback segment created. 初始化回滚段内存副本的撤销日志列表。这个函数只在数据库启动或创建一个新的回滚段时调用。*/
 
 ulint
 trx_undo_lists_init(
@@ -219,7 +219,7 @@ trx_undo_lists_init(
 	trx_rseg_t*	rseg);	/* in: rollback segment memory object */	
 /**************************************************************************
 Assigns an undo log for a transaction. A new undo log is created or a cached
-undo log reused. */
+undo log reused. 为事务分配撤消日志。创建新的撤消日志或重用缓存的撤消日志。*/
 
 trx_undo_t*
 trx_undo_assign_undo(
@@ -229,7 +229,7 @@ trx_undo_assign_undo(
 	trx_t*	trx,	/* in: transaction */
 	ulint	type);	/* in: TRX_UNDO_INSERT or TRX_UNDO_UPDATE */
 /**********************************************************************
-Sets the state of the undo log segment at a transaction finish. */
+Sets the state of the undo log segment at a transaction finish. 在事务结束时设置撤消日志段的状态。*/
 
 page_t*
 trx_undo_set_state_at_finish(
@@ -242,7 +242,7 @@ trx_undo_set_state_at_finish(
 /**************************************************************************
 Adds the update undo log header as the first in the history list, and
 frees the memory object, or puts it to the list of cached update undo log
-segments. */
+segments. 添加更新撤消日志头作为历史列表中的第一个，并释放内存对象，或将其放入缓存的更新撤消日志段列表中。*/
 
 void
 trx_undo_update_cleanup(
@@ -256,8 +256,9 @@ Discards an undo log and puts the segment to the list of cached update undo
 log segments. This optimized function is called if there is no need to
 keep the update undo log because there exist no read views and the transaction
 made no delete markings, which would make purge necessary. We restrict this
-to undo logs of size 1 to make things simpler. */
-
+to undo logs of size 1 to make things simpler. 丢弃一个撤销日志，并将其放到缓存的更新撤销日志段列表中。
+如果不需要保持更新撤销日志(因为不存在读视图，且事务没有进行删除标记)，则调用这个优化的函数，这将使清除成为必要。
+为了简化操作，我们将其限制为大小为1的undo logs。*/
 dulint
 trx_undo_update_cleanup_by_discard(
 /*===============================*/
@@ -268,14 +269,13 @@ trx_undo_update_cleanup_by_discard(
 /**********************************************************************
 Frees or caches an insert undo log after a transaction commit or rollback.
 Knowledge of inserts is not needed after a commit or rollback, therefore
-the data can be discarded. */
-
+the data can be discarded. 在事务提交或回滚后释放或缓存插入的撤消日志。在提交或回滚之后不需要了解插入，因此可以丢弃数据。*/
 void
 trx_undo_insert_cleanup(
 /*====================*/
 	trx_t*	trx);	/* in: transaction handle */
 /***************************************************************
-Parses the redo log entry of an undo log page initialization. */
+Parses the redo log entry of an undo log page initialization. 解析撤消日志页初始化的重做日志项。*/
 
 byte*
 trx_undo_parse_page_init(
@@ -286,7 +286,7 @@ trx_undo_parse_page_init(
 	page_t*	page,	/* in: page or NULL */
 	mtr_t*	mtr);	/* in: mtr or NULL */
 /***************************************************************
-Parses the redo log entry of an undo log page header create or reuse. */
+Parses the redo log entry of an undo log page header create or reuse. 解析创建或重用的撤消日志页头的重做日志条目。*/
 
 byte*
 trx_undo_parse_page_header(
@@ -298,7 +298,7 @@ trx_undo_parse_page_header(
 	page_t*	page,	/* in: page or NULL */
 	mtr_t*	mtr);	/* in: mtr or NULL */
 /***************************************************************
-Parses the redo log entry of an undo log page header discard. */
+Parses the redo log entry of an undo log page header discard. 解析撤消日志页头丢弃的重做日志条目。*/
 
 byte*
 trx_undo_parse_discard_latest(
@@ -310,23 +310,23 @@ trx_undo_parse_discard_latest(
 	mtr_t*	mtr);	/* in: mtr or NULL */
 
 
-/* Types of an undo log segment */
+/* Types of an undo log segment undo日志段类型*/
 #define	TRX_UNDO_INSERT		1	/* contains undo entries for inserts */
 #define	TRX_UNDO_UPDATE		2	/* contains undo entries for updates
 					and delete markings: in short,
 					modifys (the name 'UPDATE' is a
-					historical relic) */
-/* States of an undo log segment */
+					historical relic) 包含更新和删除标记的撤销条目:简而言之，修改(名称“UPDATE”是一个历史遗迹)*/
+/* States of an undo log segment undo日志段的状态*/
 #define TRX_UNDO_ACTIVE		1	/* contains an undo log of an active
-					transaction */
-#define	TRX_UNDO_CACHED		2	/* cached for quick reuse */
-#define	TRX_UNDO_TO_FREE	3	/* insert undo segment can be freed */
+					transaction 包含活动事务的撤消日志*/
+#define	TRX_UNDO_CACHED		2	/* cached for quick reuse 缓存以便快速重用*/
+#define	TRX_UNDO_TO_FREE	3	/* insert undo segment can be freed 可以释放插入的撤销段*/
 #define	TRX_UNDO_TO_PURGE	4	/* update undo segment will not be
 					reused: it can be freed in purge when
-					all undo data in it is removed */
+					all undo data in it is removed 更新撤销段将不会被重用:当撤销段中的所有撤销数据被删除时，可以在清除中释放它*/
 
 /* Transaction undo log memory object; this is protected by the undo_mutex
-in the corresponding transaction object */
+in the corresponding transaction object 事务撤销日志内存对象;它由相应事务对象中的undo_mutex保护*/
 
 struct trx_undo_struct{
 	/*-----------------------------*/
