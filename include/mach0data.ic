@@ -508,7 +508,7 @@ mach_dulint_get_much_compressed_size(
 }
 
 /*************************************************************
-Reads a dulint in a compressed form. */
+Reads a dulint in a compressed form. 以压缩形式读出dulint。*/
 UNIV_INLINE
 dulint
 mach_dulint_read_much_compressed(

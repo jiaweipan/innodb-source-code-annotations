@@ -146,7 +146,8 @@ dyn_array_free(
 
 /*************************************************************************
 Makes room on top of a dyn array and returns a pointer to the added element.
-The caller must copy the element to the pointer returned. */
+The caller must copy the element to the pointer returned. 
+在dyn数组上创建空间，并返回指向添加元素的指针。调用者必须将元素复制到返回的指针。*/
 UNIV_INLINE
 void*
 dyn_array_push(

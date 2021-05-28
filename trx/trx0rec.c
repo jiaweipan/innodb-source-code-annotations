@@ -1,6 +1,6 @@
 /******************************************************
 Transaction undo log record
-
+事务撤销日志记录
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
@@ -24,11 +24,11 @@ Created 3/26/1996 Heikki Tuuri
 #include "trx0purge.h"
 #include "row0row.h"
 
-/*=========== UNDO LOG RECORD CREATION AND DECODING ====================*/
+/*=========== UNDO LOG RECORD CREATION AND DECODING 撤消日志记录的创建和解码====================*/
 
 /**************************************************************************
 Writes the mtr log entry of the inserted undo log record on the undo log
-page. */
+page. 将插入的撤消日志记录的mtr日志项写入撤消日志页。*/
 UNIV_INLINE
 void
 trx_undof_page_add_undo_rec_log(
@@ -37,6 +37,7 @@ trx_undof_page_add_undo_rec_log(
 	ulint	old_free,	/* in: start offset of the inserted entry */
 	ulint	new_free,	/* in: end offset of the entry */
 	mtr_t*	mtr)		/* in: mtr */
+
 {
 	byte*	log_ptr;
 	ulint	len;
@@ -109,7 +110,7 @@ trx_undof_page_add_undo_rec_log(
 }	
 
 /***************************************************************
-Parses a redo log record of adding an undo log record. */
+Parses a redo log record of adding an undo log record. 解析添加undo日志记录的重做日志记录。*/
 
 byte*
 trx_undo_parse_add_undo_rec(
@@ -156,7 +157,7 @@ trx_undo_parse_add_undo_rec(
 }
 	
 /**************************************************************************
-Calculates the free space left for extending an undo log record. */
+Calculates the free space left for extending an undo log record. 计算用于扩展撤消日志记录的剩余空间。*/
 UNIV_INLINE
 ulint
 trx_undo_left(
@@ -172,7 +173,7 @@ trx_undo_left(
 }
 
 /**************************************************************************
-Reports in the undo log of an insert of a clustered index record. */
+Reports in the undo log of an insert of a clustered index record.在聚集索引记录插入的撤销日志中报告。 */
 static
 ulint
 trx_undo_page_report_insert(
@@ -205,15 +206,15 @@ trx_undo_page_report_insert(
 	if (trx_undo_left(undo_page, ptr) < 30) {
 
 		/* NOTE: the value 30 must be big enough such that the general
-		fields written below fit on the undo log page */
+		fields written below fit on the undo log page 注意:值30必须足够大，以便下面写的常规字段适合于撤消日志页面*/
 
 		return(0);
 	}
 
-	/* Reserve 2 bytes for the pointer to the next undo log record */
+	/* Reserve 2 bytes for the pointer to the next undo log record 为指向下一条撤消日志记录的指针保留2字节*/
 	ptr += 2;
 		
-	/* Store first some general parameters to the undo log */ 
+	/* Store first some general parameters to the undo log 首先将一些常规参数存储到撤消日志中*/ 
 	mach_write_to_1(ptr, TRX_UNDO_INSERT_REC);
 	ptr++;
 
@@ -224,7 +225,7 @@ trx_undo_page_report_insert(
 	ptr += len;
 	/*----------------------------------------*/
 	/* Store then the fields required to uniquely determine the record
-	to be inserted in the clustered index */
+	to be inserted in the clustered index 然后存储所需的字段，以惟一地确定要插入聚集索引中的记录*/
 
 	for (i = 0; i < dict_index_get_n_unique(index); i++) {
 
@@ -257,7 +258,7 @@ trx_undo_page_report_insert(
 	}
 
 	/*----------------------------------------*/
-	/* Write pointers to the previous and the next undo log records */
+	/* Write pointers to the previous and the next undo log records 向前一个和下一个撤消日志记录写入指针*/
 
 	if (trx_undo_left(undo_page, ptr) < 2) {
 
@@ -272,7 +273,7 @@ trx_undo_page_report_insert(
 	mach_write_to_2(undo_page + TRX_UNDO_PAGE_HDR + TRX_UNDO_PAGE_FREE,
 							ptr - undo_page);
 
-	/* Write the log entry to the REDO log of this change in the UNDO log */
+	/* Write the log entry to the REDO log of this change in the UNDO log 在UNDO日志中，将此更改的日志项写入REDO日志*/
 
 	trx_undof_page_add_undo_rec_log(undo_page, first_free,
 							ptr - undo_page, mtr);
@@ -280,7 +281,7 @@ trx_undo_page_report_insert(
 }
 
 /**************************************************************************
-Reads from an undo log record the general parameters. */
+Reads from an undo log record the general parameters. 从撤消日志记录中读取常规参数。*/
 
 byte*
 trx_undo_rec_get_pars(
@@ -328,7 +329,7 @@ trx_undo_rec_get_pars(
 }
 
 /**************************************************************************
-Reads from an undo log record a stored column value. */
+Reads from an undo log record a stored column value. 从撤消日志记录中读取存储的列值。*/
 static
 byte*
 trx_undo_rec_get_col_val(
@@ -356,7 +357,7 @@ trx_undo_rec_get_col_val(
 }
 
 /***********************************************************************
-Builds a row reference from an undo log record. */
+Builds a row reference from an undo log record. 从撤消日志记录构建行引用。*/
 
 byte*
 trx_undo_rec_get_row_ref(
@@ -401,7 +402,7 @@ trx_undo_rec_get_row_ref(
 }	
 
 /***********************************************************************
-Skips a row reference from an undo log record. */
+Skips a row reference from an undo log record. 从撤消日志记录中跳过行引用。*/
 
 byte*
 trx_undo_rec_skip_row_ref(
@@ -431,7 +432,7 @@ trx_undo_rec_skip_row_ref(
 
 /**************************************************************************
 Reports in the undo log of an update or delete marking of a clustered index
-record. */
+record. 聚集索引记录的更新或删除标记的撤销日志中的报告。*/
 static
 ulint
 trx_undo_page_report_modify(
@@ -484,15 +485,15 @@ trx_undo_page_report_modify(
 	if (trx_undo_left(undo_page, ptr) < 50) {
 
 		/* NOTE: the value 50 must be big enough so that the general
-		fields written below fit on the undo log page */
+		fields written below fit on the undo log page 注意:值50必须足够大，以便下面写的通用字段适合于撤消日志页面*/
 
 		return(0);
 	}
 
-	/* Reserve 2 bytes for the pointer to the next undo log record */
+	/* Reserve 2 bytes for the pointer to the next undo log record 为指向下一条撤消日志记录的指针保留2字节*/
 	ptr += 2;
 
-	/* Store first some general parameters to the undo log */ 		
+	/* Store first some general parameters to the undo log 首先将一些常规参数存储到撤消日志中*/ 		
 	if (update) {
 		if (rec_get_deleted_flag(rec)) {
 			type_cmpl = TRX_UNDO_UPD_DEL_REC;
@@ -517,13 +518,13 @@ trx_undo_page_report_modify(
 	ptr += len;
 
 	/*----------------------------------------*/
-	/* Store the state of the info bits */
+	/* Store the state of the info bits 存储信息位的状态*/
 
 	bits = rec_get_info_bits(rec);
 	mach_write_to_1(ptr, bits);
 	ptr += 1;
 
-	/* Store the values of the system columns */
+	/* Store the values of the system columns 存储系统列的值*/
 	trx_id = dict_index_rec_get_sys_col(index, DATA_TRX_ID, rec);
 
 	roll_ptr = dict_index_rec_get_sys_col(index, DATA_ROLL_PTR, rec);	
@@ -536,7 +537,7 @@ trx_undo_page_report_modify(
 
 	/*----------------------------------------*/
 	/* Store then the fields required to uniquely determine the
-	record which will be modified in the clustered index */
+	record which will be modified in the clustered index 然后存储用于唯一确定将在聚集索引中修改的记录所需的字段*/
 
 	for (i = 0; i < dict_index_get_n_unique(index); i++) {
 
@@ -562,7 +563,7 @@ trx_undo_page_report_modify(
 	}
 
 	/*----------------------------------------*/
-	/* Save to the undo log the old values of the columns to be updated. */
+	/* Save to the undo log the old values of the columns to be updated. 将要更新的列的旧值保存到undo日志中。*/
 
 	if (update) {
 	    if (trx_undo_left(undo_page, ptr) < 5) {
@@ -578,7 +579,7 @@ trx_undo_page_report_modify(
 		upd_field = upd_get_nth_field(update, i);
 		pos = upd_field->field_no;
 
-		/* Write field number to undo log */
+		/* Write field number to undo log 写字段号来撤消日志*/
 		if (trx_undo_left(undo_page, ptr) < 5) {
 
 			return(0);
@@ -587,7 +588,7 @@ trx_undo_page_report_modify(
 		len = mach_write_compressed(ptr, pos);
 		ptr += len;
 
-		/* Save the old value of field */
+		/* Save the old value of field 保存字段的旧值*/
 		field = rec_get_nth_field(rec, pos, &flen);
 
 		if (trx_undo_left(undo_page, ptr) < 5) {
@@ -597,13 +598,13 @@ trx_undo_page_report_modify(
 
 		if (rec_get_nth_field_extern_bit(rec, pos)) {
 			/* If a field has external storage, we add to
-			flen the flag */
+			flen the flag 如果一个字段有外部存储，我们添加flen标志*/
 
 			len = mach_write_compressed(ptr,
 					UNIV_EXTERN_STORAGE_FIELD + flen);
 
 			/* Notify purge that it eventually has to free the old
-			externally stored field */
+			externally stored field 通知清除程序最终必须释放旧的外部存储的字段*/
 			
 			trx->update_undo->del_marks = TRUE;
 
@@ -632,8 +633,9 @@ trx_undo_page_report_modify(
 	columns which occur as ordering fields in any index. This info is used
 	in the purge of old versions where we use it to build and search the
 	delete marked index records, to look if we can remove them from the
-	index tree. */
-
+	index tree. 在删除标记的情况下，以及在任何索引的任何排序字段发生更改的更新情况下，
+	存储作为任何索引中的排序字段出现的所有列的值。这个信息用于旧版本的清除，
+	我们用它来建立和搜索删除标记的索引记录，看看我们是否可以从索引树中删除它们。*/
 	if (!update || !(cmpl_info & UPD_NODE_NO_ORD_CHANGE)) {	    
 
 	    trx->update_undo->del_marks = TRUE;
@@ -646,7 +648,7 @@ trx_undo_page_report_modify(
 	    old_ptr = ptr;
 
 	    /* Reserve 2 bytes to write the number of bytes the stored fields
-	    take in this undo record */
+	    take in this undo record 保留2个字节来写这个undo记录中存储字段的字节数*/
 
 	    ptr += 2;
 
@@ -658,7 +660,7 @@ trx_undo_page_report_modify(
 	    		
 			pos = dict_index_get_nth_col_pos(index, col_no);
 
-			/* Write field number to undo log */
+			/* Write field number to undo log 写字段号来撤消日志*/
 			if (trx_undo_left(undo_page, ptr) < 5) {
 	
 				return(0);
@@ -667,7 +669,7 @@ trx_undo_page_report_modify(
 			len = mach_write_compressed(ptr, pos);
 			ptr += len;
 	
-			/* Save the old value of field */
+			/* Save the old value of field 保存字段的旧值*/
 			field = rec_get_nth_field(rec, pos, &flen);
 	
 			if (trx_undo_left(undo_page, ptr) < 5) {
@@ -694,7 +696,7 @@ trx_undo_page_report_modify(
 	}		
 
 	/*----------------------------------------*/
-	/* Write pointers to the previous and the next undo log records */
+	/* Write pointers to the previous and the next undo log records 向前一个和下一个撤消日志记录写入指针*/
 	if (trx_undo_left(undo_page, ptr) < 2) {
 
 		return(0);
@@ -707,7 +709,7 @@ trx_undo_page_report_modify(
 	mach_write_to_2(undo_page + TRX_UNDO_PAGE_HDR + TRX_UNDO_PAGE_FREE,
 							ptr - undo_page);
 
-	/* Write to the REDO log about this change in the UNDO log */
+	/* Write to the REDO log about this change in the UNDO log 将UNDO日志中的更改写入REDO日志*/
 
 	trx_undof_page_add_undo_rec_log(undo_page, first_free,
 							ptr - undo_page, mtr);
@@ -716,7 +718,7 @@ trx_undo_page_report_modify(
 
 /**************************************************************************
 Reads from an undo log update record the system field values of the old
-version. */
+version. 从撤消日志更新记录中读取旧版本的系统字段值。*/
 
 byte*
 trx_undo_update_rec_get_sys_cols(
@@ -732,11 +734,11 @@ trx_undo_update_rec_get_sys_cols(
 {
 	ulint	len;
 
-	/* Read the state of the info bits */
+	/* Read the state of the info bits 读取信息位的状态*/
 	*info_bits = mach_read_from_1(ptr);
 	ptr += 1;
 
-	/* Read the values of the system columns */
+	/* Read the values of the system columns 读取系统列的值*/
 
 	*trx_id = mach_dulint_read_compressed(ptr); 		
 	len = mach_dulint_get_compressed_size(*trx_id);
