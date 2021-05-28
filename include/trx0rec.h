@@ -1,6 +1,6 @@
 /******************************************************
 Transaction undo log record
-
+事务撤销日志记录
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
@@ -20,7 +20,7 @@ Created 3/26/1996 Heikki Tuuri
 #include "rem0types.h"
 
 /***************************************************************************
-Copies the undo record to the heap. */
+Copies the undo record to the heap. 将撤消记录复制到堆。*/
 UNIV_INLINE
 trx_undo_rec_t*
 trx_undo_rec_copy(
@@ -29,7 +29,7 @@ trx_undo_rec_copy(
 	trx_undo_rec_t*	undo_rec,	/* in: undo log record */
 	mem_heap_t*	heap);		/* in: heap where copied */
 /**************************************************************************
-Reads the undo log record type. */
+Reads the undo log record type. 读取撤消日志记录类型。*/
 UNIV_INLINE
 ulint
 trx_undo_rec_get_type(
@@ -37,7 +37,7 @@ trx_undo_rec_get_type(
 					/* out: record type */
 	trx_undo_rec_t*	undo_rec);	/* in: undo log record */
 /**************************************************************************
-Reads from an undo log record the record compiler info. */
+Reads from an undo log record the record compiler info. 从撤销日志记录中读取记录编译器信息。*/
 UNIV_INLINE
 ulint
 trx_undo_rec_get_cmpl_info(
@@ -45,7 +45,7 @@ trx_undo_rec_get_cmpl_info(
 					/* out: compiler info */
 	trx_undo_rec_t*	undo_rec);	/* in: undo log record */
 /**************************************************************************
-Returns TRUE if an undo log record contains an extern storage field. */
+Returns TRUE if an undo log record contains an extern storage field. 如果撤销日志记录包含外部存储字段，则返回TRUE。*/
 UNIV_INLINE
 ibool
 trx_undo_rec_get_extern_storage(
@@ -53,7 +53,7 @@ trx_undo_rec_get_extern_storage(
 					/* out: TRUE if extern */
 	trx_undo_rec_t*	undo_rec);	/* in: undo log record */
 /**************************************************************************
-Reads the undo log record number. */
+Reads the undo log record number. 读取撤消日志记录号。*/
 UNIV_INLINE
 dulint
 trx_undo_rec_get_undo_no(
@@ -61,7 +61,7 @@ trx_undo_rec_get_undo_no(
 					/* out: undo no */
 	trx_undo_rec_t*	undo_rec);	/* in: undo log record */
 /**************************************************************************
-Reads from an undo log record the general parameters. */
+Reads from an undo log record the general parameters.从撤消日志记录中读取常规参数。 */
 
 byte*
 trx_undo_rec_get_pars(
@@ -78,7 +78,7 @@ trx_undo_rec_get_pars(
 	dulint*		undo_no,	/* out: undo log record number */
 	dulint*		table_id);	/* out: table id */
 /***********************************************************************
-Builds a row reference from an undo log record. */
+Builds a row reference from an undo log record. 从撤消日志记录构建行引用。*/
 
 byte*
 trx_undo_rec_get_row_ref(
@@ -96,7 +96,7 @@ trx_undo_rec_get_row_ref(
 	mem_heap_t*	heap);	/* in: memory heap from which the memory
 				needed is allocated */
 /***********************************************************************
-Skips a row reference from an undo log record. */
+Skips a row reference from an undo log record. 从撤消日志记录中跳过行引用。*/
 
 byte*
 trx_undo_rec_skip_row_ref(
@@ -108,7 +108,7 @@ trx_undo_rec_skip_row_ref(
 	dict_index_t*	index);	/* in: clustered index */
 /**************************************************************************
 Reads from an undo log update record the system field values of the old
-version. */
+version. 从撤消日志更新记录中读取旧版本的系统字段值。*/
 
 byte*
 trx_undo_update_rec_get_sys_cols(
@@ -122,7 +122,7 @@ trx_undo_update_rec_get_sys_cols(
 	dulint*	roll_ptr,	/* out: roll ptr */
 	ulint*	info_bits);	/* out: info bits state */
 /***********************************************************************
-Builds an update vector based on a remaining part of an undo log record. */
+Builds an update vector based on a remaining part of an undo log record. 基于撤销日志记录的剩余部分构建更新向量。*/
 
 byte*
 trx_undo_update_rec_get_update(
@@ -150,7 +150,7 @@ trx_undo_update_rec_get_update(
 	upd_t**		upd);	/* out, own: update vector */
 /***********************************************************************
 Builds a partial row from an update undo log record. It contains the
-columns which occur as ordering in any index of the table. */
+columns which occur as ordering in any index of the table. 从更新撤消日志记录生成部分行。它包含在表的任何索引中作为排序出现的列。*/
 
 byte*
 trx_undo_rec_get_partial_row(
@@ -172,7 +172,7 @@ trx_undo_rec_get_partial_row(
 Writes information to an undo log about an insert, update, or a delete marking
 of a clustered index record. This information is used in a rollback of the
 transaction and in consistent reads that must look to the history of this
-transaction. */
+transaction. 将关于聚集索引记录的插入、更新或删除标记的信息写入撤销日志。该信息用于事务的回滚和一致性读取，这些读取必须查看该事务的历史记录。*/
 
 ulint
 trx_undo_report_row_operation(
@@ -200,7 +200,7 @@ trx_undo_report_row_operation(
 					flag was specified */
 /**********************************************************************
 Copies an undo record to heap. This function can be called if we know that
-the undo log record exists. */
+the undo log record exists. 将撤消记录复制到堆。如果我们知道撤销日志记录存在，就可以调用这个函数*/
 
 trx_undo_rec_t*
 trx_undo_get_undo_rec_low(
@@ -209,7 +209,7 @@ trx_undo_get_undo_rec_low(
 	dulint		roll_ptr,	/* in: roll pointer to record */
 	mem_heap_t*	heap);		/* in: memory heap where copied */
 /**********************************************************************
-Copies an undo record to heap. */
+Copies an undo record to heap. 将撤消记录复制到堆。*/
 
 ulint
 trx_undo_get_undo_rec(
@@ -230,7 +230,7 @@ trx_undo_get_undo_rec(
 Build a previous version of a clustered index record. This function checks
 that the caller has a latch on the index page of the clustered index record
 and an s-latch on the purge_view. This guarantees that the stack of versions
-is locked. */
+is locked.构建聚集索引记录的以前版本。这个函数检查调用者在聚集索引记录的索引页上有一个闩锁，在purge_view上有一个s-闩锁。这保证了版本堆栈是锁定的。 */
 
 ulint
 trx_undo_prev_version_build(
@@ -251,7 +251,7 @@ trx_undo_prev_version_build(
 				rec is the first inserted version, or if
 				history data has been deleted */
 /***************************************************************
-Parses a redo log record of adding an undo log record. */
+Parses a redo log record of adding an undo log record. 解析添加undo日志记录的重做日志记录。*/
 
 byte*
 trx_undo_parse_add_undo_rec(
@@ -261,7 +261,7 @@ trx_undo_parse_add_undo_rec(
 	byte*	end_ptr,/* in: buffer end */
 	page_t*	page);	/* in: page or NULL */
 /***************************************************************
-Parses a redo log record of erasing of an undo page end. */
+Parses a redo log record of erasing of an undo page end. 解析删除撤消页结束的重做日志记录。*/
 
 byte*
 trx_undo_parse_erase_page_end(
@@ -274,23 +274,23 @@ trx_undo_parse_erase_page_end(
 
 /* Types of an undo log record: these have to be smaller than 16, as the
 compilation info multiplied by 16 is ORed to this value in an undo log
-record */
-#define TRX_UNDO_INSERT_REC	11	/* fresh insert into clustered index */
+record 撤销日志记录的类型:这些必须小于16，因为编译信息乘以16是或的，在撤销日志记录*/
+#define TRX_UNDO_INSERT_REC	11	/* fresh insert into clustered index 新插入到聚集索引*/
 #define TRX_UNDO_UPD_EXIST_REC	12	/* update of a non-delete-marked
-					record */
+					record 更新非删除标记的记录*/
 #define	TRX_UNDO_UPD_DEL_REC	13	/* update of a delete marked record to
 					a not delete marked record; also the
-					fields of the record can change */
+					fields of the record can change 将已删除标记的记录更新为未删除标记的记录;记录的字段也可以更改*/
 #define TRX_UNDO_DEL_MARK_REC	14	/* delete marking of a record; fields
-					do not change */
+					do not change 删除记录的标记;字段不会改变*/
 #define	TRX_UNDO_CMPL_INFO_MULT	16	/* compilation info is multiplied by
-					this and ORed to the type above */
+					this and ORed to the type above 编译信息乘以此值或以上类型*/
 #define TRX_UNDO_UPD_EXTERN	128	/* This bit can be ORed to type_cmpl
 					to denote that we updated external
 					storage fields: used by purge to
-					free the external storage */
+					free the external storage 这个位可以转换为type_cmpl，表示我们更新了外部存储字段:通过purge来释放外部存储*/
 
-/* Operation type flags used in trx_undo_report_row_operation */
+/* Operation type flags used in trx_undo_report_row_operation trx_undo_report_row_operation中使用的操作类型标志*/
 #define TRX_UNDO_INSERT_OP	1
 #define TRX_UNDO_MODIFY_OP	2
 

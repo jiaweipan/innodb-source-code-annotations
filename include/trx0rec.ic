@@ -1,13 +1,13 @@
 /******************************************************
 Transaction undo log record
-
+事务撤销日志记录
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
 *******************************************************/
 
 /**************************************************************************
-Reads from an undo log record the record type. */
+Reads from an undo log record the record type.从撤消日志记录中读取记录类型。 */
 UNIV_INLINE
 ulint
 trx_undo_rec_get_type(
@@ -19,7 +19,7 @@ trx_undo_rec_get_type(
 }
 
 /**************************************************************************
-Reads from an undo log record the record compiler info. */
+Reads from an undo log record the record compiler info. 从撤销日志记录中读取记录编译器信息。*/
 UNIV_INLINE
 ulint
 trx_undo_rec_get_cmpl_info(
@@ -31,7 +31,7 @@ trx_undo_rec_get_cmpl_info(
 }
 
 /**************************************************************************
-Returns TRUE if an undo log record contains an extern storage field. */
+Returns TRUE if an undo log record contains an extern storage field. 如果撤销日志记录包含外部存储字段，则返回TRUE。*/
 UNIV_INLINE
 ibool
 trx_undo_rec_get_extern_storage(
@@ -48,7 +48,7 @@ trx_undo_rec_get_extern_storage(
 }
 
 /**************************************************************************
-Reads the undo log record number. */
+Reads the undo log record number. 读取撤消日志记录号。*/
 UNIV_INLINE
 dulint
 trx_undo_rec_get_undo_no(
@@ -64,7 +64,7 @@ trx_undo_rec_get_undo_no(
 }
 
 /***************************************************************************
-Copies the undo record to the heap. */
+Copies the undo record to the heap. 将撤消记录复制到堆。*/
 UNIV_INLINE
 trx_undo_rec_t*
 trx_undo_rec_copy(
