@@ -54,7 +54,7 @@ upd_get_n_fields(
 }
 
 /*************************************************************************
-Returns the nth field of an update vector. */
+Returns the nth field of an update vector. 返回更新向量的第n个字段。*/
 UNIV_INLINE
 upd_field_t*
 upd_get_nth_field(

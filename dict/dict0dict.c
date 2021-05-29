@@ -1215,7 +1215,7 @@ dict_index_copy_types(
 }
 
 /***********************************************************************
-Copies types of columns contained in table to tuple. */
+Copies types of columns contained in table to tuple. 将表中包含的列的类型复制到元组。*/
 
 void
 dict_table_copy_types(

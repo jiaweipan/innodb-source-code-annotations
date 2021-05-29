@@ -752,7 +752,7 @@ trx_undo_update_rec_get_sys_cols(
 }
 
 /**************************************************************************
-Reads from an update undo log record the number of updated fields. */
+Reads from an update undo log record the number of updated fields. 从更新撤消日志中读取记录更新字段的数量。*/
 UNIV_INLINE
 byte*
 trx_undo_update_rec_get_n_upd_fields(
@@ -769,7 +769,7 @@ trx_undo_update_rec_get_n_upd_fields(
 }
 
 /**************************************************************************
-Reads from an update undo log record a stored field number. */
+Reads from an update undo log record a stored field number. 从更新撤消日志记录中读取存储的字段号。*/
 UNIV_INLINE
 byte*
 trx_undo_update_rec_get_field_no(
@@ -786,7 +786,7 @@ trx_undo_update_rec_get_field_no(
 }
 
 /***********************************************************************
-Builds an update vector based on a remaining part of an undo log record. */
+Builds an update vector based on a remaining part of an undo log record. 基于撤销日志记录的剩余部分构建更新向量。*/
 
 byte*
 trx_undo_update_rec_get_update(
@@ -834,7 +834,7 @@ trx_undo_update_rec_get_update(
 
 	update->info_bits = info_bits;
 
-	/* Store first trx id and roll ptr to update vector */
+	/* Store first trx id and roll ptr to update vector 首先存储trx id并滚动ptr以更新向量*/
 
 	upd_field = upd_get_nth_field(update, n_fields);
 	buf = mem_heap_alloc(heap, DATA_TRX_ID_LEN);
@@ -854,7 +854,7 @@ trx_undo_update_rec_get_update(
 									index);
 	dfield_set_data(&(upd_field->new_val), buf, DATA_ROLL_PTR_LEN);
 	
-	/* Store then the updated ordinary columns to the update vector */
+	/* Store then the updated ordinary columns to the update vector 然后将更新后的普通列存储到更新向量中*/
 
 	for (i = 0; i < n_fields; i++) {
 
@@ -899,7 +899,7 @@ trx_undo_update_rec_get_update(
 	
 /***********************************************************************
 Builds a partial row from an update undo log record. It contains the
-columns which occur as ordering in any index of the table. */
+columns which occur as ordering in any index of the table. 从更新撤消日志记录生成部分行。它包含在表的任何索引中作为排序出现的列。*/
 
 byte*
 trx_undo_rec_get_partial_row(
@@ -963,7 +963,7 @@ trx_undo_rec_get_partial_row(
 }	
 
 /***************************************************************************
-Erases the unused undo log page end. */
+Erases the unused undo log page end. 擦除未使用的undo日志页面结束。*/
 static
 void
 trx_undo_erase_page_end(
@@ -984,7 +984,7 @@ trx_undo_erase_page_end(
 }
 	
 /***************************************************************
-Parses a redo log record of erasing of an undo page end. */
+Parses a redo log record of erasing of an undo page end.解析删除撤消页结束的重做日志记录。*/
 
 byte*
 trx_undo_parse_erase_page_end(
@@ -1066,7 +1066,7 @@ trx_undo_report_row_operation(
 	
 	mutex_enter(&(trx->undo_mutex));
 
-	/* If the undo log is not assigned yet, assign one */
+	/* If the undo log is not assigned yet, assign one 如果还没有分配undo日志，就分配一个*/
 
 	if (op_type == TRX_UNDO_INSERT_OP) {
 
@@ -1091,7 +1091,7 @@ trx_undo_report_row_operation(
 	}
 
 	if (undo == NULL) {
-		/* Did not succeed: out of space */
+		/* Did not succeed: out of space 没有成功:出空间*/
 		mutex_exit(&(trx->undo_mutex));
 
 		return(DB_OUT_OF_FILE_SPACE);
@@ -1125,8 +1125,8 @@ trx_undo_report_row_operation(
 			end segment of the undo log page and write a log
 			record of it: this is to ensure that in the debug
 			version the replicate page constructed using the log
-			records stays identical to the original page */
-
+			records stays identical to the original page 
+			这记录写在这页纸上不合适。我们擦除撤销日志页的结束段，并为其写一条日志记录:这是为了确保在调试版本中，使用日志记录构造的复制页与原始页保持相同*/
 			trx_undo_erase_page_end(undo_page, &mtr);
 		}
 		
@@ -1140,14 +1140,14 @@ trx_undo_report_row_operation(
 
 		ut_ad(page_no == undo->last_page_no);
 		
-		/* We have to extend the undo log by one page */
+		/* We have to extend the undo log by one page 我们必须将撤销日志扩展一页*/
 
 		mtr_start(&mtr);
 
 		/* When we add a page to an undo log, this is analogous to
 		a pessimistic insert in a B-tree, and we must reserve the
-		counterpart of the tree latch, which is the rseg mutex. */
-
+		counterpart of the tree latch, which is the rseg mutex.
+		当我们将一个页面添加到撤销日志时，这类似于b -树中的悲观插入，我们必须保留树锁存器的对等物，即rseg互斥锁。 */
 		mutex_enter(&(rseg->mutex));
 		
 		page_no = trx_undo_add_page(trx, undo, &mtr);
@@ -1183,7 +1183,7 @@ trx_undo_report_row_operation(
 
 /**********************************************************************
 Copies an undo record to heap. This function can be called if we know that
-the undo log record exists. */
+the undo log record exists.将撤消记录复制到堆。如果我们知道撤销日志记录存在，就可以调用这个函数。 */
 
 trx_undo_rec_t*
 trx_undo_get_undo_rec_low(
@@ -1217,7 +1217,7 @@ trx_undo_get_undo_rec_low(
 }
 
 /**********************************************************************
-Copies an undo record to heap. */
+Copies an undo record to heap.将撤消记录复制到堆。 */
 
 ulint
 trx_undo_get_undo_rec(
@@ -1240,7 +1240,7 @@ trx_undo_get_undo_rec(
 	if (!trx_purge_update_undo_must_exist(trx_id)) {
 
 	    	/* It may be that the necessary undo log has already been
-		deleted */
+		deleted 可能必要的撤销日志已经被删除*/
 
 		return(DB_MISSING_HISTORY);
 	}
@@ -1254,8 +1254,7 @@ trx_undo_get_undo_rec(
 Build a previous version of a clustered index record. This function checks
 that the caller has a latch on the index page of the clustered index record
 and an s-latch on the purge_view. This guarantees that the stack of versions
-is locked. */
-
+is locked. 构建聚集索引记录的以前版本。这个函数检查调用者在聚集索引记录的索引页上有一个闩锁，在purge_view上有一个s-闩锁。这保证了版本堆栈是锁定的。*/
 ulint
 trx_undo_prev_version_build(
 /*========================*/
@@ -1273,7 +1272,7 @@ trx_undo_prev_version_build(
 				needed is allocated */
 	rec_t**		old_vers)/* out, own: previous version, or NULL if
 				rec is the first inserted version, or if
-				history data has been deleted */
+				history data has been deleted 如果rec是第一个插入的版本，或者历史数据已经被删除，则为NULL*/
 {
 	trx_undo_rec_t*	undo_rec;
 	dtuple_t*	entry;
@@ -1363,7 +1362,7 @@ trx_undo_prev_version_build(
 
 	if (ptr == NULL) {
 		/* The record was corrupted, return an error; these printfs
-		should catch an elusive bug in row_vers_old_has_index_entry */
+		should catch an elusive bug in row_vers_old_has_index_entry记录已损坏，返回错误;这些printfs应该能捕获row_vers_old_has_index_entry中难以捉摸的bug */
 
 		fprintf(stderr,
 			"InnoDB: Table name %s, index name %s, n_uniq %lu\n",

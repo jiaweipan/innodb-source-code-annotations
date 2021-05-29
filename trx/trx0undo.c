@@ -604,7 +604,7 @@ trx_undo_parse_page_header(
 }	
 
 /*******************************************************************
-Initializes a cached insert undo log header page for new use. */
+Initializes a cached insert undo log header page for new use. 初始化一个缓存的插入撤销日志头页以供新使用。*/
 static
 ulint
 trx_undo_insert_header_reuse(
@@ -633,7 +633,7 @@ trx_undo_insert_header_reuse(
 	new_free = free + TRX_UNDO_LOG_HDR_SIZE;
 
 	/* Insert undo data is not needed after commit: we may free all
-	the space on the page */
+	the space on the page 提交后不需要插入撤销数据:可以释放页面上的所有空间*/
 
 	ut_a(mach_read_from_2(undo_page + TRX_UNDO_PAGE_HDR
 					+ TRX_UNDO_PAGE_TYPE)
@@ -732,7 +732,7 @@ trx_undo_discard_latest_update_undo(
 }
 
 /************************************************************************
-Tries to add a page to the undo log segment where the undo log is placed. */
+Tries to add a page to the undo log segment where the undo log is placed.尝试向放置撤销日志的撤销日志段添加一个页面。 */
 
 ulint
 trx_undo_add_page(
@@ -1419,7 +1419,7 @@ trx_undo_create(
 /*================ UNDO LOG ASSIGNMENT AND CLEANUP =====================*/
 
 /************************************************************************
-Reuses a cached undo log. */
+Reuses a cached undo log. 重用缓存的撤销日志。*/
 static
 trx_undo_t*
 trx_undo_reuse_cached(
@@ -1515,7 +1515,7 @@ trx_undo_mark_as_dict_operation(
 
 /**************************************************************************
 Assigns an undo log for a transaction. A new undo log is created or a cached
-undo log reused. */
+undo log reused. 为事务分配撤消日志。创建新的撤消日志或重用缓存的撤消日志。*/
 
 trx_undo_t*
 trx_undo_assign_undo(

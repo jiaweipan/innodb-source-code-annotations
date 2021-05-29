@@ -269,7 +269,7 @@ mach_get_compressed_size(
 }
 
 /*************************************************************
-Reads a ulint in a compressed form. */
+Reads a ulint in a compressed form.读取压缩格式的ulint。 */
 UNIV_INLINE
 ulint
 mach_read_compressed(
