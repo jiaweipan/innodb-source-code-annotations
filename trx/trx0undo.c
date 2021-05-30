@@ -177,7 +177,7 @@ trx_undo_get_prev_rec_from_prev_page(
 }
 
 /***************************************************************************
-Gets the previous record in an undo log. */
+Gets the previous record in an undo log. 获取撤消日志中的前一条记录。*/
 
 trx_undo_rec_t*
 trx_undo_get_prev_rec(
@@ -199,13 +199,13 @@ trx_undo_get_prev_rec(
 	}
 
 	/* We have to go to the previous undo log page to look for the
-	previous record */
+	previous record 我们必须转到以前的撤销日志页面来查找以前的记录*/
 
 	return(trx_undo_get_prev_rec_from_prev_page(rec, page_no, offset, mtr));
 }
 
 /***************************************************************************
-Gets the next record in an undo log from the next page. */
+Gets the next record in an undo log from the next page.从下一页获取撤销日志中的下一条记录。 */
 static
 trx_undo_rec_t*
 trx_undo_get_next_rec_from_next_page(
@@ -257,7 +257,7 @@ trx_undo_get_next_rec_from_next_page(
 }
 
 /***************************************************************************
-Gets the next record in an undo log. */
+Gets the next record in an undo log. 获取撤销日志中的下一条记录。*/
 
 trx_undo_rec_t*
 trx_undo_get_next_rec(
@@ -283,7 +283,7 @@ trx_undo_get_next_rec(
 }
 
 /***************************************************************************
-Gets the first record in an undo log. */
+Gets the first record in an undo log. 获取撤消日志中的第一条记录。*/
 
 trx_undo_rec_t*
 trx_undo_get_first_rec(
@@ -315,10 +315,10 @@ trx_undo_get_first_rec(
 								mode, mtr));
 }
 
-/*============== UNDO LOG FILE COPY CREATION AND FREEING ==================*/
+/*============== UNDO LOG FILE COPY CREATION AND FREEING 撤消日志文件副本的创建和释放==================*/
 
 /**************************************************************************
-Writes the mtr log entry of an undo log page initialization. */
+Writes the mtr log entry of an undo log page initialization. 写入一个撤消日志页初始化的mtr日志条目。*/
 UNIV_INLINE
 void
 trx_undo_page_init_log(
@@ -333,7 +333,7 @@ trx_undo_page_init_log(
 }	
 
 /***************************************************************
-Parses the redo log entry of an undo log page initialization. */
+Parses the redo log entry of an undo log page initialization. 解析撤消日志页初始化的重做日志项。*/
 
 byte*
 trx_undo_parse_page_init(
@@ -361,7 +361,7 @@ trx_undo_parse_page_init(
 }	
 
 /************************************************************************
-Initializes the fields in an undo log segment page. */
+Initializes the fields in an undo log segment page. 初始化undo日志段页面中的字段。*/
 static
 void
 trx_undo_page_init(
@@ -387,7 +387,7 @@ trx_undo_page_init(
 }
 
 /*******************************************************************
-Creates a new undo log segment in file. */
+Creates a new undo log segment in file. 在文件中创建一个新的撤消日志段。*/
 static
 page_t*
 trx_undo_seg_create(
@@ -434,7 +434,7 @@ trx_undo_seg_create(
 		return(NULL);
 	}
 
-	/* Allocate a new file segment for the undo log */
+	/* Allocate a new file segment for the undo log 为undo log分配一个新的文件段*/
 	undo_page = fseg_create_general(space, 0,
 			TRX_UNDO_SEG_HDR + TRX_UNDO_FSEG_HEADER, TRUE, mtr);
 
@@ -472,7 +472,7 @@ trx_undo_seg_create(
 }
 
 /**************************************************************************
-Writes the mtr log entry of an undo log header initialization. */
+Writes the mtr log entry of an undo log header initialization. 写入一个撤消日志头初始化的mtr日志项。*/
 UNIV_INLINE
 void
 trx_undo_header_create_log(
@@ -487,7 +487,7 @@ trx_undo_header_create_log(
 }	
 
 /*******************************************************************
-Creates a new undo log header in file. */
+Creates a new undo log header in file. 在文件中创建一个新的撤消日志头。*/
 static
 ulint
 trx_undo_header_create(
@@ -555,7 +555,7 @@ trx_undo_header_create(
 }
 
 /**************************************************************************
-Writes the mtr log entry of an undo log header reuse. */
+Writes the mtr log entry of an undo log header reuse. 写入一个撤消日志头重用的mtr日志条目。*/
 UNIV_INLINE
 void
 trx_undo_insert_header_reuse_log(
@@ -570,7 +570,7 @@ trx_undo_insert_header_reuse_log(
 }	
 
 /***************************************************************
-Parses the redo log entry of an undo log page header create or reuse. */
+Parses the redo log entry of an undo log page header create or reuse. 解析创建或重用的撤消日志页头的重做日志条目。*/
 
 byte*
 trx_undo_parse_page_header(
@@ -670,7 +670,7 @@ trx_undo_discard_latest_log(
 }	
 
 /***************************************************************
-Parses the redo log entry of an undo log page header discard. */
+Parses the redo log entry of an undo log page header discard. 解析撤消日志页头丢弃的重做日志条目。*/
 
 byte*
 trx_undo_parse_discard_latest(
@@ -692,7 +692,7 @@ trx_undo_parse_discard_latest(
 
 /**************************************************************************
 If an update undo log can be discarded immediately, this function frees the
-space, resetting the page to the proper state for caching. */
+space, resetting the page to the proper state for caching.如果更新撤销日志可以立即丢弃，则此函数释放空间，将页面重置为适当的状态以便缓存。 */
 static
 void
 trx_undo_discard_latest_update_undo(
@@ -801,7 +801,7 @@ trx_undo_add_page(
 }
 
 /************************************************************************
-Frees an undo log page that is not the header page. */
+Frees an undo log page that is not the header page. 释放不是头页的撤销日志页。*/
 static
 ulint
 trx_undo_free_page(
@@ -859,7 +859,7 @@ trx_undo_free_page(
 
 /************************************************************************
 Frees an undo log page when there is also the memory object for the undo
-log. */
+log. 当还存在用于撤消日志的内存对象时释放撤消日志页。*/
 static
 void
 trx_undo_free_page_in_rollback(
@@ -887,7 +887,8 @@ trx_undo_free_page_in_rollback(
 
 /************************************************************************
 Empties an undo log header page of undo records for that undo log. Other
-undo logs may still have records on that page, if it is an update undo log. */
+undo logs may still have records on that page, if it is an update undo log. 
+清空该撤消日志的撤消记录的撤消日志头页。如果是更新撤销日志，其他撤销日志可能在该页上仍然有记录。*/
 static
 void
 trx_undo_empty_header_page(
@@ -912,7 +913,7 @@ trx_undo_empty_header_page(
 
 /***************************************************************************
 Truncates an undo log from the end. This function is used during a rollback
-to free space from an undo log. */
+to free space from an undo log. 从末尾截断undo日志。在回滚期间使用此函数从撤消日志中释放空间。*/
 
 void
 trx_undo_truncate_end(
@@ -961,7 +962,7 @@ trx_undo_truncate_end(
 			if (ut_dulint_cmp(trx_undo_rec_get_undo_no(rec), limit)
 			    >= 0) {
 			    	/* Truncate at least this record off, maybe
-			    	more */
+			    	more 至少把这条记录截短，或者更多*/
 			    	trunc_here = rec;
 			} else {
 				goto function_exit;
@@ -987,7 +988,7 @@ function_exit:
 
 /***************************************************************************
 Truncates an undo log from the start. This function is used during a purge
-operation. */
+operation. 从一开始就截断撤消日志。此函数在清除操作期间使用。*/
 
 void
 trx_undo_truncate_start(
@@ -1000,7 +1001,9 @@ trx_undo_truncate_start(
 				this value should be truncated; NOTE that
 				the function only frees whole pages; the
 				header page is not freed, but emptied, if
-				all the records there are < limit */
+				all the records there are < limit 
+				所有撤消号<此值的撤消页都应该被截断;
+				注意，该函数只释放整个页面;如果存在的所有记录都< limit，则不会释放header页，而是清空header页*/
 {
 	page_t* 	undo_page;
 	trx_undo_rec_t* rec;
@@ -1099,19 +1102,19 @@ trx_undo_seg_free(
 	}
 }
 
-/*========== UNDO LOG MEMORY COPY INITIALIZATION =====================*/
+/*========== UNDO LOG MEMORY COPY INITIALIZATION 撤消日志内存副本初始化=====================*/
 
 /************************************************************************
 Creates and initializes an undo log memory object according to the values
 in the header in file, when the database is started. The memory object is
-inserted in the appropriate list of rseg. */
+inserted in the appropriate list of rseg.在数据库启动时，根据文件头中的值创建并初始化一个撤消日志内存对象。内存对象被插入到适当的rseg列表中。 */
 static
 trx_undo_t*
 trx_undo_mem_create_at_db_start(
 /*============================*/
 				/* out, own: the undo log memory object */
 	trx_rseg_t*	rseg,	/* in: rollback segment memory object */	
-	ulint		id,	/* in: slot index within rseg */
+	ulint		id,	/* in: slot index w ithin rseg */
 	ulint		page_no,/* in: undo log segment page number */
 	mtr_t*		mtr)	/* in: mtr */
 {
@@ -1164,7 +1167,7 @@ trx_undo_mem_create_at_db_start(
 	undo->state = state;
 	undo->size = flst_get_len(seg_header + TRX_UNDO_PAGE_LIST, mtr);
 
-	/* If the log segment is being freed, the page list is inconsistent! */
+	/* If the log segment is being freed, the page list is inconsistent!如果日志段正在被释放，则页面列表不一致! */
 	if (state == TRX_UNDO_TO_FREE) {
 
 		return(undo);
@@ -1243,7 +1246,7 @@ trx_undo_lists_init(
 		/* In forced recovery: try to avoid operations which look
 		at database pages; undo logs are rapidly changing data, and
 		the probability that they are in an inconsistent state is
-		high */
+		high 在强制恢复中:尽量避免查看数据库页面的操作;撤销日志是快速变化的数据，它们处于不一致状态的可能性很高*/
 
 		if (page_no != FIL_NULL
 		    && srv_force_recovery < SRV_FORCE_NO_UNDO_LOG_SCAN) {
@@ -1267,7 +1270,7 @@ trx_undo_lists_init(
 }		
 
 /************************************************************************
-Creates and initializes an undo log memory object. */
+Creates and initializes an undo log memory object. 创建并初始化一个撤消日志内存对象。*/
 static
 trx_undo_t*
 trx_undo_mem_create(
@@ -1318,7 +1321,7 @@ trx_undo_mem_create(
 }
 
 /************************************************************************
-Initializes a cached undo log object for new use. */
+Initializes a cached undo log object for new use. 初始化一个缓存的撤销日志对象以供新使用。*/
 static
 void
 trx_undo_mem_init_for_reuse(
@@ -1348,7 +1351,7 @@ trx_undo_mem_init_for_reuse(
 }
 
 /************************************************************************
-Frees an undo log memory copy. */
+Frees an undo log memory copy. 释放一个撤消日志内存副本。*/
 static
 void
 trx_undo_mem_free(
@@ -1365,7 +1368,7 @@ trx_undo_mem_free(
 }
 
 /**************************************************************************
-Creates a new undo log. */
+Creates a new undo log.创建一个新的撤消日志。 */
 static
 trx_undo_t*
 trx_undo_create(
@@ -1416,7 +1419,7 @@ trx_undo_create(
 	return(undo);
 }
 
-/*================ UNDO LOG ASSIGNMENT AND CLEANUP =====================*/
+/*================ UNDO LOG ASSIGNMENT AND CLEANUP 撤消日志分配和清除=====================*/
 
 /************************************************************************
 Reuses a cached undo log. 重用缓存的撤销日志。*/
@@ -1488,7 +1491,7 @@ trx_undo_reuse_cached(
 
 /**************************************************************************
 Marks an undo log header as a header of a data dictionary operation
-transaction. */
+transaction. 将撤消日志标头标记为数据字典操作事务的标头。*/
 static
 void
 trx_undo_mark_as_dict_operation(
@@ -1669,8 +1672,9 @@ Discards an undo log and puts the segment to the list of cached update undo
 log segments. This optimized function is called if there is no need to keep
 the update undo log because there exist no read views and the transaction
 made no delete markings, which would make purge necessary. We restrict this
-to undo logs of size 1 to make things simpler. */
-
+to undo logs of size 1 to make things simpler.丢弃一个撤销日志，并将其放到缓存的更新撤销日志段列表中。
+如果不需要保持更新撤销日志(因为不存在读视图，且事务没有进行删除标记)，则调用这个优化的函数，这将使清除成为必要。
+为了简化操作，我们将其限制为大小为1的undo logs。 */
 dulint
 trx_undo_update_cleanup_by_discard(
 /*===============================*/
@@ -1693,8 +1697,8 @@ trx_undo_update_cleanup_by_discard(
 	ut_ad(UT_LIST_GET_LEN(trx_sys->view_list) == 1);
 	
 	/* NOTE: we must hold the kernel mutex, because we must prevent
-	creation of new read views before mtr gets committed! */
-
+	creation of new read views before mtr gets committed! 
+	注意:我们必须持有内核互斥锁，因为我们必须在mtr被提交之前防止创建新的读视图!*/
 	undo_page = trx_undo_page_get(undo->space, undo->hdr_page_no, mtr);
 
 	trx_undo_discard_latest_update_undo(undo_page, mtr);
