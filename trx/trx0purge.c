@@ -1,6 +1,6 @@
 /******************************************************
 Purge old versions
-
+清除旧版本
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
@@ -26,17 +26,16 @@ Created 3/26/1996 Heikki Tuuri
 #include "srv0que.h"
 #include "os0thread.h"
 
-/* The global data structure coordinating a purge */
+/* The global data structure coordinating a purge 全局数据结构协调清除*/
 trx_purge_t*	purge_sys = NULL;
 
 /* A dummy undo record used as a return value when we have a whole undo log
-which needs no purge */
+which needs no purge 当我们有一个不需要清除的完整的撤消日志时，一个虚拟的撤消记录用作返回值*/
 trx_undo_rec_t	trx_purge_dummy_rec;
 
 /*********************************************************************
 Checks if trx_id is >= purge_view: then it is guaranteed that its update
-undo log still exists in the system. */
-
+undo log still exists in the system. 检查trx_id是否为>= purge_view:然后保证它的更新undo日志仍然存在于系统中。*/
 ibool
 trx_purge_update_undo_must_exist(
 /*=============================*/
@@ -55,10 +54,10 @@ trx_purge_update_undo_must_exist(
 	return(FALSE);
 }
 
-/*=================== PURGE RECORD ARRAY =============================*/
+/*=================== PURGE RECORD ARRAY 清洗记录数组=============================*/
 
 /***********************************************************************
-Stores info of an undo log record during a purge. */
+Stores info of an undo log record during a purge. 在清除期间存储撤消日志记录的信息。*/
 static
 trx_undo_inf_t*
 trx_purge_arr_store_info(
@@ -77,7 +76,7 @@ trx_purge_arr_store_info(
 		cell = trx_undo_arr_get_nth_info(arr, i);
 
 		if (!(cell->in_use)) {
-			/* Not in use, we may store here */
+			/* Not in use, we may store here 不用，我们可以放在这里*/
 			cell->undo_no = undo_no;
 			cell->trx_no = trx_no;
 			cell->in_use = TRUE;
@@ -90,7 +89,7 @@ trx_purge_arr_store_info(
 }
 
 /***********************************************************************
-Removes info of an undo log record during a purge. */
+Removes info of an undo log record during a purge. 在清除过程中删除撤消日志记录的信息。*/
 UNIV_INLINE
 void
 trx_purge_arr_remove_info(
@@ -109,7 +108,7 @@ trx_purge_arr_remove_info(
 }
 
 /***********************************************************************
-Gets the biggest pair of a trx number and an undo number in a purge array. */
+Gets the biggest pair of a trx number and an undo number in a purge array.获取清除数组中trx号和撤消号的最大一对。 */
 static
 void
 trx_purge_arr_get_biggest(
@@ -160,7 +159,7 @@ trx_purge_arr_get_biggest(
 
 /********************************************************************
 Builds a purge 'query' graph. The actual purge is performed by executing
-this query graph. */
+this query graph.构建一个清除“查询”图。实际的清除是通过执行这个查询图来执行的。 */
 static
 que_t*
 trx_purge_graph_build(void)
@@ -189,7 +188,7 @@ trx_purge_graph_build(void)
 
 /************************************************************************
 Creates the global purge system control structure and inits the history
-mutex. */
+mutex. 创建全局清除系统控制结构并初始化历史互斥。*/
 
 void
 trx_purge_sys_create(void)
@@ -318,7 +317,8 @@ trx_purge_add_update_undo_to_history(
 
 /**************************************************************************
 Frees an undo log segment which is in the history list. Cuts the end of the
-history list at the youngest undo log in this segment. */
+history list at the youngest undo log in this segment.
+释放历史列表中的undo日志段。在此段中最年轻的undo日志处削减历史列表的末尾。 */
 static
 void
 trx_purge_free_segment(
@@ -356,8 +356,8 @@ loop:
 	crashes, the tail of the undo log will not get accessed again. The
 	list of pages in the undo log tail gets inconsistent during the
 	freeing of the segment, and therefore purge should not try to access
-	them again. */
-
+	them again. 将最后一个撤消日志标记为完全清除，这样，如果系统崩溃，将不会再次访问撤消日志的尾部。
+	在释放段期间，undo日志尾中的页面列表变得不一致，因此清除不应该尝试再次访问它们。*/
 	if (!marked) {
 		mlog_write_ulint(log_hdr + TRX_UNDO_DEL_MARKS, FALSE,
 							MLOG_2BYTES, &mtr);
@@ -375,15 +375,15 @@ loop:
 
 	/* The page list may now be inconsistent, but the length field
 	stored in the list base node tells us how big it was before we
-	started the freeing. */
+	started the freeing. 页面列表现在可能不一致，但是存储在列表基本节点中的length字段告诉我们在开始释放之前它有多大。*/
 	
 	seg_size = flst_get_len(seg_hdr + TRX_UNDO_PAGE_LIST, &mtr);
 
 	/* We may free the undo log segment header page; it must be freed
 	within the same mtr as the undo log header is removed from the
 	history list: otherwise, in case of a database crash, the segment
-	could become inaccessible garbage in the file space. */
-
+	could become inaccessible garbage in the file space. 
+	我们可以释放undo日志段报头页;当undo日志头从历史列表中删除时，必须在相同的MTR中释放它:否则，在数据库崩溃的情况下，段可能成为文件空间中不可访问的垃圾。*/
 	flst_cut_end(rseg_hdr + TRX_RSEG_HISTORY,
 			log_hdr + TRX_UNDO_HISTORY_NODE, n_removed_logs, &mtr);
 	freed = FALSE;
@@ -392,8 +392,7 @@ loop:
 		/* Here we assume that a file segment with just the header
 		page can be freed in a few steps, so that the buffer pool
 		is not flooded with bufferfixed pages: see the note in
-		fsp0fsp.c. */
-	
+		fsp0fsp.c. 这里我们假设一个只有头页的文件段可以通过几个步骤释放，这样缓冲池就不会被缓冲固定页淹没:参见fsp0fsp.c中的说明。*/
 		freed = fseg_free_step(seg_hdr + TRX_UNDO_FSEG_HEADER,
 									&mtr);
 	}
@@ -415,7 +414,7 @@ loop:
 }
 
 /************************************************************************
-Removes unnecessary history data from a rollback segment. */
+Removes unnecessary history data from a rollback segment.从回滚段中删除不必要的历史数据。 */
 static
 void
 trx_purge_truncate_rseg_history(
@@ -513,7 +512,8 @@ loop:
 
 /************************************************************************
 Removes unnecessary history data from rollback segments. NOTE that when this
-function is called, the caller must not have any latches on undo log pages! */
+function is called, the caller must not have any latches on undo log pages! 
+从回滚段中删除不必要的历史数据。注意，当这个函数被调用时，调用者不能在撤消日志页面上有任何锁存!*/
 static
 void
 trx_purge_truncate_history(void)
@@ -535,7 +535,7 @@ trx_purge_truncate_history(void)
 	}
 
 	/* We play safe and set the truncate limit at most to the purge view
-	low_limit number, though this is not necessary */
+	low_limit number, though this is not necessary 为了安全起见，我们将截断限制最多设置为清除视图low_limit数，尽管这不是必要的*/
 
 	if (ut_dulint_cmp(limit_trx_no, purge_sys->view->low_limit_no) >= 0) {
 		limit_trx_no = purge_sys->view->low_limit_no;
@@ -556,7 +556,8 @@ trx_purge_truncate_history(void)
 
 /************************************************************************
 Does a truncate if the purge array is empty. NOTE that when this function is
-called, the caller must not have any latches on undo log pages! */
+called, the caller must not have any latches on undo log pages! 
+如果清除数组为空，则进行截断。注意，当这个函数被调用时，调用者不能在撤消日志页面上有任何锁存!*/
 UNIV_INLINE
 ibool
 trx_purge_truncate_if_arr_empty(void)
@@ -577,7 +578,8 @@ trx_purge_truncate_if_arr_empty(void)
 
 /***************************************************************************
 Updates the last not yet purged history log info in rseg when we have purged
-a whole undo log. Advances also purge_sys->purge_trx_no past the purged log. */
+a whole undo log. Advances also purge_sys->purge_trx_no past the purged log. 
+当我们已经清除了一个完整的撤消日志时，更新rseg中最后一个尚未清除的历史日志信息。purge_sys->purge_trx_no过去被清除的日志。*/
 static 
 void
 trx_purge_rseg_get_next_history_log(
@@ -615,7 +617,7 @@ trx_purge_rseg_get_next_history_log(
 	
 		/* This is the last log header on this page and the log
 		segment cannot be reused: we may increment the number of
-		pages handled */
+		pages handled 这是该页面的最后一个日志头，日志段不能被重用:我们可以增加所处理的页的数量*/
 
 		purge_sys->n_pages_handled++;
 	}
@@ -624,7 +626,7 @@ trx_purge_rseg_get_next_history_log(
 			 flst_get_prev_addr(log_hdr + TRX_UNDO_HISTORY_NODE,
 									&mtr));
 	if (prev_log_addr.page == FIL_NULL) {
-		/* No logs left in the history list */
+		/* No logs left in the history list 历史列表中没有任何记录*/
 
 		rseg->last_page_no = FIL_NULL;
 	
@@ -637,7 +639,7 @@ trx_purge_rseg_get_next_history_log(
 	mutex_exit(&(rseg->mutex));
 	mtr_commit(&mtr);
 
-	/* Read the trx number and del marks from the previous log header */
+	/* Read the trx number and del marks from the previous log header 从以前的日志标头中读取trx号和del标记*/
 	mtr_start(&mtr);
 
 	log_hdr = trx_undo_page_get_s_latched(rseg->space,
@@ -664,7 +666,9 @@ trx_purge_rseg_get_next_history_log(
 Chooses the next undo log to purge and updates the info in purge_sys. This
 function is used to initialize purge_sys when the next record to purge is
 not known, and also to update the purge system info on the next record when
-purge has handled the whole undo log for a transaction. */
+purge has handled the whole undo log for a transaction. 
+选择下一个撤消日志来清除和更新purge_sys中的信息。当不知道要清除的下一个记录时，该函数用于初始化purge_sys，
+当清除处理了一个事务的整个撤销日志时，该函数还用于更新下一个记录上的清除系统信息。*/
 static 
 void
 trx_purge_choose_next_log(void)
@@ -758,7 +762,7 @@ trx_purge_choose_next_log(void)
 }
 
 /***************************************************************************
-Gets the next record to purge and updates the info in the purge system. */
+Gets the next record to purge and updates the info in the purge system. 获取要清除的下一个记录并更新清除系统中的信息。*/
 static
 trx_undo_rec_t*
 trx_purge_get_next_rec(
@@ -789,11 +793,11 @@ trx_purge_get_next_rec(
 
 	if (offset == 0) {
 		/* It is the dummy undo log record, which means that there is
-		no need to purge this undo log */
+		no need to purge this undo log 它是虚拟的撤销日志记录，这意味着不需要清除该撤销日志*/
 
 		trx_purge_rseg_get_next_history_log(purge_sys->rseg);
 	
-		/* Look for the next undo log and record to purge */
+		/* Look for the next undo log and record to purge 寻找下一个要清除的撤销日志和记录*/
 
 		trx_purge_choose_next_log();
 
@@ -809,7 +813,7 @@ trx_purge_get_next_rec(
 
 	for (;;) {
 		/* Try first to find the next record which requires a purge
-		operation from the same page of the same undo log */
+		operation from the same page of the same undo log 首先尝试找到需要从同一撤销日志的同一页进行清除操作的下一个记录*/
 	
 		next_rec = trx_undo_page_get_next_rec(rec2,
 						purge_sys->hdr_page_no,
@@ -847,7 +851,7 @@ trx_purge_get_next_rec(
 		
 		trx_purge_rseg_get_next_history_log(purge_sys->rseg);
 	
-		/* Look for the next undo log and record to purge */
+		/* Look for the next undo log and record to purge 寻找下一个要清除的撤销日志和记录*/
 
 		trx_purge_choose_next_log();		
 
@@ -864,7 +868,7 @@ trx_purge_get_next_rec(
 		purge_sys->offset = rec2 - page;
 
 		if (undo_page != page) {
-			/* We advance to a new page of the undo log: */
+			/* We advance to a new page of the undo log: 我们进入撤销日志的新页面:*/
 			purge_sys->n_pages_handled++;
 		}
 	}
@@ -878,7 +882,7 @@ trx_purge_get_next_rec(
 
 /************************************************************************
 Fetches the next undo log record from the history list to purge. It must be
-released with the corresponding release function. */
+released with the corresponding release function. 从要清除的历史列表中获取下一个撤消日志记录。必须有相应的释放功能。*/
 
 trx_undo_rec_t*
 trx_purge_fetch_next_rec(
@@ -962,8 +966,8 @@ trx_purge_fetch_next_rec(
 			    (purge_sys->view)->low_limit_no) < 0);
 	
 	/* The following call will advance the stored values of purge_trx_no
-	and purge_undo_no, therefore we had to store them first */
-	
+	and purge_undo_no, therefore we had to store them first 
+	下面的调用将提前存储purge_trx_no和purge_undo_no的值，因此我们必须先存储它们*/
 	undo_rec = trx_purge_get_next_rec(heap);
 
 	mutex_exit(&(purge_sys->mutex));
@@ -972,7 +976,7 @@ trx_purge_fetch_next_rec(
 }
 
 /***********************************************************************
-Releases a reserved purge undo record. */
+Releases a reserved purge undo record. 释放一个保留的清除撤销记录。*/
 
 void
 trx_purge_rec_release(
@@ -991,7 +995,7 @@ trx_purge_rec_release(
 }
 
 /***********************************************************************
-This function runs a purge batch. */
+This function runs a purge batch. 此函数运行一个清除批处理。*/
 
 ulint
 trx_purge(void)
@@ -1020,7 +1024,7 @@ trx_purge(void)
 
 	mutex_enter(&kernel_mutex);
 
-	/* Close and free the old purge view */	
+	/* Close and free the old purge view 关闭并释放旧的清除视图*/	
 
 	read_view_close(purge_sys->view);
 	purge_sys->view = NULL;
@@ -1074,7 +1078,7 @@ trx_purge(void)
 }
 
 /**********************************************************************
-Prints information of the purge system to stderr. */
+Prints information of the purge system to stderr. 将清除系统的信息打印到标准错误。*/
 
 void
 trx_purge_sys_print(void)

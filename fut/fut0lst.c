@@ -328,8 +328,8 @@ flst_remove(
 /************************************************************************
 Cuts off the tail of the list, including the node given. The number of
 nodes which will be removed must be provided by the caller, as this function
-does not measure the length of the tail. */
-
+does not measure the length of the tail. 
+删除列表的尾部，包括给定的节点。要删除的节点数量必须由调用者提供，因为这个函数不度量尾部的长度。*/
 void
 flst_cut_end(
 /*=========*/

@@ -1,6 +1,6 @@
 /******************************************************
 Purge old versions
-
+清除旧版本
 (c) 1996 Innobase Oy
 
 Created 3/26/1996 Heikki Tuuri
@@ -10,7 +10,7 @@ Created 3/26/1996 Heikki Tuuri
 
 /************************************************************************
 Calculates the file address of an undo log header when we have the file
-address of its history list node. */
+address of its history list node. 当获得历史列表节点的文件地址时，计算撤销日志头的文件地址。*/
 UNIV_INLINE
 fil_addr_t
 trx_purge_get_log_from_hist(

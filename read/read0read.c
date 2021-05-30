@@ -39,8 +39,8 @@ read_view_create_low(
 Makes a copy of the oldest existing read view, with the exception that also
 the creating trx of the oldest view is set as not visible in the 'copied'
 view. Opens a new view if no views currently exist. The view must be closed
-with ..._close. This is used in purge. */
-
+with ..._close. This is used in purge. 创建最老的已存在读视图的副本，但创建最老视图的trx也被设置为在“已复制”视图中不可见。
+如果当前不存在视图，则打开一个新视图。视图必须用…_close关闭。这用于清洗。*/
 read_view_t*
 read_view_oldest_copy_or_open_new(
 /*==============================*/
@@ -75,7 +75,7 @@ read_view_oldest_copy_or_open_new(
 	view_copy = read_view_create_low(n, heap);
 	
 	/* Insert the id of the creator in the right place of the descending
-	array of ids, if needs_insert is TRUE: */
+	array of ids, if needs_insert is TRUE: 如果needs_insert为TRUE，则在id降序数组的右边插入创建器的id:*/
 
 	i = 0;
 	while (i < n) {
@@ -106,7 +106,7 @@ read_view_oldest_copy_or_open_new(
 	view_copy->can_be_too_old = FALSE;
 
 	if (n > 0) {
-		/* The last active transaction has the smallest id: */
+		/* The last active transaction has the smallest id:最后一个活动事务的id最小: */
 		view_copy->up_limit_id = read_view_get_nth_trx_id(
 							view_copy, n - 1);
 	} else {

@@ -37,7 +37,7 @@ read_view_set_nth_trx_id(
 }
 
 /*************************************************************************
-Checks if a read view sees the specified transaction. */
+Checks if a read view sees the specified transaction. 检查读视图是否看到指定的事务。*/
 UNIV_INLINE
 ibool
 read_view_sees_trx_id(
@@ -63,8 +63,8 @@ read_view_sees_trx_id(
 	/* We go through the trx ids in the array smallest first: this order
 	may save CPU time, because if there was a very long running
 	transaction in the trx id array, its trx id is looked at first, and
-	the first two comparisons may well decide the visibility of trx_id. */
-
+	the first two comparisons may well decide the visibility of trx_id. 
+	我们先查看最小的trx id数组中的trx id，这样可以节省CPU时间，因为如果trx id数组中有一个运行时间很长的事务，那么首先查看它的trx id，前两个比较可以很好地决定trx_id的可见性。*/
 	n_ids = view->n_trx_ids;
 
 	for (i = 0; i < n_ids; i++) {
