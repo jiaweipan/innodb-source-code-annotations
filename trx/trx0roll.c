@@ -1,5 +1,5 @@
 /******************************************************
-Transaction rollback
+Transaction rollback 事务回滚
 
 (c) 1996 Innobase Oy
 
