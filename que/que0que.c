@@ -120,7 +120,7 @@ que_graph_publish(
 }
 
 /***************************************************************************
-Creates a query graph fork node. */
+Creates a query graph fork node. 创建查询图分叉节点。*/
 
 que_fork_t*
 que_fork_create(
@@ -300,7 +300,7 @@ que_thr_init_command(
 Starts execution of a command in a query fork. Picks a query thread which
 is not in the QUE_THR_RUNNING state and moves it to that state. If none
 can be chosen, a situation which may arise in parallelized fetches, NULL
-is returned. */
+is returned. 在查询分叉中开始执行命令。选择一个不处于QUE_THR_RUNNING状态的查询线程并将其移动到该状态。如果没有选择，这种情况可能会在并行获取中出现，则返回NULL。*/
 
 que_thr_t*
 que_fork_start_command(
@@ -315,7 +315,7 @@ que_fork_start_command(
 {
 	que_thr_t*	thr;
 	
-	/* Set the command parameters in the fork root */
+	/* Set the command parameters in the fork root 在分叉根中设置命令参数*/
 	fork->command = command;
 	fork->param = param;	
 
@@ -325,10 +325,10 @@ que_fork_start_command(
 
 	/* Choose the query thread to run: usually there is just one thread,
 	but in a parallelized select, which necessarily is non-scrollable,
-	there may be several to choose from */
+	there may be several to choose from 选择要运行的查询线程:通常只有一个线程，但在不可滚动的并行选择中，可能有多个线程可供选择*/
 
 	/*---------------------------------------------------------------
-	First we try to find a query thread in the QUE_THR_COMMAND_WAIT state */
+	First we try to find a query thread in the QUE_THR_COMMAND_WAIT state 首先，我们尝试找到QUE_THR_COMMAND_WAIT状态的查询线程*/
 	
 	thr = UT_LIST_GET_FIRST(fork->thrs);
 
@@ -336,7 +336,7 @@ que_fork_start_command(
 		if (thr->state == QUE_THR_COMMAND_WAIT) {
 
 			/* We have to send the initial message to query thread
-			to start it */
+			to start it 我们必须发送初始消息给查询线程来启动它*/
 
 			que_thr_init_command(thr);
 
@@ -349,7 +349,7 @@ que_fork_start_command(
 	}
 
 	/*----------------------------------------------------------------
-	Then we try to find a query thread in the QUE_THR_SUSPENDED state */
+	Then we try to find a query thread in the QUE_THR_SUSPENDED state 然后尝试找到处于QUE_THR_SUSPENDED状态的查询线程*/
 
 	thr = UT_LIST_GET_FIRST(fork->thrs);
 
@@ -357,7 +357,7 @@ que_fork_start_command(
 		if (thr->state == QUE_THR_SUSPENDED) {
 			/* In this case the execution of the thread was
 			suspended: no initial message is needed because
-			execution can continue from where it was left */
+			execution can continue from where it was left 在这种情况下，线程的执行被挂起:不需要初始消息，因为执行可以从遗留的位置继续*/
 
 			que_thr_move_to_run_state(thr);
 
@@ -368,7 +368,7 @@ que_fork_start_command(
 	}
 
 	/*-----------------------------------------------------------------
-	Then we try to find a query thread in the QUE_THR_COMPLETED state */
+	Then we try to find a query thread in the QUE_THR_COMPLETED state 然后尝试找到处于QUE_THR_COMPLETED状态的查询线程*/
 	
 	thr = UT_LIST_GET_FIRST(fork->thrs);
 
@@ -793,7 +793,8 @@ Moves a thread from another state to the QUE_THR_RUNNING state. Increments
 the n_active_thrs counters of the query graph and transaction if thr was
 not active.
 ***NOTE***: This and ..._mysql are  the only functions in which such a
-transition is allowed to happen! */
+transition is allowed to happen! 将线程从另一个状态移动到QUE_THR_RUNNING状态。
+如果thr不活动，则增加查询图和事务的n_active_thrs计数器。***注:This and…_mysql是唯一允许发生这种转换的函数!*/
 static
 void
 que_thr_move_to_run_state(
@@ -1210,7 +1211,7 @@ que_node_print_info(
 }
 
 /**************************************************************************
-Performs an execution step on a query thread. */
+Performs an execution step on a query thread. 在查询线程上执行执行步骤。*/
 UNIV_INLINE
 que_thr_t*
 que_thr_step(
@@ -1400,8 +1401,8 @@ que_thr_check_if_switch(
 /**************************************************************************
 Runs query threads. Note that the individual query thread which is run
 within this function may change if, e.g., the OS thread executing this
-function uses a threshold amount of resources. */
-
+function uses a threshold amount of resources. 线程运行查询。
+注意，如果执行此函数的OS线程使用了阈值的资源，则在此函数中运行的单个查询线程可能会发生变化。*/
 void
 que_run_threads(
 /*============*/
@@ -1415,8 +1416,8 @@ que_run_threads(
 	ut_ad(!mutex_own(&kernel_mutex));
 
 	/* cumul_resource counts how much resources the OS thread (NOT the
-	query thread) has spent in this function */
-
+	query thread) has spent in this function 
+	cumul_resource计算操作系统线程(不是查询线程)在这个函数中花费了多少资源*/
 	loop_count = QUE_MAX_LOOPS_WITHOUT_CHECK;
 	cumul_resource = 0;	
 loop:
@@ -1444,12 +1445,12 @@ loop:
 	/* Check that there is enough space in the log to accommodate
 	possible log entries by this query step; if the operation can touch
 	more than about 4 pages, checks must be made also within the query
-	step! */
+	step! 通过这个查询步骤，检查日志中是否有足够的空间容纳可能的日志条目;如果操作可以触摸超过4页左右，检查也必须在查询步骤中进行!*/
 
 	log_free_check();
 	
 	/* Perform the actual query step: note that the query thread
-	may change if, e.g., a subprocedure call is made */
+	may change if, e.g., a subprocedure call is made 执行实际的查询步骤:注意，如果调用子过程，查询线程可能会改变*/
 
 	/*-------------------------*/
 	next_thr = que_thr_step(thr);

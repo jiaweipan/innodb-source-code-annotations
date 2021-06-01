@@ -2006,7 +2006,7 @@ pars_sql(
 /**********************************************************************
 Completes a query graph by adding query thread and fork nodes
 above it and prepares the graph for running. The fork created is of
-type QUE_FORK_MYSQL_INTERFACE. */
+type QUE_FORK_MYSQL_INTERFACE. 通过在查询图之上添加查询线程和分叉节点来完成查询图，并准备运行查询图。创建的分叉的类型是QUE_FORK_MYSQL_INTERFACE。*/
 
 que_thr_t*
 pars_complete_graph_for_exec(

@@ -26,11 +26,11 @@ Created 3/26/1996 Heikki Tuuri
 #include "lock0lock.h"
 #include "pars0pars.h"
 
-/* This many pages must be undone before a truncate is tried within rollback */
+/* This many pages must be undone before a truncate is tried within rollback 在回滚中尝试截断之前，必须撤消这么多页*/
 #define TRX_ROLL_TRUNC_THRESHOLD	1
 
 /***********************************************************************
-Rollback a transaction used in MySQL. */
+Rollback a transaction used in MySQL. 回滚MySQL中使用的事务。*/
 
 int
 trx_general_rollback_for_mysql(
@@ -86,7 +86,7 @@ trx_general_rollback_for_mysql(
 }
 
 /***********************************************************************
-Rollback a transaction used in MySQL. */
+Rollback a transaction used in MySQL. 回滚MySQL中使用的事务。*/
 
 int
 trx_rollback_for_mysql(
@@ -104,7 +104,7 @@ trx_rollback_for_mysql(
 	trx->op_info = "rollback";
 	
 	/* Tell Innobase server that there might be work for
-	utility threads: */
+	utility threads: 告诉Innobase服务器，可能有工作的实用程序线程:*/
 
 	srv_active_wake_master_thread();
 
@@ -113,7 +113,7 @@ trx_rollback_for_mysql(
 	trx_mark_sql_stat_end(trx);
 
 	/* Tell Innobase server that there might be work for
-	utility threads: */
+	utility threads: 告诉Innobase服务器，可能有工作的实用程序线程:*/
 
 	srv_active_wake_master_thread();
 
@@ -123,7 +123,7 @@ trx_rollback_for_mysql(
 }	
 
 /***********************************************************************
-Rollback the latest SQL statement for MySQL. */
+Rollback the latest SQL statement for MySQL. 回滚MySQL的最新SQL语句。*/
 
 int
 trx_rollback_last_sql_stat_for_mysql(
@@ -141,7 +141,7 @@ trx_rollback_last_sql_stat_for_mysql(
 	trx->op_info = "rollback of SQL statement";
 	
 	/* Tell Innobase server that there might be work for
-	utility threads: */
+	utility threads:告诉Innobase服务器，可能有工作的实用程序线程: */
 
 	srv_active_wake_master_thread();
 
@@ -150,7 +150,7 @@ trx_rollback_last_sql_stat_for_mysql(
 	trx_mark_sql_stat_end(trx);
 
 	/* Tell Innobase server that there might be work for
-	utility threads: */
+	utility threads: 告诉Innobase服务器，可能有工作的实用程序线程:*/
 
 	srv_active_wake_master_thread();
 
@@ -160,7 +160,7 @@ trx_rollback_last_sql_stat_for_mysql(
 }
 
 /***********************************************************************
-Rollback uncommitted transactions which have no user session. */
+Rollback uncommitted transactions which have no user session. 回滚没有用户会话的未提交事务。*/
 
 void
 trx_rollback_all_without_sess(void)
@@ -262,7 +262,7 @@ loop:
 
 	if (trx->dict_operation) {
 		/* If the transaction was for a dictionary operation, we
-		drop the relevant table, if it still exists */
+		drop the relevant table, if it still exists 如果事务用于字典操作，则删除相关表(如果它仍然存在)*/
 
 		table = dict_table_get_on_id_low(trx->table_id, trx);
 
@@ -286,7 +286,7 @@ loop:
 }
 
 /***********************************************************************
-Returns a transaction savepoint taken at this point in time. */
+Returns a transaction savepoint taken at this point in time. 返回此时获取的事务保存点。*/
 
 trx_savept_t
 trx_savept_take(
@@ -302,7 +302,7 @@ trx_savept_take(
 }
 	
 /***********************************************************************
-Creates an undo number array. */
+Creates an undo number array. 创建撤消编号数组。*/
 
 trx_undo_arr_t*
 trx_undo_arr_create(void)
@@ -345,7 +345,7 @@ trx_undo_arr_free(
 }
 
 /***********************************************************************
-Stores info of an undo log record to the array if it is not stored yet. */
+Stores info of an undo log record to the array if it is not stored yet. 如果尚未存储，则将undo日志记录的信息存储到数组中。*/
 static
 ibool
 trx_undo_arr_store_info(
@@ -407,7 +407,7 @@ trx_undo_arr_store_info(
 }
 
 /***********************************************************************
-Removes an undo number from the array. */
+Removes an undo number from the array. 从数组中删除撤消号。*/
 static
 void
 trx_undo_arr_remove_info(
@@ -441,7 +441,7 @@ trx_undo_arr_remove_info(
 }
 
 /***********************************************************************
-Gets the biggest undo number in an array. */
+Gets the biggest undo number in an array.获取数组中最大的撤销编号。 */
 static
 dulint
 trx_undo_arr_get_biggest(
@@ -478,7 +478,7 @@ trx_undo_arr_get_biggest(
 }
 
 /***************************************************************************
-Tries truncate the undo logs. */
+Tries truncate the undo logs. 尝试截断undo日志。*/
 
 void
 trx_roll_try_truncate(
@@ -518,7 +518,8 @@ trx_roll_try_truncate(
 
 /***************************************************************************
 Pops the topmost undo log record in a single undo log and updates the info
-about the topmost record in the undo log memory struct. */
+about the topmost record in the undo log memory struct.
+在单个撤消日志中弹出最上面的撤消日志记录，并更新关于撤消日志内存结构中最上面记录的信息。 */
 static
 trx_undo_rec_t*
 trx_roll_pop_top_rec(
@@ -570,8 +571,8 @@ Pops the topmost record when the two undo logs of a transaction are seen
 as a single stack of records ordered by their undo numbers. Inserts the
 undo number of the popped undo record to the array of currently processed
 undo numbers in the transaction. When the query thread finishes processing
-of this undo record, it must be released with trx_undo_rec_release. */
-
+of this undo record, it must be released with trx_undo_rec_release.当事务的两个撤销日志被视为按撤销编号排序的单个记录堆栈时，弹出最上面的记录。
+将弹出的撤消记录的撤消号插入到事务中当前处理的撤消号数组中。当查询线程完成撤销记录的处理时，必须使用trx_undo_rec_release释放它。 */
 trx_undo_rec_t*
 trx_roll_pop_top_rec_of_trx(
 /*========================*/
@@ -656,7 +657,7 @@ try_again:
 	trx->undo_no = undo_no;
 
 	if (!trx_undo_arr_store_info(trx, undo_no)) {
-		/* A query thread is already processing this undo log record */
+		/* A query thread is already processing this undo log record 查询线程已经在处理这条撤消日志记录*/
 
 		mutex_exit(&(trx->undo_mutex));
 
@@ -677,8 +678,7 @@ try_again:
 /************************************************************************
 Reserves an undo log record for a query thread to undo. This should be
 called if the query thread gets the undo log record not using the pop
-function above. */
-
+function above. 为要撤消的查询线程保留一条撤消日志记录。如果查询线程获取的undo日志记录没有使用上面的pop函数，则应该调用此函数。*/
 ibool
 trx_undo_rec_reserve(
 /*=================*/
@@ -698,7 +698,7 @@ trx_undo_rec_reserve(
 }
 
 /***********************************************************************
-Releases a reserved undo record. */
+Releases a reserved undo record. 释放一个保留的撤销记录。*/
 
 void
 trx_undo_rec_release(
@@ -718,7 +718,7 @@ trx_undo_rec_release(
 }
 
 /*************************************************************************
-Starts a rollback operation. */	
+Starts a rollback operation. 开始回滚操作。*/	
 
 void
 trx_rollback(
@@ -739,7 +739,7 @@ trx_rollback(
 	ut_ad(mutex_own(&kernel_mutex));
 	ut_ad((trx->undo_no_arr == NULL) || ((trx->undo_no_arr)->n_used == 0));
 	
-	/* Initialize the rollback field in the transaction */
+	/* Initialize the rollback field in the transaction 初始化事务中的回滚字段*/
 
 	if (sig->type == TRX_SIG_TOTAL_ROLLBACK) {
 
@@ -764,7 +764,7 @@ trx_rollback(
 		trx->undo_no_arr = trx_undo_arr_create();
 	}
 	
-	/* Build a 'query' graph which will perform the undo operations */
+	/* Build a 'query' graph which will perform the undo operations 构建一个“查询”图，它将执行撤销操作*/
 
 	roll_graph = trx_roll_graph_build(trx);
 
@@ -792,7 +792,7 @@ trx_rollback(
 Builds an undo 'query' graph for a transaction. The actual rollback is
 performed by executing this query graph like a query subprocedure call.
 The reply about the completion of the rollback will be sent by this
-graph. */
+graph.为事务构建撤消“查询”图。实际的回滚是通过像执行查询子过程调用一样执行这个查询图来执行的。关于回滚完成的回复将由这个图发送。 */
 
 que_t*
 trx_roll_graph_build(
@@ -822,7 +822,7 @@ trx_roll_graph_build(
 
 /*************************************************************************
 Finishes error processing after the necessary partial rollback has been
-done. */
+done. 在完成必要的部分回滚后完成错误处理。*/
 static
 void
 trx_finish_error_processing(
@@ -851,7 +851,7 @@ trx_finish_error_processing(
 }
 
 /*************************************************************************
-Finishes a partial rollback operation. */
+Finishes a partial rollback operation. 完成部分回滚操作。*/
 static
 void
 trx_finish_partial_rollback_off_kernel(
@@ -870,7 +870,7 @@ trx_finish_partial_rollback_off_kernel(
 	sig = UT_LIST_GET_FIRST(trx->signals);
 
 	/* Remove the signal from the signal queue and send reply message
-	to it */
+	to it 从信号队列中删除信号并向其发送回复消息*/
 
 	trx_sig_reply(trx, sig, next_thr);
 	trx_sig_remove(trx, sig);
@@ -879,7 +879,7 @@ trx_finish_partial_rollback_off_kernel(
 }
 
 /********************************************************************
-Finishes a transaction rollback. */
+Finishes a transaction rollback. 完成事务回滚。*/
 
 void
 trx_finish_rollback_off_kernel(
@@ -900,7 +900,7 @@ trx_finish_rollback_off_kernel(
 
 	ut_a(trx->undo_no_arr == NULL || trx->undo_no_arr->n_used == 0);
 
-	/* Free the memory reserved by the undo graph */
+	/* Free the memory reserved by the undo graph 释放撤消图所保留的内存*/
 	que_graph_free(graph);
 
 	sig = UT_LIST_GET_FIRST(trx->signals);
@@ -926,7 +926,7 @@ trx_finish_rollback_off_kernel(
 	trx_commit_off_kernel(trx);
 
 	/* Remove all TRX_SIG_TOTAL_ROLLBACK signals from the signal queue and
-	send reply messages to them */
+	send reply messages to them 从信号队列中删除所有TRX_SIG_TOTAL_ROLLBACK信号，并向它们发送回复消息*/
 
 	trx->que_state = TRX_QUE_RUNNING;
 	
@@ -945,7 +945,7 @@ trx_finish_rollback_off_kernel(
 }
 
 /*************************************************************************
-Creates a rollback command node struct. */
+Creates a rollback command node struct. 创建一个回滚命令节点结构。*/
 
 roll_node_t*
 roll_node_create(
@@ -965,7 +965,7 @@ roll_node_create(
 }
 
 /***************************************************************
-Performs an execution step for a rollback command node in a query graph. */
+Performs an execution step for a rollback command node in a query graph.为查询图中的回滚命令节点执行执行步骤。 */
 
 que_thr_t*
 trx_rollback_step(
@@ -999,7 +999,7 @@ trx_rollback_step(
 			savept = NULL;
 		}
 
-		/* Send a rollback signal to the transaction */
+		/* Send a rollback signal to the transaction 向事务发送回滚信号*/
 
 		success = trx_sig_send(thr_get_trx(thr),
 					sig_no, TRX_SIG_SELF,
@@ -1010,7 +1010,7 @@ trx_rollback_step(
 		mutex_exit(&kernel_mutex);
 
 		if (!success) {
-			/* Error in delivering the rollback signal */
+			/* Error in delivering the rollback signal 回滚信号传递错误*/
 			que_thr_handle_error(thr, DB_ERROR, NULL, 0);
 		}
 

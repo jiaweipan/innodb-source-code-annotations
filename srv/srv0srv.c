@@ -2367,8 +2367,8 @@ Tells the InnoDB server that there has been activity in the database
 and wakes up the master thread if it is suspended (not sleeping). Used
 in the MySQL interface. Note that there is a small chance that the master
 thread stays suspended (we do not protect our operation with the kernel
-mutex, for performace reasons). */
-
+mutex, for performace reasons). 告诉InnoDB服务器数据库中有活动，并在主线程挂起(不是休眠)时唤醒主线程。
+在MySQL界面中使用。注意，主线程保持挂起的可能性很小(出于性能原因，我们没有使用内核互斥锁来保护我们的操作)。*/
 void
 srv_active_wake_master_thread(void)
 /*===============================*/
