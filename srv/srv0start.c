@@ -1,5 +1,5 @@
 /************************************************************************
-Starts the InnoDB database server
+Starts the InnoDB database server 启动Innobase数据库服务器
 
 (c) 1996-2000 Innobase Oy
 
