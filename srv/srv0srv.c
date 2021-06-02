@@ -1,5 +1,5 @@
 /******************************************************
-The database server main program
+The database server main program 服务器主程序
 
 NOTE: SQL Server 7 uses something which the documentation
 calls user mode scheduled threads (UMS threads). One such
@@ -9,17 +9,19 @@ that the concept is internal to SQL Server 7. It may mean that
 SQL Server 7 does all the scheduling of threads itself, even
 in i/o waits. We should maybe modify InnoDB to use the same
 technique, because thread switches within NT may be too slow.
-
+注意:SQL Server 7使用了文档中所谓的用户模式调度线程(UMS线程)。通常为每个处理器分配一个这样的线程。
+Win32文档不知道任何UMS线程，这表明这个概念是SQL Server 7的内部概念。这可能意味着SQL Server 7自己完成所有线程的调度，甚至在i/o等待中。
+我们可能应该修改InnoDB以使用同样的技术，因为NT中的线程切换可能太慢了。
 SQL Server 7 also mentions fibers, which are cooperatively
 scheduled threads. They can boost performance by 5 %,
 according to the Delaney and Soukup's book.
-
+SQL Server 7还提到了光纤，它是协同调度的线程。根据Delaney和Soukup的书，他们可以提高5%的绩效。
 Windows 2000 will have something called thread pooling
 (see msdn website), which we could possibly use.
-
+Windows 2000将会有一个叫做线程池的东西(见msdn网站)，我们可能会用到它。
 Another possibility could be to use some very fast user space
 thread library. This might confuse NT though.
-
+另一种可能是使用一些非常快的用户空间线程库。但是这可能会使NT感到困惑。
 (c) 1995 Innobase Oy
 
 Created 10/8/1995 Heikki Tuuri
@@ -51,11 +53,11 @@ Created 10/8/1995 Heikki Tuuri
 #include "srv0start.h"
 #include "row0mysql.h"
 
-/* Buffer which can be used in printing fatal error messages */
+/* Buffer which can be used in printing fatal error messages 可用于打印致命错误消息的缓冲区*/
 char	srv_fatal_errbuf[5000];
 
 /* The following counter is incremented whenever there is some user activity
-in the server */
+in the server 每当服务器中有一些用户活动时，以下计数器就会增加*/
 ulint	srv_activity_count	= 0;
 
 ibool	srv_lock_timeout_and_monitor_active = FALSE;
@@ -63,10 +65,10 @@ ibool	srv_error_monitor_active = FALSE;
 
 char*	srv_main_thread_op_info = "";
 
-/* Server parameters which are read from the initfile */
+/* Server parameters which are read from the initfile 从initfile中读取的服务器参数*/
 
 /* The following three are dir paths which are catenated before file
-names, where the file name itself may also contain a path */
+names, where the file name itself may also contain a path 下面三个是dir路径，它们连接在文件名之前，其中文件名本身也可能包含一个路径*/
 
 char*	srv_data_home 	= NULL;
 char*	srv_logs_home 	= NULL;
@@ -74,12 +76,12 @@ char*	srv_arch_dir 	= NULL;
 
 ulint	srv_n_data_files = 0;
 char**	srv_data_file_names = NULL;
-ulint*	srv_data_file_sizes = NULL;	/* size in database pages */ 
+ulint*	srv_data_file_sizes = NULL;	/* size in database pages 数据库页中的大小*/ 
 
 ulint*  srv_data_file_is_raw_partition = NULL;
 
 /* If the following is TRUE we do not allow inserts etc. This protects
-the user from forgetting the 'newraw' keyword to my.cnf */
+the user from forgetting the 'newraw' keyword to my.cnf 如果下面是TRUE，我们不允许插入等。这样可以防止用户忘记my.cnf中的'newraw'关键字*/
 
 ibool	srv_created_new_raw	= FALSE;
 
@@ -94,7 +96,7 @@ ibool	srv_flush_log_at_trx_commit = TRUE;
 
 byte	srv_latin1_ordering[256]	/* The sort order table of the latin1
 					character set. The following table is
-					the MySQL order as of Feb 10th, 2002 */
+					the MySQL order as of Feb 10th, 2002 latin1字符集的排序顺序表。下表是2002年2月10日MySQL的顺序*/
 = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07
 , 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
@@ -134,7 +136,7 @@ ibool	srv_use_native_aio	= FALSE;
 		
 ulint	srv_pool_size		= ULINT_MAX;	/* size in database pages;
 						MySQL originally sets this
-						value in megabytes */ 
+						value in megabytes  MySQL最初以mb为单位设置这个值*/ 
 ulint	srv_mem_pool_size	= ULINT_MAX;	/* size in bytes */ 
 ulint	srv_lock_table_size	= ULINT_MAX;
 
@@ -149,8 +151,8 @@ char*   srv_unix_file_flush_method_str = NULL;
 ulint   srv_unix_file_flush_method = 0;
 
 /* If the following is != 0 we do not allow inserts etc. This protects
-the user from forgetting the innodb_force_recovery keyword to my.cnf */
-
+the user from forgetting the innodb_force_recovery keyword to my.cnf 
+如果下面是!= 0，我们不允许插入等。这样可以防止用户忘记my.cnf中的innodb_force_recovery关键字*/
 ulint	srv_force_recovery	= 0;
 /*-----------------------*/
 /* The following controls how many threads we let inside InnoDB concurrently:
@@ -158,21 +160,22 @@ threads waiting for locks are not counted into the number because otherwise
 we could get a deadlock. MySQL creates a thread for each user session, and
 semaphore contention and convoy problems can occur withput this restriction.
 Value 10 should be good if there are less than 4 processors + 4 disks in the
-computer. Bigger computers need bigger values. */
-
+computer. Bigger computers need bigger values. 
+下面的方法控制了InnoDB内部并发线程的数量:等待锁的线程不计入线程数，否则会导致死锁。
+MySQL为每个用户会话创建一个线程，在这个限制下可能会出现信号量争用和护航问题。如果计算机中有少于4个处理器+ 4个磁盘，那么值10应该很好。更大的计算机需要更大的值。*/
 ulint	srv_thread_concurrency	= 8;
 
 os_fast_mutex_t	srv_conc_mutex;		/* this mutex protects srv_conc data
-					structures */
+					structures 这个互斥保护srv_conc数据结构*/
 lint	srv_conc_n_threads	= 0;	/* number of OS threads currently
 					inside InnoDB; it is not an error
 					if this drops temporarily below zero
 					because we do not demand that every
 					thread increments this, but a thread
 					waiting for a lock decrements this
-					temporarily */
+					temporarily InnoDB中当前OS线程数;如果这个值暂时降到0以下，就不是错误，因为我们不要求每个线程都增加这个值，但是等待锁的线程会临时减少这个值*/
 ulint	srv_conc_n_waiting_threads = 0;	/* number of OS threads waiting in the
-					FIFO for a permission to enter InnoDB
+					FIFO for a permission to enter InnoDB 在FIFO中等待进入InnoDB权限的OS线程数
 					*/
 
 typedef struct srv_conc_slot_struct	srv_conc_slot_t;
@@ -186,22 +189,22 @@ struct srv_conc_slot_struct{
 							thread in this slot is
 							free to proceed; but
 							reserved may still be
-							TRUE at that point */
+							TRUE at that point 当另一个线程已经设置了事件，并且该槽中的线程可以继续执行时，为TRUE;但在这一点上，保留可能仍然是正确的*/
 	UT_LIST_NODE_T(srv_conc_slot_t)	srv_conc_queue;	/* queue node */
 };
 
 UT_LIST_BASE_NODE_T(srv_conc_slot_t)	srv_conc_queue;	/* queue of threads
-							waiting to get in */
+							waiting to get in 等待进入的线程队列*/
 srv_conc_slot_t	srv_conc_slots[OS_THREAD_MAX_N];	/* array of wait
 							slots */
 
 /* Number of times a thread is allowed to enter InnoDB within the same
-SQL query after it has once got the ticket at srv_conc_enter_innodb */
+SQL query after it has once got the ticket at srv_conc_enter_innodb 线程在获得srv_conc_enter_innodb的许可后，允许在同一个SQL查询中进入InnoDB的次数*/
 #define SRV_FREE_TICKETS_TO_ENTER	500
 
 /*-----------------------*/
 /* If the following is set TRUE then we do not run purge and insert buffer
-merge to completion before shutdown */
+merge to completion before shutdown 如果以下设置为TRUE，则在关闭前不运行清除和插入缓冲区合并到完成*/
 
 ibool	srv_fast_shutdown	= FALSE;
 
@@ -237,7 +240,7 @@ ibool   srv_print_innodb_lock_monitor   = FALSE;
 ibool   srv_print_innodb_tablespace_monitor = FALSE;
 ibool   srv_print_innodb_table_monitor = FALSE;
 
-/* The parameters below are obsolete: */
+/* The parameters below are obsolete: 以下参数已过时:*/
 
 ibool	srv_print_parsed_sql		= FALSE;
 
@@ -262,16 +265,16 @@ ulint	srv_test_array_size	= ULINT_MAX;
 ulint	srv_test_n_mutexes	= ULINT_MAX;
 
 /* Array of English strings describing the current state of an
-i/o handler thread */
+i/o handler thread 描述i/o处理程序线程当前状态的英文字符串数组*/
 
 char* srv_io_thread_op_info[SRV_MAX_N_IO_THREADS];
 
 /*
-	IMPLEMENTATION OF THE SERVER MAIN PROGRAM
+	IMPLEMENTATION OF THE SERVER MAIN PROGRAM 服务器主程序的实现
 	=========================================
 
 There is the following analogue between this database
-server and an operating system kernel:
+server and an operating system kernel:在这个数据库服务器和一个操作系统内核之间有以下类似的东西:
 
 DB concept			equivalent OS concept
 ----------			---------------------
@@ -299,7 +302,9 @@ to check whether there is anything happening in the server which
 requires intervention of the master thread. Such situations may be,
 for example, when flushing of dirty blocks is needed in the buffer
 pool or old version of database rows have to be cleaned away.
-
+服务器由一个主线程控制，该主线程运行的优先级高于正常线程，即高于用户线程。
+它大部分时间都处于休眠状态，并每300毫秒唤醒一次，以检查服务器中是否发生了需要主线程干预的事情。
+例如，当缓冲池中需要清除脏块或必须清除旧版本的数据库行时，可能会出现这种情况。
 The threads which we call user threads serve the queries of
 the clients and input from the console of the server.
 They run at normal priority. The server may have several
@@ -308,7 +313,9 @@ at each of these endpoints ready to receive a client request.
 Each request is taken by a single user thread, which then starts
 processing and, when the result is ready, sends it to the client
 and returns to wait at the same endpoint the thread started from.
-
+我们称之为用户线程的线程服务于客户端的查询和来自服务器控制台的输入。它们以正常优先级运行。
+服务器可能有多个通信端点。一组专门的用户线程在每个端点上等待，准备接收客户端请求。
+每个请求都由一个用户线程接收，然后该线程开始处理，当结果准备好时，将其发送给客户机，并返回到线程开始时所在的端点处等待。
 So, we do not have dedicated communication threads listening at
 the endpoints and dealing the jobs to dedicated worker threads.
 Our architecture saves one thread swithch per request, compared
@@ -320,10 +327,13 @@ if the client resides in the same machine, maybe in an SMP machine
 on a different processor from the server thread, the saving
 can be important as the threads can communicate over shared
 memory with an overhead of a few microseconds.
-
+因此，我们没有专门的通信线程在端点侦听并将作业处理给专门的工作线程。与使用专用通信线程的解决方案相比，
+我们的架构为每个请求节省了一个线程切换，在运行NT的100mhz Pentium上，专用通信线程相当于15微秒。
+如果客户端通过网络通信，这种节省可以忽略不计，但如果客户端位于同一台机器上，可能在与服务器线程不同的处理器上的SMP机器中，
+节省可能很重要，因为线程可以通过共享内存进行通信，而开销只有几微秒。
 We may later implement a dedicated communication thread solution
 for those endpoints which communicate over a network.
-
+我们稍后可能会为那些通过网络进行通信的端点实现一个专用的通信线程解决方案。
 Our solution with user threads has two problems: for each endpoint
 there has to be a number of listening threads. If there are many
 communication endpoints, it may be difficult to set the right number
@@ -331,15 +341,17 @@ of concurrent threads in the system, as many of the threads
 may always be waiting at less busy endpoints. Another problem
 is queuing of the messages, as the server internally does not
 offer any queue for jobs.
-
+我们的用户线程解决方案有两个问题:对于每个端点，必须有许多侦听线程。
+如果有许多通信端点，可能很难在系统中设置正确的并发线程数，因为许多线程可能总是在较不繁忙的端点上等待。
+另一个问题是消息的队列，因为服务器内部没有为作业提供任何队列。
 Another group of user threads is intended for splitting the
 queries and processing them in parallel. Let us call these
 parallel communication threads. These threads are waiting for
 parallelized tasks, suspended on event semaphores.
-
+另一组用户线程用于分割查询并并行处理它们。让我们称这些为并行通信线程。这些线程正在等待并行化的任务，挂起在事件信号量上。
 A single user thread waits for input from the console,
 like a command to shut the database.
-
+单个用户线程等待控制台的输入，比如关闭数据库的命令。
 Utility threads are a different group of threads which takes
 care of the buffer pool flushing and other, mainly background
 operations, in the server.
@@ -355,7 +367,11 @@ the urgency drops under the low-water mark. Then the utility thread
 suspend itself to wait for an event. The master thread is
 responsible of signaling this event when the utility thread is
 again needed.
-
+实用程序线程是另一组线程，负责服务器中的缓冲池刷新和其他主要是后台操作。
+其中一些实用程序线程总是以低于正常优先级的速度运行，因此它们总是在后台运行。
+如果它们的任务变得紧急，它们中的一些可能会通过pri_adjust函数动态地提高它们的优先级，甚至高于正常的优先级。
+公用事业的运行由紧急的高水位和低水位标志控制。例如，对于刷新线程，紧急程度可以通过缓冲池中的脏块数量来衡量。
+当超过高水位标志时，公用事业开始运行，直到紧急下降到低水位标志之下。然后实用程序线程挂起自己以等待一个事件。当再次需要实用程序线程时，主线程负责通知此事件。
 For each individual type of utility, some threads always remain
 at lower than normal priority. This is because pri_adjust is implemented
 so that the threads at normal or higher priority control their
@@ -363,13 +379,15 @@ share of running time by calling sleep. Thus, if the load of the
 system sudenly drops, these threads cannot necessarily utilize
 the system fully. The background priority threads make up for this,
 starting to run when the load drops.
-
+对于每一种实用程序类型，有些线程总是保持在低于正常优先级的水平。
+这是因为实现了pri_adjust，以便正常或更高优先级的线程通过调用sleep来控制它们的运行时间份额。
+因此，如果系统的负载突然下降，这些线程不一定能够充分利用系统。后台优先级线程弥补了这一点，在负载下降时开始运行。
 When there is no activity in the system, also the master thread
 suspends itself to wait for an event making
 the server totally silent. The responsibility to signal this
 event is on the user thread which again receives a message
 from a client.
-
+当系统中没有活动时，主线程也会暂停自身以等待一个事件，使服务器完全静默。发出此事件信号的责任在用户线程上，该线程再次从客户端接收消息。
 There is still one complication in our server design. If a
 background utility thread obtains a resource (e.g., mutex) needed by a user
 thread, and there is also some other user activity in the system,
@@ -377,7 +395,8 @@ the user thread may have to wait indefinitely long for the
 resource, as the OS does not schedule a background thread if
 there is some other runnable user thread. This problem is called
 priority inversion in real-time programming.
-
+在我们的服务器设计中还有一个复杂之处。如果后台的实用程序线程获得所需的资源(例如,互斥)用户线程时,
+还有其他一些系统中用户活动,用户线程可能无限期等待长的时间资源,因为操作系统不安排一个后台线程是否有其他可运行用户线程。这个问题在实时编程中称为优先级反转。
 One solution to the priority inversion problem would be to
 keep record of which thread owns which resource and
 in the above case boost the priority of the background thread
@@ -394,7 +413,10 @@ stored before acquiring the mutex, and if it stored afterwards,
 the information is outdated for the time of one machine instruction,
 at least. (To be precise, the information could be stored to
 lock_word in mutex if the machine supports atomic swap.)
-
+优先级反转问题的一个解决方案是记录哪个线程拥有哪个资源，在上述情况下提高后台线程的优先级，以便它将被调度并释放资源。
+这种解决方案在实时编程中称为优先级继承。这种解决方案的缺点是获取互斥的开销会略微增加，在100 MHz的Pentium上可能会增加0.2微秒，因为线程必须调用os_thread_get_curr_id。
+这相当于一个互斥锁-解锁对的0.5微秒的开销。注意，线程不能将信息存储在资源中，比如互斥锁本身，因为如果在获取互斥锁之前存储信息，
+竞争的线程可能会抹掉这些信息，如果在获取互斥锁之后存储信息，那么这些信息至少在一条机器指令的时间内就过期了。(准确地说，如果机器支持原子交换，信息可以存储到互斥锁中的lock_word中。)
 The above solution with priority inheritance may become actual in the
 future, but at the moment we plan to implement a more coarse solution,
 which could be called a global priority inheritance. If a thread
@@ -404,7 +426,9 @@ thread, and boost the the priority of all runnable background threads
 to the normal level. The background threads then themselves adjust
 their fixed priority back to background after releasing all resources
 they had (or, at some fixed points in their program code).
-
+上述具有优先级继承的解决方案将来可能会成为现实，但目前我们计划实现一个更粗糙的解决方案，可以称为全局优先级继承。
+如果一个线程不得不为一个资源等待很长时间，比如300毫秒，我们就猜测它可能在等待一个后台线程拥有的资源，并将所有可运行后台线程的优先级提高到正常级别。
+后台线程在释放它们拥有的所有资源(或者在程序代码中的某些固定点)后，将自己的固定优先级调整回后台。
 What is the performance of the global priority inheritance solution?
 We may weigh the length of the wait time 300 milliseconds, during
 which the system processes some other thread
@@ -416,14 +440,16 @@ threads is not very big, say < 100, the cost is tolerable.
 Utility threads probably will access resources used by
 user threads not very often, so collisions of user threads
 to preempted utility threads should not happen very often.
-
+全局优先级继承解决方案的性能如何?我们可以将等待时间的长度衡量为300毫秒，在此期间系统处理其他线程，以提高每个可运行后台线程的优先级，
+重新调度它，并再次降低优先级的代价。在100 MHz Pentium + NT上，这个开销可能为每个线程100微秒。因此，如果可运行的后台线程的数量不是很大，
+比如小于100，那么成本是可以容忍的。实用程序线程可能不会经常访问用户线程使用的资源，所以用户线程和被抢占的实用程序线程之间的冲突不应该经常发生。
 The thread table contains
 information of the current status of each thread existing in the system,
 and also the event semaphores used in suspending the master thread
 and utility and parallel communication threads when they have nothing to do.
 The thread table can be seen as an analogue to the process table
 in a traditional Unix implementation.
-
+线程表包含系统中存在的每个线程的当前状态信息，以及在主线程、实用程序和并行通信线程无事可做时用于挂起它们的事件信号量。线程表可以看作是传统Unix实现中的进程表的类似物。
 The thread table is also used in the global priority inheritance
 scheme. This brings in one additional complication: threads accessing
 the thread table must have at least normal fixed priority,
@@ -432,9 +458,10 @@ thread is preempted while possessing the mutex protecting the thread table.
 So, if a thread accesses the thread table, its priority has to be
 boosted at least to normal. This priority requirement can be seen similar to
 the privileged mode used when processing the kernel calls in traditional
-Unix.*/
+Unix.线程表也用于全局优先级继承方案。这就带来了一个额外的复杂性:访问线程表的线程必须至少具有普通的固定优先级，因为如果后台线程在拥有保护线程表的互斥时被抢占，
+优先级继承解决方案将不起作用。因此，如果一个线程访问线程表，它的优先级至少必须提高到正常水平。这种优先级要求与传统Unix中处理内核调用时使用的特权模式类似。*/
 
-/* Thread slot in the thread table */
+/* Thread slot in the thread table 线程表中的线程槽*/
 struct srv_slot_struct{
 	os_thread_id_t	id;		/* thread id */
 	os_thread_t	handle;		/* thread handle */
@@ -450,7 +477,7 @@ struct srv_slot_struct{
 					used for MySQL threads) */
 };
 
-/* Table for MySQL threads where they will be suspended to wait for locks */
+/* Table for MySQL threads where they will be suspended to wait for locks MySQL线程将被挂起以等待锁的表*/
 srv_slot_t*	srv_mysql_table = NULL;
 
 os_event_t	srv_lock_timeout_thread_event;
@@ -470,8 +497,8 @@ byte		srv_pad2[64];	/* padding to prevent other memory update
 buffer, version, and insert threads. They may vary from 0 - 1000.
 The server mutex protects all these variables. The low-water values
 tell that the server can acquiesce the utility when the value
-drops below this low-water mark. */
-
+drops below this low-water mark. 以下三个值测量缓冲区、版本和插入线程作业的紧急程度。
+它们可能从0到1000不等。服务器互斥保护所有这些变量。低水位值表明，当该值低于此低水位标志时，服务器可以默认该实用程序。*/
 ulint	srv_meter[SRV_MASTER + 1];
 ulint	srv_meter_low_water[SRV_MASTER + 1];
 ulint	srv_meter_high_water[SRV_MASTER + 1];
@@ -480,7 +507,7 @@ ulint	srv_meter_foreground[SRV_MASTER + 1];
 
 /* The following values give info about the activity going on in
 the database. They are protected by the server mutex. The arrays
-are indexed by the type of the thread. */
+are indexed by the type of the thread. 下面的值给出了数据库中正在进行的活动的信息。它们受到服务器互斥锁的保护。数组根据线程的类型建立索引。*/
 
 ulint	srv_n_threads_active[SRV_MASTER + 1];
 ulint	srv_n_threads[SRV_MASTER + 1];
