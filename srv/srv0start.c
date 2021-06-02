@@ -61,7 +61,7 @@ ibool           srv_is_being_started = FALSE;
 ibool           srv_was_started      = FALSE;
 
 /* At a shutdown the value first climbs to SRV_SHUTDOWN_CLEANUP
-and then to SRV_SHUTDOWN_LAST_PHASE */
+and then to SRV_SHUTDOWN_LAST_PHASE 在一次关机时，该值首先上升到SRV_SHUTDOWN_CLEANUP，然后上升到SRV_SHUTDOWN_LAST_PHASE*/
 ulint		srv_shutdown_state = 0;
 
 ibool		measure_cont	= FALSE;
@@ -78,14 +78,14 @@ os_thread_id_t	thread_ids[SRV_MAX_N_IO_THREADS + 5];
 #define SRV_MAX_N_PENDING_SYNC_IOS	100
 
 /* The following limit may be too big in some old operating systems:
-we may get an assertion failure in os0file.c */
+we may get an assertion failure in os0file.c 以下限制在一些旧的操作系统中可能太大:我们可能在os0file.c中得到一个断言失败*/
 
 #define SRV_MAX_N_OPEN_FILES		500
 
 #define SRV_LOG_SPACE_FIRST_ID		1000000000
 
 /************************************************************************
-I/o-handler thread function. */
+I/o-handler thread function. I/o-handler线程函数。*/
 static
 
 #ifndef __WIN__
@@ -126,7 +126,7 @@ io_handler_thread(
 #endif
 
 /*************************************************************************
-Normalizes a directory path for Windows: converts slashes to backslashes. */
+Normalizes a directory path for Windows: converts slashes to backslashes.规范化Windows目录路径:将斜杠转换为反斜杠。 */
 static
 void
 srv_normalize_path_for_win(
@@ -147,7 +147,7 @@ srv_normalize_path_for_win(
 	
 /*************************************************************************
 Adds a slash or a backslash to the end of a string if it is missing
-and the string is not empty. */
+and the string is not empty. 如果字符串缺失且字符串不为空，则在字符串的末尾添加斜杠或反斜杠。*/
 static
 char*
 srv_add_path_separator_if_needed(
@@ -180,7 +180,7 @@ srv_add_path_separator_if_needed(
 
 /*************************************************************************
 Calculates the low 32 bits when a file size which is given as a number
-database pages is converted to the number of bytes. */
+database pages is converted to the number of bytes.当一个文件大小(数据库页数)被转换为字节数时，计算低32位。 */
 static
 ulint
 srv_calc_low32(
@@ -194,7 +194,7 @@ srv_calc_low32(
 
 /*************************************************************************
 Calculates the high 32 bits when a file size which is given as a number
-database pages is converted to the number of bytes. */
+database pages is converted to the number of bytes. 当文件大小(数据库页面数)被转换为字节数时，计算高32位。*/
 static
 ulint
 srv_calc_high32(
@@ -207,7 +207,7 @@ srv_calc_high32(
 }
 
 /*************************************************************************
-Creates or opens the log files. */
+Creates or opens the log files. 创建或打开日志文件。*/
 static
 ulint
 open_or_create_log_file(
@@ -299,7 +299,7 @@ open_or_create_log_file(
 
 	if (i == 0) {
 		/* Create in memory the file space object
-		which is for this log group */
+		which is for this log group 在内存中创建此日志组的文件空间对象*/
 				
 		fil_space_create(name,
 		2 * k + SRV_LOG_SPACE_FIRST_ID, FIL_LOG);
@@ -311,7 +311,7 @@ open_or_create_log_file(
 					2 * k + SRV_LOG_SPACE_FIRST_ID);
 
 	/* If this is the first log group, create the file space object
-	for archived logs */
+	for archived logs 如果这是第一个日志组，请为归档日志创建文件空间对象*/
 
 	if (k == 0 && i == 0) {
 		arch_space_id = 2 * k + 1 + SRV_LOG_SPACE_FIRST_ID;
@@ -332,7 +332,7 @@ open_or_create_log_file(
 }
 
 /*************************************************************************
-Creates or opens database data files. */
+Creates or opens database data files. 创建或打开数据库数据文件。*/
 static
 ulint
 open_or_create_data_files(
@@ -380,7 +380,7 @@ open_or_create_data_files(
 
 		if (srv_data_file_is_raw_partition[i] == SRV_NEW_RAW) {
 			/* The partition is opened, not created; then it is
-			written over */
+			written over 打开分区，但没有创建分区;然后它就被改写了*/
 
 			srv_created_new_raw = TRUE;
 
@@ -515,7 +515,7 @@ open_or_create_data_files(
 }
 
 /*********************************************************************
-This thread is used to measure contention of latches. */
+This thread is used to measure contention of latches. 这个线程用于测量锁存的争用。*/
 static
 ulint
 test_measure_cont(
@@ -589,8 +589,8 @@ test_measure_cont(
 /********************************************************************
 Starts InnoDB and creates a new database if database files
 are not found and the user wants. Server parameters are
-read from a file of name "srv_init" in the ib_home directory. */
-
+read from a file of name "srv_init" in the ib_home directory. 
+启动InnoDB并创建一个新的数据库，如果数据库文件没有找到，而用户想要。从ib_home目录中名为“srv_init”的文件中读取服务器参数。*/
 int
 innobase_start_or_create_for_mysql(void)
 /*====================================*/
@@ -768,7 +768,7 @@ innobase_start_or_create_for_mysql(void)
 		/* If we are using the doublewrite method, we will
 		check if there are half-written pages in data files,
 		and restore them from the doublewrite buffer if
-		possible */
+		possible 如果我们使用doublewrite方法，我们将检查数据文件中是否有写了一半的页，如果可能的话，从doublewrite缓冲区中恢复它们*/
 		
 		trx_sys_doublewrite_restore_corrupt_pages();
 	}
@@ -984,7 +984,7 @@ innobase_start_or_create_for_mysql(void)
 }
 
 /********************************************************************
-Shuts down the InnoDB database. */
+Shuts down the InnoDB database. 关闭InnoDB数据库。*/
 
 int
 innobase_shutdown_for_mysql(void) 
@@ -1004,7 +1004,8 @@ innobase_shutdown_for_mysql(void)
 	}
 
 	/* Flush buffer pool to disk, write the current lsn to
-	the tablespace header(s), and copy all log data to archive */
+	the tablespace header(s), and copy all log data to archive 
+	将缓冲池刷新到磁盘，将当前lsn写入表空间头，并将所有日志数据复制到存档*/
 
 	logs_empty_and_mark_files_at_shutdown();
 	

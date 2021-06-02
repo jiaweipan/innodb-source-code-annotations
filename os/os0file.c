@@ -154,8 +154,8 @@ os_get_os_version(void)
 Retrieves the last error number if an error occurs in a file io function.
 The number should be retrieved before any other OS calls (because they may
 overwrite the error number). If the number is not known to this program,
-the OS error number + 100 is returned. */
-
+the OS error number + 100 is returned. 如果文件io函数中发生错误，则检索最后一个错误号。
+应该在任何其他OS调用之前检索该编号(因为它们可能会覆盖错误编号)。如果程序不知道这个数字，则返回OS错误号+ 100。*/
 ulint
 os_file_get_last_error(void)
 /*========================*/
@@ -243,7 +243,8 @@ os_file_get_last_error(void)
 /********************************************************************
 Does error handling when a file operation fails. If we have run out
 of disk space, then the user can clean the disk. If we do not find
-a specified file, then the user can copy it to disk. */
+a specified file, then the user can copy it to disk.
+当文件操作失败时进行错误处理。如果我们已经耗尽了磁盘空间，那么用户可以清理磁盘。如果我们没有找到指定的文件，那么用户可以将其复制到磁盘。 */
 static
 ibool
 os_file_handle_error(
@@ -507,7 +508,7 @@ os_file_get_size(
 }
 
 /***************************************************************************
-Sets a file size. This function can be used to extend or truncate a file. */
+Sets a file size. This function can be used to extend or truncate a file.设置文件大小。此函数可用于扩展或截断文件。 */
 
 ibool
 os_file_set_size(
@@ -1845,7 +1846,7 @@ os_aio_posix_handle(
 
 /**************************************************************************
 Does simulated aio. This function should be called by an i/o-handler
-thread. */
+thread.并模拟aio。这个函数应该被一个i/o处理程序线程调用。 */
 
 ibool
 os_aio_simulated_handle(
@@ -1855,12 +1856,14 @@ os_aio_simulated_handle(
 				arrays to wait for; segment 0 is the ibuf
 				i/o thread, segment 1 the log i/o thread,
 				then follow the non-ibuf read threads, and as
-				the last are the non-ibuf write threads */
+				the last are the non-ibuf write threads 
+				在aio数组中等待的段的个数;段0是ibuf I / O线程，段1是日志I / O线程，然后是非ibuf读线程，最后是非ibuf写线程*/
 	void**	message1,	/* out: the messages passed with the aio
 				request; note that also in the case where
 				the aio operation failed, these output
 				parameters are valid and can be used to
-				restart the operation, for example */
+				restart the operation, for example 
+				与aio请求一起传递的消息;请注意，在aio操作失败的情况下，这些输出参数是有效的，可以用于重新启动操作*/
 	void**	message2,
 	ulint*	type)		/* out: OS_FILE_WRITE or ..._READ */
 {

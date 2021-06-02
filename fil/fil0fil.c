@@ -311,7 +311,7 @@ fil_space_get_ibuf_data(
 }
 
 /***********************************************************************
-Appends a new file to the chain of files of a space. File must be closed. */
+Appends a new file to the chain of files of a space. File must be closed. 将新文件追加到一个空间的文件链中。文件必须关闭。*/
 
 void
 fil_node_create(
@@ -644,7 +644,7 @@ fil_read_flushed_lsn_and_arch_log_no(
 }
 
 /***********************************************************************
-Creates a space object and puts it to the file system. */
+Creates a space object and puts it to the file system. 创建一个空间对象并将其放入文件系统。*/
 
 void
 fil_space_create(
@@ -662,7 +662,7 @@ fil_space_create(
 
 #ifndef UNIV_BASIC_LOG_DEBUG
 	/* Spaces with an odd id number are reserved to replicate spaces
-	used in log debugging */
+	used in log debugging 保留奇数号的空格，用于复制日志调试时使用的空格*/
 	
 	ut_a((purpose == FIL_LOG) || (id % 2 == 0));
 #endif
