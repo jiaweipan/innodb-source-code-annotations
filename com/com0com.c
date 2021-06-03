@@ -23,7 +23,8 @@ use in communication. The primitives have been modeled
 after the Windows Sockets interface. Below this uniform
 API, the precise methods of communication, for example,
 shared memory or Berkeley sockets, can be implemented
-as subroutines.
+as subroutines.这些原语为通信提供了统一的功能接口。
+这些原语是根据Windows Sockets接口建模的。在这个统一的API之下，通信的精确方法(例如，共享内存或伯克利套接字)可以作为子例程实现。
 */
 
 struct com_endpoint_struct{
@@ -172,7 +173,7 @@ com_endpoint_free(
 
 /*************************************************************************
 Sets an option, like the maximum datagram size for an endpoint.
-The options may vary depending on the endpoint type. */
+The options may vary depending on the endpoint type. 设置一个选项，如端点的最大数据报大小。根据端点类型的不同，选项可能会有所不同。*/
 
 ulint
 com_endpoint_set_option(

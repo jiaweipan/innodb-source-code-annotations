@@ -87,7 +87,7 @@ try_again:
 }
 
 /***********************************************************************
-Gets the slot number in the thread table of a thread. */
+Gets the slot number in the thread table of a thread. 获取线程的线程表中的槽号。*/
 
 ulint
 thr_local_get_slot_no(

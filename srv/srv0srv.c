@@ -515,7 +515,7 @@ ulint	srv_n_threads[SRV_MASTER + 1];
 
 /*************************************************************************
 Accessor function to get pointer to n'th slot in the server thread
-table. */
+table.访问器函数获取指向服务器线程表中第n个槽的指针。 */
 static
 srv_slot_t*
 srv_table_get_nth_slot(
@@ -529,7 +529,7 @@ srv_table_get_nth_slot(
 }
 
 /*************************************************************************
-Gets the number of threads in the system. */
+Gets the number of threads in the system. 获取系统中的线程数。*/
 
 ulint
 srv_get_n_threads(void)
@@ -553,7 +553,7 @@ srv_get_n_threads(void)
 /*************************************************************************
 Reserves a slot in the thread table for the current thread. Also creates the
 thread local storage struct for the current thread. NOTE! The server mutex
-has to be reserved by the caller! */
+has to be reserved by the caller! 在线程表中为当前线程保留一个槽。还为当前线程创建线程本地存储结构。注意!服务器互斥锁必须由调用者保留!*/
 static
 ulint
 srv_table_reserve_slot(
@@ -592,7 +592,7 @@ srv_table_reserve_slot(
 
 /*************************************************************************
 Suspends the calling thread to wait for the event in its thread slot.
-NOTE! The server mutex has to be reserved by the caller! */
+NOTE! The server mutex has to be reserved by the caller! 挂起调用线程，在其线程槽中等待事件。服务器互斥锁必须由调用者保留!*/
 static
 os_event_t
 srv_suspend_thread(void)
@@ -636,7 +636,7 @@ srv_suspend_thread(void)
 
 /*************************************************************************
 Releases threads of the type given from suspension in the thread table.
-NOTE! The server mutex has to be reserved by the caller! */
+NOTE! The server mutex has to be reserved by the caller! 从线程表中释放给定类型的线程。注意!服务器互斥锁必须由调用者保留!*/
 
 ulint
 srv_release_threads(
@@ -686,7 +686,7 @@ srv_release_threads(
 }
 
 /*************************************************************************
-Returns the calling thread type. */
+Returns the calling thread type. 返回调用线程类型。*/
 
 ulint
 srv_get_thread_type(void)
@@ -715,7 +715,7 @@ srv_get_thread_type(void)
 
 /***********************************************************************
 Increments by 1 the count of active threads of the type given
-and releases master thread if necessary. */
+and releases master thread if necessary. 将给定类型的活动线程的数量增加1，并在必要时释放主线程。*/
 static
 void
 srv_inc_thread_count(
@@ -737,7 +737,7 @@ srv_inc_thread_count(
 }
 
 /***********************************************************************
-Decrements by 1 the count of active threads of the type given. */
+Decrements by 1 the count of active threads of the type given. 给定类型的活动线程数量减1。*/
 static
 void
 srv_dec_thread_count(
@@ -762,7 +762,7 @@ srv_dec_thread_count(
 
 /***********************************************************************
 Calculates the number of allowed utility threads for a thread to decide if
-it has to suspend itself in the thread table. */
+it has to suspend itself in the thread table. 计算一个线程允许的实用程序线程的数量，以决定它是否必须在线程表中暂停自己。*/
 static
 ulint
 srv_max_n_utilities(
@@ -797,7 +797,7 @@ srv_max_n_utilities(
 
 /***********************************************************************
 Increments the utility meter by the value given and releases utility
-threads if necessary. */
+threads if necessary. 根据给定的值增加实用程序仪表，并在必要时释放实用程序线程。*/
 
 void
 srv_increment_meter(
@@ -823,7 +823,7 @@ srv_increment_meter(
 
 /***********************************************************************
 Releases max number of utility threads if no queries are active and
-the high-water mark for the utility is exceeded. */
+the high-water mark for the utility is exceeded. 如果没有活动的查询并且超过实用程序的高水位标记，则释放实用程序线程的最大数量。*/
 
 void
 srv_release_max_if_no_queries(void)
@@ -857,7 +857,7 @@ srv_release_max_if_no_queries(void)
 
 /***********************************************************************
 Releases one utility thread if no queries are active and
-the high-water mark 2 for the utility is exceeded. */
+the high-water mark 2 for the utility is exceeded. 如果没有活动的查询并且超过实用程序的高水位标志2，则释放一个实用程序线程。*/
 static
 void
 srv_release_one_if_no_queries(void)
@@ -892,7 +892,7 @@ srv_release_one_if_no_queries(void)
 #ifdef notdefined
 /***********************************************************************
 Decrements the utility meter by the value given and suspends the calling
-thread, which must be an utility thread of the type given, if necessary. */
+thread, which must be an utility thread of the type given, if necessary. 按给定值递减实用程序度量值，并挂起调用线程，如果需要，该线程必须是给定类型的实用程序线程。*/
 static
 void
 srv_decrement_meter(
@@ -926,7 +926,7 @@ srv_decrement_meter(
 #endif
 
 /*************************************************************************
-Implements the server console. */
+Implements the server console. 实现服务器控制台。*/
 
 ulint
 srv_console(
@@ -974,7 +974,7 @@ srv_console(
 
 /*************************************************************************
 Creates the first communication endpoint for the server. This
-first call also initializes the com0com.* module. */
+first call also initializes the com0com.* module. 为服务器创建第一个通信端点。第一个调用还初始化com0com.*模块。*/
 
 void
 srv_communication_init(
@@ -1001,7 +1001,7 @@ srv_communication_init(
 }
 	
 /*************************************************************************
-Implements the recovery utility. */
+Implements the recovery utility.实现恢复实用程序。 */
 static
 ulint
 srv_recovery_thread(
@@ -1019,7 +1019,7 @@ srv_recovery_thread(
 	os_event_wait(srv_sys->operational);
 
 	for (;;) {
-		/* Finish a possible recovery */
+		/* Finish a possible recovery 完成一个可能的恢复*/
 
 		srv_inc_thread_count(SRV_RECOVERY);
 
