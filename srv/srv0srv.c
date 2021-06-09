@@ -1032,7 +1032,7 @@ srv_recovery_thread(
 		mutex_exit(&kernel_mutex);
 
 		/* Wait for somebody to release this thread; (currently, this
-		should never be released) */
+		should never be released) 等待某人释放这个线程;(目前，这个不应该被释放)*/
 
 		os_event_wait(event);
 	}
@@ -1041,7 +1041,7 @@ srv_recovery_thread(
 }
 
 /*************************************************************************
-Implements the purge utility. */
+Implements the purge utility. 实现清除实用程序。*/
 
 ulint
 srv_purge_thread(
@@ -1061,7 +1061,7 @@ srv_purge_thread(
 }
 
 /*************************************************************************
-Creates the utility threads. */
+Creates the utility threads. 创建实用程序线程。*/
 
 void
 srv_create_utility_threads(void)
@@ -1090,7 +1090,7 @@ srv_create_utility_threads(void)
 }
 
 /*************************************************************************
-Implements the communication threads. */
+Implements the communication threads. 实现通信线程。*/
 static
 ulint
 srv_com_thread(
@@ -1131,7 +1131,7 @@ srv_com_thread(
 		/* Release one utility thread for each utility if
 		high water mark 2 is exceeded and there are no
 		active queries. This is done to utilize possible
-		quiet time in the server. */
+		quiet time in the server. 如果超过高水位线2且没有活动查询，则为每个实用程序释放一个实用程序线程。这样做是为了利用服务器中可能的安静时间。*/
 
 		srv_release_one_if_no_queries();
 	}		
@@ -1140,7 +1140,7 @@ srv_com_thread(
 }
 
 /*************************************************************************
-Creates the communication threads. */
+Creates the communication threads.创建通信线程。 */
 
 void
 srv_create_com_threads(void)
@@ -1159,7 +1159,7 @@ srv_create_com_threads(void)
 }
 
 /*************************************************************************
-Implements the worker threads. */
+Implements the worker threads. 实现工作线程。*/
 static
 ulint
 srv_worker_thread(
@@ -1180,13 +1180,13 @@ srv_worker_thread(
  		event = srv_suspend_thread();
 		mutex_exit(&kernel_mutex);
 
-		/* Wait for somebody to release this thread */
+		/* Wait for somebody to release this thread 等待某人发布这个线程*/
 		os_event_wait(event);
 
 		srv_inc_thread_count(SRV_WORKER);
 
 		/* Check in the server task queue if there is work for this
-		thread, and do the work */
+		thread, and do the work 如果此线程有工作，请检查服务器任务队列，并执行该工作*/
 
 		srv_que_task_queue_check();				
 
@@ -1195,7 +1195,7 @@ srv_worker_thread(
 		/* Release one utility thread for each utility if
 		high water mark 2 is exceeded and there are no
 		active queries. This is done to utilize possible
-		quiet time in the server. */
+		quiet time in the server. 如果超过高水位线2且没有活动查询，则为每个实用程序释放一个实用程序线程。这样做是为了利用服务器中可能的安静时间。*/
 
 		srv_release_one_if_no_queries();
 	}		
@@ -1204,7 +1204,7 @@ srv_worker_thread(
 }
 
 /*************************************************************************
-Creates the worker threads. */
+Creates the worker threads. 创建工作线程。*/
 
 void
 srv_create_worker_threads(void)
@@ -1225,7 +1225,7 @@ srv_create_worker_threads(void)
 
 #ifdef notdefined
 /*************************************************************************
-Reads a keyword and a value from a file. */
+Reads a keyword and a value from a file.从文件中读取关键字和值。 */
 
 ulint
 srv_read_init_val(
@@ -1351,7 +1351,7 @@ skip_keyword:
 }
 
 /*************************************************************************
-Reads keywords and values from an initfile. */
+Reads keywords and values from an initfile. 从初始化文件读取关键字和值。*/
 
 ulint
 srv_read_initfile(
@@ -1491,7 +1491,7 @@ srv_read_initfile(
 
 /*************************************************************************
 Reads keywords and a values from an initfile. In case of an error, exits
-from the process. */
+from the process. 从初始化文件中读取关键字和值。如果出现错误，退出进程。*/
 
 void
 srv_read_initfile(
@@ -1622,7 +1622,7 @@ srv_read_initfile(
 #endif
 
 /*************************************************************************
-Initializes the server. */
+Initializes the server. 初始化服务器。*/
 static
 void
 srv_init(void)

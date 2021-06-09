@@ -18,7 +18,7 @@ Created 6/5/1996 Heikki Tuuri
 Checks if there is work to do in the server task queue. If there is, the
 thread starts processing a task. Before leaving, it again checks the task
 queue and picks a new task if any exists. This is called by a SRV_WORKER
-thread. */
+thread. 检查服务器任务队列中是否有工作要做。如果有，线程就开始处理一个任务。在离开之前，它再次检查任务队列，并选择一个新任务(如果有的话)。这是由SRV_WORKER线程调用的。*/
 
 void
 srv_que_task_queue_check(void)

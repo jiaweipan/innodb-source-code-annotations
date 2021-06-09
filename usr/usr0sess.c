@@ -1106,7 +1106,7 @@ sess_open_connection(
 
 /***********************************************************************
 Starts a new connection and a session, or starts a query based on a client
-message. This is called by a SRV_COM thread. */
+message. This is called by a SRV_COM thread. 启动一个新的连接和一个会话，或启动一个基于客户端消息的查询。这是由SRV_COM线程调用的。*/
 
 void
 sess_process_cli_msg(
